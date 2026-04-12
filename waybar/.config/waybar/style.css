@@ -53,6 +53,7 @@ button:hover {
 #network:hover,
 #bluetooth:hover,
 #custom-power:hover,
+#custom-updates:hover,
 #pulseaudio:hover {
     background-color: #dddddd;
 }
@@ -216,7 +217,6 @@ label:focus {
     background-color: #ff5b61;
 }
 
-#custom-updates,
 #pulseaudio {
     padding: 0 8px;
     background-color: #9370da;
@@ -368,6 +368,7 @@ label:focus {
     padding: 2px 0 0 0;
 }
 
+#custom-updates,
 #custom-mic {
     padding: 0 8px;
     margin-top: 6px;
@@ -385,7 +386,6 @@ label:focus {
 }
 
 @keyframes recording-blink {
-
     50% { opacity: 0.5; }
 }
 
@@ -400,5 +400,9 @@ label:focus {
     margin-right: 2px;
     border-radius: 8px;
     animation: recording-blink 2s linear infinite;
+}
+
+#custom-updates {
+    background-color: #9370da;
 }
 

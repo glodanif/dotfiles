@@ -40,3 +40,5 @@ if [[ ! -d /usr/lib/modules/$(uname -r) ]]; then
   section "Kernel updated — reboot when ready." "\e[33m"
 fi
 
+pkill -RTMIN+8 waybar
+

@@ -16,6 +16,7 @@ elephant-all
 elogind-openrc
 fastfetch
 ffmpegthumbnailer
+fzf
 ghostty
 git
 gnome-themes-extra
@@ -46,6 +47,7 @@ obs-studio
 ookla-speedtest-bin
 openrc
 openssh-openrc
+pacman-contrib
 pipewire
 pipewire-audio
 pipewire-pulse

@@ -39,3 +39,7 @@ provider = "clipboard"
 prefix = "`"
 provider = "menus:configs"
 
+[[providers.prefixes]]
+prefix = "!"
+provider = "menus:scripts"
+

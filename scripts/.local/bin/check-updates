@@ -1,4 +1,6 @@
 #!/bin/zsh
-count=$(checkupdates 2>/dev/null | wc -l)
+official=$(checkupdates 2>/dev/null | wc -l)
+aur=$(yay -Qua 2>/dev/null | wc -l)
+count=$(( official + aur ))
 (( count > 0 )) && echo "$count" || echo ""
 

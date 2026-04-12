@@ -1,0 +1,44 @@
+name = "scripts"
+name_pretty = "Scripts"
+icon = "text-editor"
+
+[[entries]]
+text = "Start screen recording"
+subtext = "screenrecording"
+value = "screenrecording"
+
+[[entries]]
+text = "System update"
+subtext = "sys-update"
+value = "sys-update"
+
+[[entries]]
+text = "System backup"
+subtext = "sys-backup"
+value = "sys-backup"
+
+[[entries]]
+text = "Install package"
+subtext = "install-package"
+value = "install-package"
+
+[[entries]]
+text = "Install AUR package"
+subtext = "install-aur-package"
+value = "install-aur-package"
+
+[[entries]]
+text = "Uninstall package"
+subtext = "uninstall-package"
+value = "uninstall-package"
+
+[[entries]]
+text = "Start SSH"
+subtext = "rc-service sshd start"
+value = "rc-service sshd start"
+
+[[entries]]
+text = "Power menu"
+subtext = "power-menu"
+value = "power-menu"
+
