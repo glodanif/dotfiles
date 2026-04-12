@@ -2,6 +2,7 @@ name = "configs"
 name_pretty = "Configs"
 icon = "text-editor"
 action = "ghostty -e sh -c 'cd $(dirname %VALUE%) && nvim %VALUE%; exec $SHELL'"
+
 [[entries]]
 text = "Hyprland"
 subtext = "hyprland.conf"
@@ -41,3 +42,4 @@ value = "~/.config/profile-io/config.json"
 text = ".zshrc"
 subtext = ".zshrc"
 value = "~/.zshrc"
+

@@ -11,6 +11,7 @@ text-color=#ffffff
 border-color=#9370da
 background-color=#0a2b4e
 format=<b>%s</b>\n\n%b
+on-button-left=invoke-action default
 
 [app-name=Spotify]
 invisible=1
@@ -24,4 +25,3 @@ invisible=false
 [urgency=critical]
 default-timeout=0
 layer=overlay
-

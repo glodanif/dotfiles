@@ -4,6 +4,7 @@
 [[ -f ~/.config/user-dirs.dirs ]] && source ~/.config/user-dirs.dirs
 OUTPUT_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos/Recordings}"
 RECORDING_FILE="/tmp/screenrecord-filename"
+PID_FILE="/tmp/screenrecord-pid"
 RESOLUTION=""
 for arg in "$@"; do
   case "$arg" in
@@ -20,9 +21,13 @@ default_resolution() {
   fi
 }
 signal_waybar() {
-  pkill -RTMIN+8 waybar
-  sleep 0.2
-  pkill -RTMIN+8 waybar
+  for pid in $(pgrep waybar); do
+    kill -$((34+8)) "$pid" 2>/dev/null
+  done
+  sleep 0.1
+  for pid in $(pgrep waybar); do
+    kill -$((34+8)) "$pid" 2>/dev/null
+  done
 }
 start_recording() {
   if [[ ! -d $OUTPUT_DIR ]]; then
@@ -31,45 +36,73 @@ start_recording() {
   fi
   local filename="$OUTPUT_DIR/screenrecording-$(date +'%Y-%m-%d_%H-%M-%S').mp4"
   local resolution="${RESOLUTION:-$(default_resolution)}"
-  gpu-screen-recorder -w portal -k auto -s "$resolution" -f 60 -fm cfr -fallback-cpu-encoding yes -o "$filename" &
+  nohup gpu-screen-recorder -w portal -k auto -s "$resolution" -f 60 -fm cfr -fallback-cpu-encoding yes -o "$filename" &>/dev/null &
   local pid=$!
+  disown
   # Wait for portal selection and recording to start
   while kill -0 $pid 2>/dev/null && [[ ! -f $filename ]]; do
     sleep 0.2
   done
   if kill -0 $pid 2>/dev/null; then
     echo "$filename" > "$RECORDING_FILE"
+    echo "$pid" > "$PID_FILE"
     signal_waybar
+    exit 0
   fi
 }
 stop_recording() {
-  pkill -SIGINT -f "^gpu-screen-recorder"
-  local count=0
-  while pgrep -f "^gpu-screen-recorder" >/dev/null && ((count < 50)); do
-    sleep 0.1
-    count=$((count + 1))
-  done
-  if pgrep -f "^gpu-screen-recorder" >/dev/null; then
-    pkill -9 -f "^gpu-screen-recorder"
-    rm -f "$RECORDING_FILE"
-    signal_waybar
-    notify-send "Screen recording" "Force-killed. Video may be corrupted." -u critical -t 5000
-  else
-    local filename=$(cat "$RECORDING_FILE" 2>/dev/null)
-    rm -f "$RECORDING_FILE"
-    signal_waybar
-    local preview="${filename%.mp4}-preview.png"
-    ffmpeg -y -i "$filename" -ss 00:00:00.1 -vframes 1 -q:v 2 "$preview" -loglevel quiet 2>/dev/null
-    (
-      ACTION=$(notify-send "Screen recording saved" "Click to open" -t 10000 -i "${preview:-$filename}" -A "default=open")
-      [[ $ACTION == "default" ]] && mpv "$filename"
-      rm -f "$preview"
-    ) &
+  local pid
+  pid=$(cat "$PID_FILE" 2>/dev/null)
+  
+  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+    kill -SIGINT "$pid"
+    local count=0
+    while kill -0 "$pid" 2>/dev/null && ((count < 50)); do
+      sleep 0.1
+      count=$((count + 1))
+    done
+    
+    if kill -0 "$pid" 2>/dev/null; then
+      kill -9 "$pid"
+      rm -f "$RECORDING_FILE" "$PID_FILE"
+      signal_waybar
+      notify-send "Screen recording" "Force-killed. Video may be corrupted." -u critical -t 5000
+      exit 1
+    fi
   fi
+  
+  local filename
+  filename=$(cat "$RECORDING_FILE" 2>/dev/null)
+  rm -f "$RECORDING_FILE" "$PID_FILE"
+  signal_waybar
+  
+  sleep 0.3
+  
+  if [[ -f "$filename" ]]; then
+    local preview="${filename%.mp4}-preview.png"
+    local tmpscript
+    tmpscript=$(mktemp /tmp/screenrecord-notify-XXXX.sh)
+    cat > "$tmpscript" << 'SCRIPT'
+#!/bin/bash
+ffmpeg -y -i "$FILENAME" -ss 00:00:01 -vframes 1 -q:v 2 "$PREVIEW" -loglevel quiet 2>/dev/null
+ACTION=$(notify-send "Screen recording saved" "Click to open" -t 10000 -i "$PREVIEW" -A "default=Open")
+[[ "$ACTION" == "default" ]] && mpv "$FILENAME"
+rm -f "$PREVIEW" "$0"
+SCRIPT
+    chmod +x "$tmpscript"
+    nohup env \
+      PREVIEW="$preview" \
+      FILENAME="$filename" \
+      DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" \
+      WAYLAND_DISPLAY="$WAYLAND_DISPLAY" \
+      XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+      "$tmpscript" &>/dev/null &
+    disown
+  fi
+  exit 0
 }
-if pgrep -f "^gpu-screen-recorder" >/dev/null; then
+if [[ -f "$RECORDING_FILE" ]]; then
   stop_recording
 else
   start_recording
 fi
-

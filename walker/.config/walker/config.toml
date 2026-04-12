@@ -40,6 +40,6 @@ prefix = "`"
 provider = "menus:configs"
 
 [[providers.prefixes]]
-prefix = "!"
+prefix = "\\"
 provider = "menus:scripts"
 

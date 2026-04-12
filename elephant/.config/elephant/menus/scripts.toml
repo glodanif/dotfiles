@@ -1,11 +1,12 @@
 name = "scripts"
 name_pretty = "Scripts"
 icon = "text-editor"
+action = "ghostty -e sh -c '%VALUE%'"
 
 [[entries]]
 text = "Start screen recording"
-subtext = "screenrecording"
-value = "screenrecording"
+subtext = "screenrecord"
+value = "screenrecord"
 
 [[entries]]
 text = "System update"
@@ -34,8 +35,8 @@ value = "uninstall-package"
 
 [[entries]]
 text = "Start SSH"
-subtext = "rc-service sshd start"
-value = "rc-service sshd start"
+subtext = "sudo rc-service sshd start"
+value = "run-and-wait sudo rc-service sshd start"
 
 [[entries]]
 text = "Power menu"
