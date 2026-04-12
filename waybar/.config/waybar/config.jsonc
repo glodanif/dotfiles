@@ -101,7 +101,7 @@
   },
   "custom/power": {
     "format": "⏻",
-    "on-click": "wlogout --buttons-per-row 4 --column-spacing 36 --margin 512",
+    "on-click": "power-menu",
     "tooltip-format": "Power menu"
   },
   "custom/mic": {
