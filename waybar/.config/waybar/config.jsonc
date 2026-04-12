@@ -97,11 +97,11 @@
     "exec": "ghostty -e check-updates",
     "interval": 3600,
     "format": " {}",
-    "on-click": "ghostty -e system-update"
+    "on-click": "ghostty -e sys-update"
   },
   "custom/power": {
     "format": "⏻",
-    "on-click": "wlogout --buttons-per-row 4",
+    "on-click": "wlogout --buttons-per-row 4 --column-spacing 36 --margin 512",
     "tooltip-format": "Power menu"
   },
   "custom/mic": {

@@ -1,0 +1,54 @@
+#!/bin/bash
+# sys-backup — mount backup drive, run restic, prune, unmount
+set -e
+
+BACKUP_DISK_UUID="468df889-d691-4d07-8c89-31caa4c0b2ea"
+MOUNT_POINT="/mnt/backup"
+REPO="/mnt/backup/restic"
+PASSWORD_FILE="/root/.restic-password"
+
+section() {
+  local msg="$1"
+  local color="${2:-\e[32m}"
+  echo -e "${color}"
+  echo -e "$msg"
+  echo -e "─────────────────────────────────────────────\e[0m"
+}
+
+hyprctl dispatch tagwindow +noidle &>/dev/null || true
+trap 'hyprctl dispatch tagwindow -- -noidle &>/dev/null || true' EXIT
+
+section "System Backup"
+sudo -v
+
+DEVICE=$(sudo blkid -U "$BACKUP_DISK_UUID" 2>/dev/null || true)
+if [[ -z "$DEVICE" ]]; then
+  section "Backup drive not found. Skipping." "\e[33m"
+  exit 0
+fi
+
+section "Backup drive found at $DEVICE"
+
+if ! mountpoint -q "$MOUNT_POINT"; then
+  section "Mounting..."
+  sudo mount "$DEVICE" "$MOUNT_POINT"
+fi
+
+section "Running backup..."
+sudo restic backup --repo "$REPO" \
+  --password-file "$PASSWORD_FILE" \
+  --exclude /home/glodanif/.cache \
+  --exclude /home/glodanif/.local/share/Trash \
+  /home/glodanif /etc
+
+section "Pruning old snapshots..."
+sudo restic forget --repo "$REPO" \
+  --password-file "$PASSWORD_FILE" \
+  --keep-last 5 \
+  --prune
+
+section "Unmounting..."
+sudo umount "$MOUNT_POINT"
+
+section "Backup complete."
+

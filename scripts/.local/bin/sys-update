@@ -3,6 +3,9 @@
 
 set -e
 
+hyprctl dispatch tagwindow +noidle &>/dev/null || true
+trap 'hyprctl dispatch tagwindow -- -noidle &>/dev/null || true' EXIT
+
 section() {
   local msg="$1"
   local color="${2:-\e[32m}"
@@ -36,3 +39,4 @@ section "Done."
 if [[ ! -d /usr/lib/modules/$(uname -r) ]]; then
   section "Kernel updated — reboot when ready." "\e[33m"
 fi
+

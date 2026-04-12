@@ -8,20 +8,21 @@ window {
 }
 
 button {
-    border-radius: 0;
-    border-color: black;
-	text-decoration-color: #FFFFFF;
+    border-radius: 10px;
+    border-color: #9370da;
+    text-decoration-color: #FFFFFF;
     color: #FFFFFF;
-	background-color: #1E1E1E;
-	border-style: solid;
-	border-width: 1px;
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: 25%;
+    background-color: #1E1E1E;
+    border-style: solid;
+    border-width: 2px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 25%;
+    font-size: 36px;
 }
 
 button:focus, button:active, button:hover {
-	background-color: #3700B3;
+	background-color: rgba(147, 112, 218, 0.5);
 	outline-style: none;
 }
 

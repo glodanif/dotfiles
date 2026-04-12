@@ -1,0 +1,3 @@
+#!/bin/zsh
+swayosd-client --monitor "$(hyprctl activeworkspace -j | jq -r '.monitor')" "$@"
+
