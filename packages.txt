@@ -8,7 +8,6 @@ brave-bin
 btop
 cliphist
 cryptsetup
-curl
 dhcpcd
 discord-latest-bin
 dkms
@@ -52,6 +51,7 @@ pipewire-pulse
 proton-vpn-cli
 qt5-wayland
 qt6-wayland
+restic
 rsync
 satty
 seahorse
@@ -60,6 +60,7 @@ slurp
 steam
 stow
 swaync
+swayosd
 sxiv
 telegram-desktop
 ttf-font-awesome
@@ -68,13 +69,15 @@ unzip
 vim
 walker
 waybar
-wget
 windsurf
 wiremix
 wireplumber
 wl-clip-persist
 wlogout
 wofi
+xdg-desktop-portal
+xdg-desktop-portal-gtk
+xdg-desktop-portal-hyprland
 yay-bin
 yt-dlp
 zed
