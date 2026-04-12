@@ -19,6 +19,7 @@ ffmpegthumbnailer
 ghostty
 git
 gnome-themes-extra
+gpu-screen-recorder
 grim
 hypridle
 hyprland
@@ -49,6 +50,7 @@ pipewire
 pipewire-audio
 pipewire-pulse
 proton-vpn-cli
+python-pip
 qt5-wayland
 qt6-wayland
 restic

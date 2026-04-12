@@ -1,0 +1,75 @@
+#!/bin/bash
+# Screen recording toggle script
+# Saves to ~/Videos by default, override with XDG_VIDEOS_DIR env
+[[ -f ~/.config/user-dirs.dirs ]] && source ~/.config/user-dirs.dirs
+OUTPUT_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos/Recordings}"
+RECORDING_FILE="/tmp/screenrecord-filename"
+RESOLUTION=""
+for arg in "$@"; do
+  case "$arg" in
+  --resolution=*) RESOLUTION="${arg#*=}" ;;
+  esac
+done
+default_resolution() {
+  local width height
+  read -r width height < <(hyprctl monitors -j | jq -r '.[] | select(.focused == true) | "\(.width) \(.height)"')
+  if ((width > 3840 || height > 2160)); then
+    echo "3840x2160"
+  else
+    echo "0x0"
+  fi
+}
+signal_waybar() {
+  pkill -RTMIN+8 waybar
+  sleep 0.2
+  pkill -RTMIN+8 waybar
+}
+start_recording() {
+  if [[ ! -d $OUTPUT_DIR ]]; then
+    notify-send "Screen recording" "Output directory does not exist: $OUTPUT_DIR" -u critical -t 3000
+    exit 1
+  fi
+  local filename="$OUTPUT_DIR/screenrecording-$(date +'%Y-%m-%d_%H-%M-%S').mp4"
+  local resolution="${RESOLUTION:-$(default_resolution)}"
+  gpu-screen-recorder -w portal -k auto -s "$resolution" -f 60 -fm cfr -fallback-cpu-encoding yes -o "$filename" &
+  local pid=$!
+  # Wait for portal selection and recording to start
+  while kill -0 $pid 2>/dev/null && [[ ! -f $filename ]]; do
+    sleep 0.2
+  done
+  if kill -0 $pid 2>/dev/null; then
+    echo "$filename" > "$RECORDING_FILE"
+    signal_waybar
+  fi
+}
+stop_recording() {
+  pkill -SIGINT -f "^gpu-screen-recorder"
+  local count=0
+  while pgrep -f "^gpu-screen-recorder" >/dev/null && ((count < 50)); do
+    sleep 0.1
+    count=$((count + 1))
+  done
+  if pgrep -f "^gpu-screen-recorder" >/dev/null; then
+    pkill -9 -f "^gpu-screen-recorder"
+    rm -f "$RECORDING_FILE"
+    signal_waybar
+    notify-send "Screen recording" "Force-killed. Video may be corrupted." -u critical -t 5000
+  else
+    local filename=$(cat "$RECORDING_FILE" 2>/dev/null)
+    rm -f "$RECORDING_FILE"
+    signal_waybar
+    local preview="${filename%.mp4}-preview.png"
+    ffmpeg -y -i "$filename" -ss 00:00:00.1 -vframes 1 -q:v 2 "$preview" -loglevel quiet 2>/dev/null
+    (
+      ACTION=$(notify-send "Screen recording saved" "Click to open" -t 10000 -i "${preview:-$filename}" -A "default=open")
+      [[ $ACTION == "default" ]] && mpv "$filename"
+      rm -f "$preview"
+    ) &
+  fi
+}
+if pgrep -f "^gpu-screen-recorder" >/dev/null; then
+  stop_recording
+else
+  start_recording
+fi
+

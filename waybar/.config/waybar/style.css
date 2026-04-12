@@ -383,3 +383,22 @@ label:focus {
 #custom-mic.muted {
     background-color: #ff9999;
 }
+
+@keyframes recording-blink {
+
+    50% { opacity: 0.5; }
+}
+
+#custom-recording {
+    background-color: #ffffff;
+    color: #cc0000;
+    font-size: 22px;
+    padding: 0 8px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    margin-left: 6px;
+    margin-right: 2px;
+    border-radius: 8px;
+    animation: recording-blink 2s linear infinite;
+}
+

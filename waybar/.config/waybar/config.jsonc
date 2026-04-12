@@ -6,7 +6,7 @@
   "spacing": 4,
   "modules-left": ["custom/artix", "hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock", "custom/weather"],
-  "modules-right": ["tray", "custom/updates", "custom/mic", "pulseaudio", "cpu", "memory", "bluetooth", "network", "custom/power"],
+  "modules-right": ["tray", "custom/updates", "custom/recording", "custom/mic", "pulseaudio", "cpu", "memory", "bluetooth", "network", "custom/power"],
   "clock": {
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
     "format": "{:L%A %H:%M}",
@@ -108,5 +108,13 @@
     "exec": "mic-watch",
     "return-type": "json",
     "on-click": "mic-toggle"
+  },
+  "custom/recording": {
+    "exec": "echo '{\"text\": \"⏺\", \"class\": \"recording\"}'",
+    "exec-if": "[ -f /tmp/screenrecord-filename ]",
+    "return-type": "json",
+    "interval": "once",
+    "signal": 8,
+    "on-click": "screenrecord"
   }
 }
