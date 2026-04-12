@@ -1,0 +1,38 @@
+#!/bin/bash
+# sys-update — update Arch system packages and AUR
+
+set -e
+
+section() {
+  local msg="$1"
+  local color="${2:-\e[32m}"
+  echo -e "${color}"
+  echo -e "$msg"
+  echo -e "─────────────────────────────────────────────\e[0m"
+}
+
+section "System Update"
+sudo -v
+
+section "Syncing keyrings..."
+sudo pacman -Sy --noconfirm archlinux-keyring >/dev/null
+
+section "Updating system packages..."
+sudo pacman -Syyu --noconfirm
+
+if command -v yay &>/dev/null && pacman -Qem &>/dev/null; then
+  section "Updating AUR packages..."
+  yay -Sua --noconfirm --cleanafter
+fi
+
+orphans=$(pacman -Qtdq 2>/dev/null || true)
+if [[ -n $orphans ]]; then
+  section "Removing orphans..."
+  sudo pacman -Rs --noconfirm $orphans
+fi
+
+section "Done."
+
+if [[ ! -d /usr/lib/modules/$(uname -r) ]]; then
+  section "Kernel updated — reboot when ready." "\e[33m"
+fi

@@ -1,0 +1,43 @@
+name = "configs"
+name_pretty = "Configs"
+icon = "text-editor"
+action = "ghostty -e sh -c 'cd $(dirname %VALUE%) && nvim %VALUE%; exec $SHELL'"
+[[entries]]
+text = "Hyprland"
+subtext = "hyprland.conf"
+value = "~/.config/hypr/hyprland.conf"
+
+[[entries]]
+text = "Hyprland | Autostart"
+subtext = "autostart.conf"
+value = "~/.config/hypr/autostart.conf"
+
+[[entries]]
+text = "Hyprland | Hyprpaper"
+subtext = "hyprpaper.conf"
+value = "~/.config/hypr/hyprpaper.conf"
+
+[[entries]]
+text = "Waybar | Style"
+subtext = "style.css"
+value = "~/.config/waybar/style.css"
+
+[[entries]]
+text = "Waybar | Config"
+subtext = "config.jsonc"
+value = "~/.config/waybar/config.jsonc"
+
+[[entries]]
+text = "Walker"
+subtext = "config.toml"
+value = "~/.config/walker/config.toml"
+
+[[entries]]
+text = "Profile IO"
+subtext = "config.json"
+value = "~/.config/profile-io/config.json"
+
+[[entries]]
+text = ".zshrc"
+subtext = ".zshrc"
+value = "~/.zshrc"

@@ -1,0 +1,4 @@
+.stow-local-ignore
+*~
+*.swp
+.DS_Store

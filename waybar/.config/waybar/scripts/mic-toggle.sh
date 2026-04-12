@@ -1,0 +1,4 @@
+#!/bin/zsh
+SOURCE="alsa_input.usb-0c76_USB_PnP_Audio_Device-00.mono-fallback"
+pactl set-source-mute "$SOURCE" toggle
+

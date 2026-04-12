@@ -1,0 +1,112 @@
+{
+  "reload_style_on_change": true,
+  "layer": "top",
+  "position": "top",
+  "height": 42,
+  "spacing": 4,
+  "modules-left": ["custom/artix", "hyprland/workspaces", "hyprland/window"],
+  "modules-center": ["clock", "custom/weather"],
+  "modules-right": ["tray", "custom/updates", "custom/mic", "pulseaudio", "cpu", "memory", "bluetooth", "network", "custom/power"],
+  "clock": {
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+    "format": "{:L%A %H:%M}",
+    "format-alt": "{:L%d %B W%V %Y}",
+  },
+  "cpu": {
+    "format": " {usage}%",
+    "on-click": "ghostty -e btop",
+  },
+  "memory": {
+    "format": "  {}%",
+    "on-click": "ghostty -e btop"
+  },
+  "network": {
+    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+    "format-wifi": "{icon}",
+    "format-ethernet": "󰈁",
+    "format-disconnected": "󰈂",
+    "tooltip-format-wifi": "{essid} ({frequency} GHz)",
+    "tooltip-format-ethernet": "Connected",
+    "tooltip-format-disconnected": "Disconnected",
+    "interval": 3,
+    "spacing": 1,
+    "interface": "eth*",
+    "on-click": "ghostty -e run-and-wait speedtest",
+  },
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": "󰖁",
+    "format-icons": {
+      "default": ["󰕿", "󰖀", "󰕾"],
+      "headphone": "",
+      "headset": "",
+    },
+    "scroll-step": 5,
+    "on-click": "ghostty -e wiremix",
+  },
+  "bluetooth": {
+    "format": "",
+    "format-off": "󰂲",
+    "format-disabled": "󰂲",
+    "format-connected": "󰂱",
+    "format-no-controller": "󰂲",
+    "tooltip-format": "Devices connected: {num_connections}",
+    "on-click": "ghostty -e bluetui"
+  },
+  "tray": {
+    "spacing": 10,
+  },
+  "hyprland/workspaces": {
+    "format": "{id}",
+    "on-click": "activate",
+    "persistent-workspaces": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": [],
+      "6": [],
+      "7": [],
+    },
+  },
+  "hyprland/window": {
+    "format": "{}",
+    "format-empty": "",
+    "separate-outputs": true,
+    "rewrite": {
+      "^(.{40}).+": "[ $1... ]",
+      "^(.{1,40})$": "[ $1 ]",
+      "^$": "",
+    },
+    "on-click-middle": "hyprctl dispatch killactive",
+  },
+  "custom/weather": {
+    "exec": "terminal-weather -w",
+    "on-click": "ghostty -e run-and-wait terminal-weather",
+    "return-type": "json",
+    "interval": 900
+  },
+  "custom/artix": {
+    "exec": "echo ' '",
+    "interval": "once",
+    "format": "{}",
+    "tooltip-format": "Artix",
+    "on-click": "ghostty -e run-and-wait fastfetch"
+  },
+  "custom/updates": {
+    "exec": "ghostty -e check-updates",
+    "interval": 3600,
+    "format": " {}",
+    "on-click": "ghostty -e system-update"
+  },
+  "custom/power": {
+    "format": "⏻",
+    "on-click": "wlogout --buttons-per-row 4",
+    "tooltip-format": "Power menu"
+  },
+  "custom/mic": {
+    "exec": "mic-watch",
+    "return-type": "json",
+    "on-click": "mic-toggle"
+  }
+}
