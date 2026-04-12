@@ -1,3 +1,5 @@
 #!/bin/zsh
-"$@"
-read -k1 "?Press any key to close..."
+cmd="$*"
+exec setsid -- ghostty \
+  --title="float" \
+  -e bash -c "$cmd; echo; read -p 'Press any key to close...' -n1"
