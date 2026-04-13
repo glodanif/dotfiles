@@ -2,12 +2,18 @@
 
 pkill wlogout 2>/dev/null; true
 
-HEIGHT=$(hyprctl monitors -j | jq '.[] | select(.focused == true) | .height')
+MONITOR=$(hyprctl monitors -j | jq '.[] | select(.focused == true)')
+HEIGHT=$(echo $MONITOR | jq '.height')
+SCALE=$(echo $MONITOR | jq '.scale')
+LOGICAL_HEIGHT=$(echo "$HEIGHT $SCALE" | awk '{printf "%d", $1 / $2}')
 
-if (( HEIGHT >= 1440 )); then
+if (( LOGICAL_HEIGHT >= 1440 )); then
     MARGIN=512
-else
+elif (( LOGICAL_HEIGHT >= 1080 )); then
     MARGIN=280
+else
+    MARGIN=200
 fi
 
 wlogout --buttons-per-row 4 --column-spacing 36 --margin $MARGIN
+

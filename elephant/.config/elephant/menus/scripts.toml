@@ -1,6 +1,6 @@
 name = "scripts"
 name_pretty = "Scripts"
-icon = "text-editor"
+icon = "application-x-executable"
 action = "ghostty -e sh -c '%VALUE%'"
 
 [[entries]]

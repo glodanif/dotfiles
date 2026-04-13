@@ -5,6 +5,7 @@ bluetui
 bluez-openrc
 bluez-utils
 brave-bin
+brave-origin-nightly-bin
 btop
 cliphist
 cryptsetup
@@ -35,6 +36,7 @@ linux-firmware
 linux-headers
 localsend-bin
 lvm2
+mailspring-bin
 mako
 mpv
 nautilus

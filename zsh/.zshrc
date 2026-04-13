@@ -137,4 +137,5 @@ export PATH="$PATH:$HOME/Development/Tools/flutter/bin"
 export PATH="$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools"
 export JAVA_HOME="$HOME/.local/share/JetBrains/Toolbox/apps/intellij-idea/jbr"
 export PATH="$PATH:$HOME/.local/bin"
+export PATH="$JAVA_HOME/bin:$PATH"
 

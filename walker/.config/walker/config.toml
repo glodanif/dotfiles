@@ -36,10 +36,10 @@ prefix = "$"
 provider = "clipboard"
 
 [[providers.prefixes]]
-prefix = "`"
+prefix = "\\"
 provider = "menus:configs"
 
 [[providers.prefixes]]
-prefix = "\\"
+prefix = "`"
 provider = "menus:scripts"
 
