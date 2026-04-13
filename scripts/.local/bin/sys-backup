@@ -39,6 +39,12 @@ sudo restic backup --repo "$REPO" \
   --password-file "$PASSWORD_FILE" \
   --exclude /home/glodanif/.cache \
   --exclude /home/glodanif/.local/share/Trash \
+  --exclude /home/glodanif/.gradle/caches \
+  --exclude /home/glodanif/.gradle/daemon \
+  --exclude /home/glodanif/.gradle/native \
+  --exclude /home/glodanif/.gradle/kotlin-profile \
+  --exclude /home/glodanif/.gradle/.tmp \
+  --exclude /home/glodanif/Development/Work/**/build \
   /home/glodanif /etc
 
 section "Pruning old snapshots..."
