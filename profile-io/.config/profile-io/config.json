@@ -60,6 +60,15 @@
           "monitor_name": "DP-2"
         }
       ],
+      "persistent_workspace_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
       "workspaces_fallback_monitor_name": "DP-1",
       "focus_monitor_name": "DP-1",
       "focus_workspace_id": 2,
@@ -126,6 +135,15 @@
           "id": 1,
           "monitor_name": "HDMI-A-1"
         }
+      ],
+      "persistent_workspace_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
       ],
       "workspaces_fallback_monitor_name": "HDMI-A-1",
       "focus_monitor_name": null,
