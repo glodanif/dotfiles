@@ -1,14 +1,16 @@
 #!/bin/bash
 # Screen recording toggle script
-# Saves to ~/Videos by default, override with XDG_VIDEOS_DIR env
+# Saves to ~/Videos/Recordings by default, override with XDG_VIDEOS_DIR env
 [[ -f ~/.config/user-dirs.dirs ]] && source ~/.config/user-dirs.dirs
 OUTPUT_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos/Recordings}"
 RECORDING_FILE="/tmp/screenrecord-filename"
 PID_FILE="/tmp/screenrecord-pid"
 RESOLUTION=""
+CAPTURE_AUDIO=false
 for arg in "$@"; do
   case "$arg" in
   --resolution=*) RESOLUTION="${arg#*=}" ;;
+  --audio|--audio=true|--audio=1) CAPTURE_AUDIO=true ;;
   esac
 done
 default_resolution() {
@@ -36,13 +38,18 @@ start_recording() {
   fi
   local filename="$OUTPUT_DIR/screenrecording-$(date +'%Y-%m-%d_%H-%M-%S').mp4"
   local resolution="${RESOLUTION:-$(default_resolution)}"
-  nohup gpu-screen-recorder -w portal -k auto -s "$resolution" -f 60 -fm cfr -fallback-cpu-encoding yes -o "$filename" &>/dev/null &
+  local audio_args=""
+  if [[ "$CAPTURE_AUDIO" == true ]]; then
+    audio_args="-a default_output"
+  fi
+  nohup gpu-screen-recorder -w portal -k auto -s "$resolution" -f 60 -fm cfr -fallback-cpu-encoding yes $audio_args -o "$filename" &>/dev/null &
   local pid=$!
   disown
   # Wait for portal selection and recording to start
   while kill -0 $pid 2>/dev/null && [[ ! -f $filename ]]; do
     sleep 0.2
   done
+  notify-send -t 1000 "Recording screen"
   if kill -0 $pid 2>/dev/null; then
     echo "$filename" > "$RECORDING_FILE"
     echo "$pid" > "$PID_FILE"

@@ -1,7 +1,5 @@
 #!/bin/bash
-
 # Show a fuzzy-finder TUI for picking new AUR packages to install.
-
 fzf_args=(
   --multi
   --preview 'yay -Siia {1}'
@@ -19,11 +17,10 @@ fzf_args=(
 pkg_names=$(yay -Slqa | fzf "${fzf_args[@]}")
 
 if [[ -n $pkg_names ]]; then
-  # Add aur/ prefix to each package name and convert to space-separated for yay
-  source omarchy-sudo-keepalive
-
-  echo "$pkg_names" | sed 's/^/aur\//' | tr '\n' ' ' | xargs yay -S --noconfirm
+  pkgs=$(echo "$pkg_names" | sed 's/^/aur\//' | tr '\n' ' ')
+  yay -S $pkgs
   sudo updatedb
-  omarchy-show-done
+  echo ""
+  read -rp "Done. Press Enter to close."
 fi
 

@@ -1,0 +1,16 @@
+#!/bin/zsh
+
+handle() {
+  case $1 in
+    activelayout*)
+      echo $1
+      layout="${1##*,}"
+      echo $layout
+      notify-send -t 2000 -h string:x-canonical-private-synchronous:kb-layout "Layout" "$layout"
+      ;;
+  esac
+}
+
+socat - "UNIX-CONNECT:$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" \
+  | while read -r line; do handle "$line"; done
+

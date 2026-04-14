@@ -2,3 +2,11 @@
 SOURCE="alsa_input.usb-0c76_USB_PnP_Audio_Device-00.mono-fallback"
 pactl set-source-mute "$SOURCE" toggle
 
+MUTED=$(pactl get-source-mute "$SOURCE" | awk '{print $2}')
+
+if [[ "$MUTED" == "yes" ]]; then
+    notify-send -t 1000 "Mic muted"
+else
+    notify-send -t 1000 "Mic active"
+fi
+

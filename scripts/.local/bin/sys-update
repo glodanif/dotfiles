@@ -35,6 +35,7 @@ if [[ -n $orphans ]]; then
 fi
 
 section "Done."
+notify-send -t 2000 "Update complete."
 
 if [[ ! -d /usr/lib/modules/$(uname -r) ]]; then
   section "Kernel updated — reboot when ready." "\e[33m"

@@ -57,4 +57,5 @@ section "Unmounting..."
 sudo umount "$MOUNT_POINT"
 
 section "Backup complete."
+notify-send -t 2000 "Backup complete."
 

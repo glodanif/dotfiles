@@ -6,19 +6,19 @@
 }
 {
     "label" : "logout",
-    "action" : "hyprctl dispatch exit",
+    "action" : "hyprland-power logout",
     "text" : "Logout",
     "keybind" : "e"
 }
 {
     "label" : "reboot",
-    "action" : "loginctl reboot",
+    "action" : "hyprland-power reboot",
     "text" : "Reboot",
     "keybind" : "r"
 }
 {
     "label" : "shutdown",
-    "action" : "loginctl poweroff",
+    "action" : "hyprland-power shutdown"
     "text" : "Shutdown",
     "keybind" : "s"
 }
