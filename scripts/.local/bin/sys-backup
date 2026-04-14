@@ -45,6 +45,9 @@ sudo restic backup --repo "$REPO" \
   --exclude /home/glodanif/.gradle/kotlin-profile \
   --exclude /home/glodanif/.gradle/.tmp \
   --exclude /home/glodanif/Development/Work/**/build \
+  --exclude /home/glodanif/.local/share/Steam/steamapps/common \
+  --exclude /home/glodanif/.local/share/Steam/steamapps/shadercache \
+  --exclude /home/glodanif/.local/share/Steam/steamapps/compatdata \
   /home/glodanif /etc
 
 section "Pruning old snapshots..."

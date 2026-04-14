@@ -1,12 +1,17 @@
 #!/bin/zsh
 
+LAST_LAYOUT=""
+
 handle() {
   case $1 in
     activelayout*)
-      echo $1
-      layout="${1##*,}"
-      echo $layout
-      notify-send -t 2000 -h string:x-canonical-private-synchronous:kb-layout "Layout" "$layout"
+      local current_layout="${1##*,}"
+      if [[ "$current_layout" != "$LAST_LAYOUT" ]]; then
+        LAST_LAYOUT="$current_layout"
+        notify-send -t 2000 \
+                    -h string:x-canonical-private-synchronous:kb-layout \
+                    "Keyboard Layout" "$current_layout"
+      fi
       ;;
   esac
 }

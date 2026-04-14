@@ -406,3 +406,12 @@ label:focus {
     background-color: #9370da;
 }
 
+#custom-bracket-open,
+#custom-bracket-close {
+    margin-top: 4px;
+}
+
+#custom-bracket-close {
+    padding-right: 12px;
+}
+

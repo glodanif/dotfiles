@@ -5,13 +5,13 @@ bluetui
 bluez-openrc
 bluez-utils
 brave-bin
-brave-origin-nightly-bin
 btop
 cliphist
 cryptsetup
 dhcpcd
 discord-latest-bin
 dkms
+dua-cli
 efibootmgr
 elephant-all
 elogind-openrc
@@ -42,6 +42,8 @@ mpv
 nautilus
 neovim
 networkmanager-openrc
+noto-fonts
+noto-fonts-cjk
 noto-fonts-emoji
 nvidia-open-dkms
 nvidia-utils
@@ -63,10 +65,9 @@ satty
 seahorse
 slack-desktop
 slurp
+socat
 steam
 stow
-swaync
-swayosd
 sxiv
 telegram-desktop
 ttf-font-awesome
