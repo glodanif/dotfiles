@@ -6,6 +6,7 @@ bluez-openrc
 bluez-utils
 brave-bin
 btop
+calcurse
 cliphist
 cryptsetup
 dhcpcd
@@ -27,6 +28,9 @@ hypridle
 hyprland
 hyprlock
 hyprpaper
+impala
+imv
+iwd-openrc
 lazygit
 lib32-nvidia-utils
 libva-nvidia-driver
@@ -52,10 +56,12 @@ ookla-speedtest-bin
 openrc
 openssh-openrc
 pacman-contrib
+pinta
 pipewire
 pipewire-audio
 pipewire-pulse
 proton-vpn-cli
+proton-vpn-gtk-app
 python-pip
 qt5-wayland
 qt6-wayland
@@ -68,7 +74,6 @@ slurp
 socat
 steam
 stow
-sxiv
 telegram-desktop
 ttf-font-awesome
 ttf-jetbrains-mono-nerd
@@ -85,6 +90,7 @@ wofi
 xdg-desktop-portal
 xdg-desktop-portal-gtk
 xdg-desktop-portal-hyprland
+xournalpp
 yay-bin
 yt-dlp
 zed
