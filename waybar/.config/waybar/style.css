@@ -123,6 +123,7 @@ button:hover {
 }
 
 #clock {
+    margin-top: 1px;
 }
 
 #battery {

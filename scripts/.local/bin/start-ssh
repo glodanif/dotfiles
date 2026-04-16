@@ -1,0 +1,18 @@
+#!/bin/zsh
+
+set -e
+
+section() {
+  local msg="$1"
+  local color="${2:-\e[32m}"
+  echo -e "${color}"
+  echo -e "$msg"
+  echo -e "─────────────────────────────────────────────\e[0m"
+}
+
+section "Start SSH"
+sudo rc-service sshd start
+
+section "IP address:"
+ip route get 1.1.1.1 | awk '{print $7; exit}'
+

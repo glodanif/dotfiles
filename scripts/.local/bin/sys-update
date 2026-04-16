@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # sys-update — update Arch system packages and AUR
 
 set -e

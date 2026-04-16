@@ -1,5 +1,6 @@
-#!/bin/bash
+#!/bin/zsh
 # sys-backup — mount backup drive, run restic, prune, unmount
+
 set -e
 
 BACKUP_DISK_UUID="468df889-d691-4d07-8c89-31caa4c0b2ea"

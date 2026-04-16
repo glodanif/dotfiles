@@ -41,7 +41,7 @@ value = "uninstall-package"
 [[entries]]
 text = "Start SSH"
 subtext = "sudo rc-service sshd start"
-value = "run-and-wait sudo rc-service sshd start"
+value = "run-and-wait start-ssh"
 
 [[entries]]
 text = "Power menu"
