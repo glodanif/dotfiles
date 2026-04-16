@@ -1,3 +1,4 @@
+affine-bin
 artix-archlinux-support
 base
 base-devel

@@ -25,7 +25,7 @@
     "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
     "format-wifi": "{icon}",
     "format-ethernet": "󰈁",
-    "format-disconnected": "󰈂",
+    "format-disconnected": "󰈁",
     "tooltip-format-wifi": "{essid} ({frequency} GHz)",
     "tooltip-format-ethernet": "Connected",
     "tooltip-format-disconnected": "Disconnected",
