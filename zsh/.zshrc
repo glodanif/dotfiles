@@ -122,6 +122,9 @@ alias dl-batch='yt-dlp -P "~/Downloads/Videos" --cookies-from-browser "brave+gno
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
+# Fix the aliases in .zshrc
+alias personal-claude="CLAUDE_CONFIG_DIR=$HOME/.claude-personal command claude"
+alias work-claude="CLAUDE_CONFIG_DIR=$HOME/.claude-work command claude"
 v() { if [ "$#" -eq 0 ]; then command nvim . ; else command nvim "$@"; fi; }
 sudov() { if [ "$#" -eq 0 ]; then sudo nvim . ; else sudo nvim "$@"; fi; }
 
