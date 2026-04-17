@@ -1,5 +1,6 @@
 #!/bin/zsh
 cache_file="/tmp/waybar-updates-cache"
+lock_file="/tmp/waybar-updates-cache.lock"
 cache_max_age=3600
 
 if [[ -f "$cache_file" ]]; then
@@ -10,9 +11,24 @@ if [[ -f "$cache_file" ]]; then
     fi
 fi
 
+# Try to acquire the lock. If we can't, someone else is fetching.
+# Wait for them to finish and read their result.
+if ! mkdir "$lock_file" 2>/dev/null; then
+    # Poll until the lock is gone or cache appears
+    for i in {1..30}; do
+        sleep 1
+        [[ -d "$lock_file" ]] || break
+    done
+    cat "$cache_file" 2>/dev/null
+    exit 0
+fi
+
+trap 'rmdir "$lock_file" 2>/dev/null' EXIT
+
 official=$(checkupdates 2>/dev/null | wc -l)
 aur=$(yay -Qua 2>/dev/null | wc -l)
 count=$(( official + aur ))
 result=$( (( count > 0 )) && echo "$count" || echo "" )
 
-echo "$result" | tee "$cache_file"
+echo "$result" > "${cache_file}.tmp" && mv "${cache_file}.tmp" "$cache_file"
+
