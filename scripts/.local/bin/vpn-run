@@ -1,0 +1,44 @@
+#!/bin/zsh
+
+CONFIGS_DIR="/home/glodanif/.config/wireguard"
+WAYBAR_SIGNAL=8
+
+case "$1" in
+    on)
+        if sudo wg show interfaces | grep -q .; then
+            echo "VPN already connected"
+            exit 1
+        fi
+        CONFIG=$(ls "$CONFIGS_DIR"/*.conf 2>/dev/null | head -1)
+        if [ -z "$CONFIG" ]; then
+            echo "No config found in $CONFIGS_DIR"
+            exit 1
+        fi
+        sudo resolvconf -u
+        sudo wg-quick up "$CONFIG"
+        sleep 3
+        LAST_HANDSHAKE=$(sudo wg show all latest-handshakes | awk '{print $3}')
+        NOW=$(date +%s)
+        if [ -z "$LAST_HANDSHAKE" ] || [ $((NOW - LAST_HANDSHAKE)) -gt 30 ]; then
+            echo "VPN connected but no handshake — keys may be stale, regenerate config"
+            sudo wg-quick down "$CONFIG"
+            exit 1
+        fi
+        ;;
+   off)
+        INTERFACE=$(sudo wg show interfaces)
+        if [ -z "$INTERFACE" ]; then
+            echo "VPN not connected"
+            exit 1
+        fi
+        sudo wg-quick down "$CONFIGS_DIR/$INTERFACE.conf"
+        sudo nmcli connection up "Wired connection 1"
+        ;;
+    *)
+        echo "Usage: vpn on|off"
+        exit 1
+        ;;
+esac
+
+pkill -SIGRTMIN+$WAYBAR_SIGNAL waybar
+

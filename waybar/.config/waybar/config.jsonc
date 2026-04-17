@@ -6,7 +6,7 @@
   "spacing": 4,
   "modules-left": ["custom/artix", "hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock", "custom/weather"],
-  "modules-right": ["tray", "custom/updates", "custom/recording", "custom/mic", "pulseaudio", "cpu", "memory", "bluetooth", "network", "custom/power"],
+  "modules-right": ["tray", "custom/updates", "custom/recording", "custom/voxtype", "custom/mic", "pulseaudio", "cpu", "memory", "bluetooth", "custom/vpn", "network", "custom/power"],
   "clock": {
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
     "format": "{:L%A %H:%M}",
@@ -119,14 +119,24 @@
     "signal": 8,
     "on-click": "screenrecord"
   },
-  "custom/bracket-open": {
-    "exec": "echo '['",
+  "custom/vpn": {
+    "exec": "vpn-status",
     "interval": "once",
-    "format": "{}"
+    "signal": 8,
+    "return-type": "json"
   },
-  "custom/bracket-close": {
-    "exec": "echo ']'",
-    "interval": "once",
-    "format": "{}"
+  "custom/voxtype": {
+    "exec": "voxtype-status",
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": {
+      "idle": "",
+      "recording": "󰍬",
+      "transcribing": "󰔟"
+    },
+    "tooltip": true,
+    "on-click-right": "omarchy-voxtype-config",
+    "on-click": "omarchy-voxtype-model"
   }
 }
+
