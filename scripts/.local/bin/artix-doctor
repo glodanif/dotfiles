@@ -1,0 +1,43 @@
+#!/bin/zsh
+# artix-doctor — check system health against known good state
+
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+
+set -uo pipefail
+
+UTILS="$HOME/.config/bash/utils.sh"
+CHECKS_DIR="$HOME/.config/artix-doctor/checks"
+LOCAL_CONF="$HOME/.config/artix-doctor/local.conf"
+
+if [[ ! -f "$UTILS" ]]; then
+    echo "ERR: utils not found at $UTILS" >&2
+    exit 2
+fi
+source "$UTILS"
+
+[[ -f "$LOCAL_CONF" ]] && source "$LOCAL_CONF"
+
+typeset -gi ERRORS=0 WARNINGS=0 OKS=0
+
+ok() { check "OK " "$1"; ((OKS++)) || true; }
+warn() { check "WRN" "$1"; ((WARNINGS++)) || true; }
+err() { check "ERR" "$1"; ((ERRORS++)) || true; }
+
+if [[ ! -d "$CHECKS_DIR" ]]; then
+    echo "ERR: checks dir not found at $CHECKS_DIR" >&2
+    exit 2
+fi
+
+for check_file in "$CHECKS_DIR"/*.sh; do
+    [[ -f "$check_file" ]] || continue
+    source "$check_file"
+done
+
+echo
+section "Summary"
+echo "  OK:       $OKS"
+echo "  Warnings: $WARNINGS"
+echo "  Errors:   $ERRORS"
+
+(( ERRORS > 0 )) && exit 1
+exit 0

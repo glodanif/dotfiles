@@ -1,7 +1,7 @@
 #!/bin/zsh
 # sys-backup — mount backup drive, run restic, prune, unmount
 
-set -eo pipefail
+set -euo pipefail
 
 BACKUP_DISK_UUID="468df889-d691-4d07-8c89-31caa4c0b2ea"
 MOUNT_POINT="/mnt/backup"
@@ -55,7 +55,8 @@ section "Pruning old snapshots..."
 sudo restic forget --repo "$REPO" \
   --password-file "$PASSWORD_FILE" \
   --keep-last 5 \
-  --keep-monthly 6 \
+  --keep-daily 7 \
+  --keep-weekly 4 \
   --prune
 
 section "Unmounting..."
@@ -63,4 +64,3 @@ sudo umount "$MOUNT_POINT"
 
 section "Backup complete."
 notify-send -t 2000 "Backup complete."
-

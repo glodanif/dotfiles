@@ -10,6 +10,7 @@ section() {
 check() { echo "[ $1 ] $2"; }
 ok()    { check "OK " "$1"; }
 fail()  { check "ERR" "$1"; }
+warn()  { check "WRN" "$1"; }
 
 # ── Interaction ───────────────────────────────────────────
 confirm() {
