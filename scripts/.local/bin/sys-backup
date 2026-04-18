@@ -33,7 +33,6 @@ else
 fi
 
 cleanup() {
-  hyprctl dispatch tagwindow -- -noidle &>/dev/null || true
   if (( MOUNTED_BY_SCRIPT == 1 )) && mountpoint -q "$MOUNT_POINT"; then
     sudo umount "$MOUNT_POINT" 2>/dev/null || true
   fi
