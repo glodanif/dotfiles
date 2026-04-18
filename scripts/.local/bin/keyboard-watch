@@ -1,11 +1,17 @@
 #!/bin/zsh
-
 LAST_LAYOUT=""
-
 handle() {
   case $1 in
     activelayout*)
-      local current_layout="${1##*,}"
+      local payload="${1#activelayout>>}"
+      local device="${payload%,*}"
+      local current_layout="${payload##*,}"
+
+      case "$device" in
+        *"hyperx-alloy-origins"*|*"mini-keyboard"*) ;;
+        *) return ;;
+      esac
+
       if [[ "$current_layout" != "$LAST_LAYOUT" ]]; then
         LAST_LAYOUT="$current_layout"
         notify-send -t 2000 \
@@ -15,7 +21,6 @@ handle() {
       ;;
   esac
 }
-
 socat - "UNIX-CONNECT:$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" \
   | while read -r line; do handle "$line"; done
 
