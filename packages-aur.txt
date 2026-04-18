@@ -1,0 +1,13 @@
+affine-bin
+brave-bin
+discord-latest-bin
+elephant-all
+localsend-bin
+mailspring-bin
+ookla-speedtest-bin
+pinta
+slack-desktop
+voxtype
+walker
+windsurf
+yay-bin
