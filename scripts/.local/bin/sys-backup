@@ -18,31 +18,43 @@ sudo -v
 DEVICE=$(sudo blkid -U "$BACKUP_DISK_UUID" 2>/dev/null || true)
 if [[ -z "$DEVICE" ]]; then
   section "Backup drive not found. Skipping." "\e[33m"
+  press_any_key
   exit 0
 fi
-
 section "Backup drive found at $DEVICE"
 
 if ! mountpoint -q "$MOUNT_POINT"; then
-  section "Mounting..."
+  section "Mounting $DEVICE at $MOUNT_POINT..."
+  sudo mkdir -p "$MOUNT_POINT"
   sudo mount "$DEVICE" "$MOUNT_POINT"
+  MOUNTED_BY_SCRIPT=1
+else
+  MOUNTED_BY_SCRIPT=0
 fi
+
+cleanup() {
+  hyprctl dispatch tagwindow -- -noidle &>/dev/null || true
+  if (( MOUNTED_BY_SCRIPT == 1 )) && mountpoint -q "$MOUNT_POINT"; then
+    sudo umount "$MOUNT_POINT" 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT
 
 section "Running backup..."
 sudo restic backup --repo "$REPO" \
   --password-file "$PASSWORD_FILE" \
-  --exclude /home/glodanif/.cache \
-  --exclude /home/glodanif/.local/share/Trash \
-  --exclude /home/glodanif/.gradle/caches \
-  --exclude /home/glodanif/.gradle/daemon \
-  --exclude /home/glodanif/.gradle/native \
-  --exclude /home/glodanif/.gradle/kotlin-profile \
-  --exclude /home/glodanif/.gradle/.tmp \
-  --exclude /home/glodanif/Development/Work/**/build \
-  --exclude /home/glodanif/.local/share/Steam/steamapps/common \
-  --exclude /home/glodanif/.local/share/Steam/steamapps/shadercache \
-  --exclude /home/glodanif/.local/share/Steam/steamapps/compatdata \
-  /home/glodanif /etc
+  --exclude "$HOME/.cache" \
+  --exclude "$HOME/.local/share/Trash" \
+  --exclude "$HOME/.gradle/caches" \
+  --exclude "$HOME/.gradle/daemon" \
+  --exclude "$HOME/.gradle/native" \
+  --exclude "$HOME/.gradle/kotlin-profile" \
+  --exclude "$HOME/.gradle/.tmp" \
+  --exclude "$HOME/Development/Work/**/build" \
+  --exclude "$HOME/.local/share/Steam/steamapps/common" \
+  --exclude "$HOME/.local/share/Steam/steamapps/shadercache" \
+  --exclude "$HOME/.local/share/Steam/steamapps/compatdata" \
+  "$HOME" /etc
 
 section "Pruning old snapshots..."
 sudo restic forget --repo "$REPO" \
@@ -53,9 +65,8 @@ sudo restic forget --repo "$REPO" \
   --keep-monthly 6 \
   --prune
 
-section "Unmounting..."
-sudo umount "$MOUNT_POINT"
-
 section "Backup complete."
 notify-send -t 2000 "Backup complete."
+
+press_any_key
 
