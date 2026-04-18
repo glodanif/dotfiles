@@ -28,6 +28,10 @@ if [[ ! -d "$CHECKS_DIR" ]]; then
     exit 2
 fi
 
+if (( EUID != 0 )); then
+    sudo -v 2>/dev/null || true
+fi
+
 for check_file in "$CHECKS_DIR"/*.sh; do
     [[ -f "$check_file" ]] || continue
     source "$check_file"
@@ -41,3 +45,4 @@ echo "  Errors:   $ERRORS"
 
 (( ERRORS > 0 )) && exit 1
 exit 0
+
