@@ -3,21 +3,14 @@
 
 set -euo pipefail
 
+source "$HOME/.config/bash/utils.sh"
+
 BACKUP_DISK_UUID="468df889-d691-4d07-8c89-31caa4c0b2ea"
 MOUNT_POINT="/mnt/backup"
 REPO="/mnt/backup/restic"
 PASSWORD_FILE="/root/.restic-password"
 
-section() {
-  local msg="$1"
-  local color="${2:-\e[32m}"
-  echo -e "${color}"
-  echo -e "$msg"
-  echo -e "─────────────────────────────────────────────\e[0m"
-}
-
-hyprctl dispatch tagwindow +noidle &>/dev/null || true
-trap 'hyprctl dispatch tagwindow -- -noidle &>/dev/null || true' EXIT
+keep_screen_on
 
 section "System Backup"
 sudo -v
@@ -57,6 +50,7 @@ sudo restic forget --repo "$REPO" \
   --keep-last 5 \
   --keep-daily 7 \
   --keep-weekly 4 \
+  --keep-monthly 6 \
   --prune
 
 section "Unmounting..."
@@ -64,3 +58,4 @@ sudo umount "$MOUNT_POINT"
 
 section "Backup complete."
 notify-send -t 2000 "Backup complete."
+
