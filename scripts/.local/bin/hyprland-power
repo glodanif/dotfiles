@@ -13,3 +13,4 @@ notify-send -t 3000 "$MSG"
 nohup zsh -c "sleep 2 && $CMD" >/dev/null 2>&1 &
 hypr-close-all-windows
 sleep 1
+

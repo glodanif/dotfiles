@@ -1,5 +1,8 @@
-#!/bin/bash
+#!/bin/zsh
 # Show a fuzzy-finder TUI for picking new AUR packages to install.
+
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+
 fzf_args=(
   --multi
   --preview 'yay -Siia {1}'
@@ -21,6 +24,6 @@ if [[ -n $pkg_names ]]; then
   yay -S $pkgs
   sudo updatedb
   echo ""
-  read -rp "Done. Press Enter to close."
+  press_any_key
 fi
 

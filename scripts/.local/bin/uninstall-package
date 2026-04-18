@@ -1,5 +1,8 @@
-#!/bin/bash
+#!/bin/zsh
 # Show a fuzzy-finder TUI for picking packages installed on the system to be removed.
+
+source "$HOME/.config/bash/utils.sh"
+
 fzf_args=(
   --multi
   --preview 'yay -Qi {1}'
@@ -18,6 +21,6 @@ if [[ -n $pkg_names ]]; then
   pkgs=$(echo "$pkg_names" | tr '\n' ' ')
   sudo pacman -Rns $pkgs
   echo ""
-  read -rp "Done. Press Enter to close."
+  press_any_key
 fi
 

@@ -3,6 +3,8 @@ section "Fonts"
 required_fonts=(
     "JetBrainsMono Nerd Font"
     "Noto Color Emoji"
+    "Noto Sans CJK JP"
+    "Noto Sans CJK KR"
     "Lato"
     "Montserrat"
     "SUSE Mono"
@@ -16,3 +18,4 @@ for font in "${required_fonts[@]}"; do
         err "$font not installed"
     fi
 done
+

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # Screen recording toggle script
 # Saves to ~/Videos/Recordings by default, override with XDG_VIDEOS_DIR env
 [[ -f ~/.config/user-dirs.dirs ]] && source ~/.config/user-dirs.dirs
