@@ -2,4 +2,5 @@
 cmd="$*"
 exec setsid -- ghostty \
   --title="float" \
-  -e bash -c "$cmd; echo; read -p 'Press any key to close...' -n1"
+  -e bash -c "source $HOME/.config/bash/utils.sh; printf '\033]0;float | %s\007' '$cmd'; $cmd; echo; press_any_key"
+

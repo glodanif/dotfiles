@@ -2,13 +2,7 @@
 
 set -e
 
-section() {
-  local msg="$1"
-  local color="${2:-\e[32m}"
-  echo -e "${color}"
-  echo -e "$msg"
-  echo -e "─────────────────────────────────────────────\e[0m"
-}
+source "$HOME/.config/bash/utils.sh"
 
 section "Start SSH"
 sudo rc-service sshd start
