@@ -1,3 +1,5 @@
+alsa-utils
+amd-ucode
 artix-archlinux-support
 base
 base-devel
@@ -5,11 +7,14 @@ bluetui
 bluez-openrc
 bluez-utils
 btop
+btrfs-progs
 calcurse
+clang
 cliphist
 cryptsetup
 dhcpcd
-dkms
+dnscrypt-proxy
+dnscrypt-proxy-openrc
 dua-cli
 efibootmgr
 elogind-openrc
@@ -41,6 +46,7 @@ mako
 mpv
 nautilus
 neovim
+networkmanager
 networkmanager-openrc
 noto-fonts
 noto-fonts-cjk
@@ -60,10 +66,12 @@ qt5-wayland
 qt6-wayland
 restic
 rsync
+rustup
 satty
 seahorse
 slurp
 socat
+sof-firmware
 steam
 stow
 tcpdump
@@ -73,6 +81,7 @@ ttf-jetbrains-mono-nerd
 unzip
 vim
 waybar
+wget
 wireguard-tools
 wiremix
 wireplumber
