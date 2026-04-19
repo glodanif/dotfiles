@@ -117,13 +117,14 @@
     "return-type": "json",
     "interval": "once",
     "signal": 8,
-    "on-click": "screenrecord"
+    "on-click": "screenrecord off"
   },
   "custom/vpn": {
     "exec": "vpn-status",
     "interval": "once",
     "signal": 8,
-    "return-type": "json"
+    "return-type": "json",
+    "on-click-middle": "vpn-run off"
   },
   "custom/voxtype": {
     "exec": "voxtype-status",
@@ -135,8 +136,6 @@
       "transcribing": "󰔟"
     },
     "tooltip": true,
-    "on-click-right": "omarchy-voxtype-config",
-    "on-click": "omarchy-voxtype-model"
   }
 }
 

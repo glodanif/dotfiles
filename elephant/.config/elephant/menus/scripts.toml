@@ -5,13 +5,13 @@ action = "ghostty -e sh -c '%VALUE%'"
 
 [[entries]]
 text = "Start screen recording"
-subtext = "screenrecord"
-value = "screenrecord"
+subtext = "screenrecord on"
+value = "screenrecord on"
 
 [[entries]]
 text = "Start screen recording with audio"
-subtext = "screenrecord --audio"
-value = "screenrecord --audio"
+subtext = "screenrecord on --audio"
+value = "screenrecord on --audio"
 
 [[entries]]
 text = "System update"
@@ -47,4 +47,9 @@ value = "run-and-wait start-ssh"
 text = "Power menu"
 subtext = "power-menu"
 value = "power-menu"
+
+[[entries]]
+text = "Start VPN"
+subtext = "vpn-run on"
+value = "vpn-run on"
 

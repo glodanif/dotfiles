@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Screen recording toggle script
+# Screen recording script
 # Saves to ~/Videos/Recordings by default, override with XDG_VIDEOS_DIR env
 [[ -f ~/.config/user-dirs.dirs ]] && source ~/.config/user-dirs.dirs
 OUTPUT_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos/Recordings}"
@@ -32,6 +32,10 @@ signal_waybar() {
   done
 }
 start_recording() {
+  if [[ -f "$RECORDING_FILE" ]]; then
+    notify-send "Screen recording" "Already recording." -u normal -t 3000
+    exit 1
+  fi
   if [[ ! -d $OUTPUT_DIR ]]; then
     notify-send "Screen recording" "Output directory does not exist: $OUTPUT_DIR" -u critical -t 3000
     exit 1
@@ -61,21 +65,25 @@ stop_recording() {
   local pid
   pid=$(cat "$PID_FILE" 2>/dev/null)
   
-  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
-    kill -SIGINT "$pid"
-    local count=0
-    while kill -0 "$pid" 2>/dev/null && ((count < 50)); do
-      sleep 0.1
-      count=$((count + 1))
-    done
-    
-    if kill -0 "$pid" 2>/dev/null; then
-      kill -9 "$pid"
-      rm -f "$RECORDING_FILE" "$PID_FILE"
-      signal_waybar
-      notify-send "Screen recording" "Force-killed. Video may be corrupted." -u critical -t 5000
-      exit 1
-    fi
+  if [[ -z "$pid" ]] || ! kill -0 "$pid" 2>/dev/null; then
+    notify-send "Screen recording" "Not currently recording." -u normal -t 3000
+    rm -f "$RECORDING_FILE" "$PID_FILE"
+    exit 1
+  fi
+
+  kill -SIGINT "$pid"
+  local count=0
+  while kill -0 "$pid" 2>/dev/null && ((count < 50)); do
+    sleep 0.1
+    count=$((count + 1))
+  done
+  
+  if kill -0 "$pid" 2>/dev/null; then
+    kill -9 "$pid"
+    rm -f "$RECORDING_FILE" "$PID_FILE"
+    signal_waybar
+    notify-send "Screen recording" "Force-killed. Video may be corrupted." -u critical -t 5000
+    exit 1
   fi
   
   local filename
@@ -108,8 +116,12 @@ SCRIPT
   fi
   exit 0
 }
-if [[ -f "$RECORDING_FILE" ]]; then
-  stop_recording
-else
-  start_recording
-fi
+case "$1" in
+  on)  start_recording ;;
+  off) stop_recording ;;
+  *)
+    echo "Usage: screenrecord on|off [--audio] [--resolution=WxH]"
+    exit 1
+    ;;
+esac
+
