@@ -2,6 +2,7 @@
 # Show a fuzzy-finder TUI for picking new Arch packages to install.
 
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+source "$HOME/.config/bash/utils.sh"
 
 fzf_args=(
   --multi
@@ -16,10 +17,9 @@ fzf_args=(
 )
 
 pkg_names=$(pacman -Slq | fzf "${fzf_args[@]}")
-
 if [[ -n $pkg_names ]]; then
-  pkgs=$(echo "$pkg_names" | tr '\n' ' ')
-  sudo pacman -S $pkgs
+  pkgs=(${(f)pkg_names})
+  sudo pacman -S "${pkgs[@]}"
   echo ""
   press_any_key
 fi

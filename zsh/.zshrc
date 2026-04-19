@@ -138,8 +138,8 @@ HISTFILESIZE=32768
 export ANDROID_HOME="$HOME/Development/Tools/android-sdk"
 export PATH="$PATH:$HOME/Development/Tools/flutter/bin"
 export PATH="$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools"
-export JAVA_HOME="$HOME/.local/share/JetBrains/Toolbox/apps/intellij-idea/jbr"
 export PATH="$PATH:$HOME/.local/bin"
+export JAVA_HOME="$HOME/.jdks/openjdk-26"
 export PATH="$JAVA_HOME/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 

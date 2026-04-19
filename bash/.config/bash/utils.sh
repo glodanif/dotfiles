@@ -20,7 +20,9 @@ confirm() {
 }
 
 press_any_key() {
-  read -r -n1 -p "${1:-Press any key to exit...}"
+  sleep 0.2
+  echo -n "${1:-Press any key to exit...}"
+  read -r -n 1
   echo
 }
 

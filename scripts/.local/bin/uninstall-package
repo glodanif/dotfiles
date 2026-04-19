@@ -16,10 +16,9 @@ fzf_args=(
 )
 
 pkg_names=$(yay -Qqe | fzf "${fzf_args[@]}")
-
 if [[ -n $pkg_names ]]; then
-  pkgs=$(echo "$pkg_names" | tr '\n' ' ')
-  sudo pacman -Rns $pkgs
+  pkgs=(${(f)pkg_names})
+  sudo pacman -Rns "${pkgs[@]}"
   echo ""
   press_any_key
 fi

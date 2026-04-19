@@ -2,6 +2,7 @@
 # Show a fuzzy-finder TUI for picking new AUR packages to install.
 
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+source "$HOME/.config/bash/utils.sh"
 
 fzf_args=(
   --multi
@@ -18,10 +19,9 @@ fzf_args=(
 )
 
 pkg_names=$(yay -Slqa | fzf "${fzf_args[@]}")
-
 if [[ -n $pkg_names ]]; then
-  pkgs=$(echo "$pkg_names" | sed 's/^/aur\//' | tr '\n' ' ')
-  yay -S $pkgs
+  pkgs=(${(f)pkg_names})
+  yay -S "${pkgs[@]}"
   sudo updatedb
   echo ""
   press_any_key
