@@ -124,15 +124,15 @@
     "interval": "once",
     "signal": 8,
     "return-type": "json",
-    "on-click-middle": "ghostty -e run-and-wait vpn-run off"
+    "on-click": "ghostty -e run-and-wait vpn-run off"
   },
   "custom/voxtype": {
-    "exec": "voxtype-status",
+    "exec": "voxtype status --follow --format json",
     "return-type": "json",
     "format": "{icon}",
     "format-icons": {
       "idle": "",
-      "recording": "󰍬",
+      "recording": "",
       "transcribing": "󰔟"
     },
     "tooltip": true,

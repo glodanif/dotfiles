@@ -55,6 +55,7 @@ button:hover {
 #custom-power:hover,
 #custom-updates:hover,
 #custom-vpn:hover,
+#custom-voxtype:hover,
 #pulseaudio:hover {
     background-color: #dddddd;
 }
@@ -212,6 +213,7 @@ label:focus {
 #memory,
 #network,
 #custom-updates,
+#custom-voxtype,
 #pulseaudio {
   margin-right: 8px;
 }
@@ -379,6 +381,7 @@ label:focus {
     padding: 2px 0 0 0;
 }
 
+#custom-voxtype,
 #custom-updates,
 #custom-mic {
     padding: 0 8px;
@@ -394,6 +397,10 @@ label:focus {
 }
 #custom-mic.muted {
     background-color: #ff9999;
+}
+#custom-voxtype {
+    background-color: #99ff99;
+    animation: recording-blink 2s linear infinite;
 }
 
 @keyframes recording-blink {

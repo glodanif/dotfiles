@@ -16,7 +16,7 @@ fzf_args=(
   --color 'pointer:green,marker:green'
 )
 
-pkg_names=$(pacman -Slq | fzf "${fzf_args[@]}")
+pkg_names=$(pacman -Slq | sort -u | fzf "${fzf_args[@]}")
 if [[ -n $pkg_names ]]; then
   pkgs=(${(f)pkg_names})
   sudo pacman -S "${pkgs[@]}"
