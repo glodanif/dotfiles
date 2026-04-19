@@ -1,10 +1,13 @@
 #!/bin/zsh
 
+source "$HOME/.config/bash/utils.sh"
+
 CONFIGS_DIR="/home/glodanif/.config/wireguard"
 WAYBAR_SIGNAL=8
 
 case "$1" in
     on)
+        section "Starting VPN"
         if sudo wg show interfaces | grep -q .; then
             echo "VPN already connected"
             exit 1
@@ -26,11 +29,12 @@ case "$1" in
         fi
         ;;
    off)
+        section "Stopping VPN"
         INTERFACE=$(sudo wg show interfaces)
         if [ -z "$INTERFACE" ]; then
             echo "VPN not connected"
             exit 1
-        fi
+        fi 
         sudo wg-quick down "$CONFIGS_DIR/$INTERFACE.conf"
         sudo nmcli connection up "Wired connection 1"
         ;;

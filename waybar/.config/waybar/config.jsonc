@@ -124,7 +124,7 @@
     "interval": "once",
     "signal": 8,
     "return-type": "json",
-    "on-click-middle": "vpn-run off"
+    "on-click-middle": "ghostty -e run-and-wait vpn-run off"
   },
   "custom/voxtype": {
     "exec": "voxtype-status",

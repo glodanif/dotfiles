@@ -51,5 +51,5 @@ value = "power-menu"
 [[entries]]
 text = "Start VPN"
 subtext = "vpn-run on"
-value = "vpn-run on"
+value = "run-and-wait vpn-run on"
 
