@@ -32,7 +32,7 @@
     "interval": 3,
     "spacing": 1,
     "interface": "eth*",
-    "on-click": "ghostty -e run-and-wait speedtest",
+    "on-click": "run-and-wait speedtest",
   },
   "pulseaudio": {
     "format": "{icon} {volume}%",
@@ -83,7 +83,7 @@
   },
   "custom/weather": {
     "exec": "terminal-weather -w",
-    "on-click": "ghostty -e run-and-wait terminal-weather",
+    "on-click": "run-and-wait terminal-weather",
     "return-type": "json",
     "interval": 900
   },
@@ -92,13 +92,13 @@
     "interval": "once",
     "format": "{}",
     "tooltip-format": "Artix",
-    "on-click": "ghostty -e run-and-wait fastfetch"
+    "on-click": "run-and-wait fastfetch"
   },
   "custom/updates": {
     "exec": "check-updates",
     "interval": 3600,
     "format": "󰅢 {}",
-    "on-click": "ghostty -e run-and-wait sys-update",
+    "on-click": "run-and-wait sys-update",
     "signal": 8
   },
   "custom/power": {
@@ -124,7 +124,7 @@
     "interval": "once",
     "signal": 8,
     "return-type": "json",
-    "on-click": "ghostty -e run-and-wait vpn-run off"
+    "on-click": "run-and-wait vpn-run off"
   },
   "custom/voxtype": {
     "exec": "voxtype status --follow --format json",

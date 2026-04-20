@@ -367,7 +367,7 @@ label:focus {
 }
 
 #custom-artix {
-    background-image: url("/home/glodanif/.config/waybar/icons/artix-logo.png");
+    background-image: url("/home/glodanif/.local/share/assets/artix-logo.png");
     background-repeat: no-repeat;
     background-position: center;
     background-size: 16px 16px;

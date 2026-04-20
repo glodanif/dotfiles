@@ -1,7 +1,7 @@
 name = "scripts"
 name_pretty = "Scripts"
 icon = "application-x-executable"
-action = "ghostty -e sh -c '%VALUE%'"
+action = "run-and-wait '%VALUE%'"
 
 [[entries]]
 text = "Start screen recording"
@@ -16,12 +16,12 @@ value = "screenrecord on --audio"
 [[entries]]
 text = "System update"
 subtext = "sys-update"
-value = "run-and-wait sys-update"
+value = "sys-update"
 
 [[entries]]
 text = "System backup"
 subtext = "sys-backup"
-value = "run-and-wait sys-backup"
+value = "sys-backup"
 
 [[entries]]
 text = "Install package"
@@ -46,5 +46,5 @@ value = "artix-doctor"
 [[entries]]
 text = "Start VPN"
 subtext = "vpn-run on"
-value = "run-and-wait vpn-run on"
+value = "vpn-run on"
 

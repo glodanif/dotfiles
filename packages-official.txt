@@ -92,6 +92,7 @@ xdg-desktop-portal
 xdg-desktop-portal-gtk
 xdg-desktop-portal-hyprland
 xournalpp
+yazi
 yt-dlp
 zed
 zsh

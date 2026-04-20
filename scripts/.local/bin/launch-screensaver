@@ -1,0 +1,47 @@
+#!/bin/zsh
+DIR="$(dirname "$(readlink -f "$0")")"
+STATE_FILE="/tmp/screensaver-state"
+PID_FILE="/tmp/screensaver.pid"
+
+jq -n \
+  --argjson rounding "$(hyprctl getoption decoration:rounding -j | jq '.int')" \
+  --argjson border_size "$(hyprctl getoption general:border_size -j | jq '.int')" \
+  --arg window "$(hyprctl activewindow -j | jq -r '.address // ""')" \
+  --arg monitor "$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')" \
+  '{rounding: $rounding, border_size: $border_size, window: $window, monitor: $monitor}' \
+  > "$STATE_FILE"
+
+restore() {
+    rm -f "$PID_FILE"
+    [[ -f "$STATE_FILE" ]] && exit-screensaver
+}
+trap restore EXIT
+
+makoctl mode -a do-not-disturb &>/dev/null
+
+hyprctl keyword animations:enabled false &>/dev/null
+hyprctl keyword decoration:rounding 0 &>/dev/null
+hyprctl keyword general:border_size 0 &>/dev/null
+hyprctl keyword decoration:blur:enabled false &>/dev/null
+hyprctl keyword decoration:shadow:enabled false &>/dev/null
+hyprctl keyword cursor:invisible true &>/dev/null
+
+python "$HOME/.local/share/screensaver/main.py" &
+PYTHON_PID=$!
+echo "$PYTHON_PID" > "$PID_FILE"
+
+monitor_count=$(hyprctl monitors -j | jq 'length')
+for _ in $(seq 1 20); do
+    kill -0 "$PYTHON_PID" 2>/dev/null || break
+    count=$(hyprctl clients -j | jq '[.[] | select(.title == "screensaver")] | length')
+    [[ "$count" -ge "$monitor_count" ]] && break
+    sleep 0.2
+done
+
+hyprctl clients -j | jq -r '.[] | select(.title == "screensaver") | .address' | while read -r addr; do
+    hyprctl dispatch focuswindow "address:$addr" &>/dev/null
+    hyprctl dispatch fullscreen 0 &>/dev/null
+done
+
+wait "$PYTHON_PID"
+

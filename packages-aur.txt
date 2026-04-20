@@ -2,10 +2,12 @@ affine-bin
 brave-bin
 discord-latest-bin
 elephant-all
+jetbrains-toolbox
 localsend-bin
 mailspring-bin
 ookla-speedtest-bin
 pinta
+python-pyglet
 slack-desktop
 voxtype
 walker
