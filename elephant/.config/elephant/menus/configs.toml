@@ -14,6 +14,31 @@ subtext = "autostart.conf"
 value = "~/.config/hypr/autostart.conf"
 
 [[entries]]
+text = "Hyprland | Keybinds"
+subtext = "keybinds.conf"
+value = "~/.config/hypr/keybinds.conf"
+
+[[entries]]
+text = "Hyprland | Look and feel"
+subtext = "look-and-feel.conf"
+value = "~/.config/hypr/look-and-feel.conf"
+
+[[entries]]
+text = "Hyprland | Apps"
+subtext = "programs.conf"
+value = "~/.config/hypr/programs.conf"
+
+[[entries]]
+text = "Hyprland | Hypridle"
+subtext = "hypridle.conf"
+value = "~/.config/hypr/hypridle.conf"
+
+[[entries]]
+text = "Hyprland | Hyprlock"
+subtext = "hyprlock.conf"
+value = "~/.config/hypr/hyprlock.conf"
+
+[[entries]]
 text = "Hyprland | Hyprpaper"
 subtext = "hyprpaper.conf"
 value = "~/.config/hypr/hyprpaper.conf"
@@ -32,6 +57,11 @@ value = "~/.config/waybar/config.jsonc"
 text = "Walker"
 subtext = "config.toml"
 value = "~/.config/walker/config.toml"
+
+[[entries]]
+text = "Elephant | Menus"
+subtext = "/menus"
+value = "~/.config/elephant/menus"
 
 [[entries]]
 text = "Profile IO"
