@@ -95,8 +95,8 @@
     "on-click": "run-and-wait fastfetch"
   },
   "custom/updates": {
-    "exec": "check-updates",
-    "interval": 3600,
+    "exec": "cat /tmp/waybar-updates-cache 2>/dev/null",
+    "interval": "once",
     "format": "󰅢 {}",
     "on-click": "run-and-wait sys-update",
     "signal": 8

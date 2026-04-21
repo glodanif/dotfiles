@@ -1,7 +1,7 @@
 section "Services"
 
 required=(NetworkManager elogind dbus)
-optional=(bluetoothd iwd netmount sshd)
+optional=(bluetoothd iwd netmount sshd cronie)
 
 for svc in "${required[@]}"; do
     if rc-update show default 2>/dev/null | grep -qE "^\s*$svc\s"; then
