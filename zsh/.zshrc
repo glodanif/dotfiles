@@ -131,6 +131,8 @@ sudov() { if [ "$#" -eq 0 ]; then sudo nvim . ; else sudo nvim "$@"; fi; }
 autoload -Uz compinit && compinit
 zstyle ':completion:*' menu select
 
+export EDITOR=nvim
+export VISUAL=nvim
 export SUDO_EDITOR="$EDITOR"
 export BAT_THEME=ansi
 HISTSIZE=32768
