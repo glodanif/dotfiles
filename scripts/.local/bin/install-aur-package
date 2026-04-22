@@ -24,6 +24,5 @@ if [[ -n $pkg_names ]]; then
   yay -S "${pkgs[@]}"
   sudo updatedb
   echo ""
-  press_any_key
 fi
 

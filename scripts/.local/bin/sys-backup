@@ -67,5 +67,3 @@ sudo restic forget --repo "$REPO" \
 section "Backup complete."
 notify-send -t 2000 "Backup complete."
 
-press_any_key
-

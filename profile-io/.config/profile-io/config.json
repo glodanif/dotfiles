@@ -1,5 +1,5 @@
 {
-  "current_profile_id": "2f5a7524-375a-471a-8690-c1d689f451bb",
+  "current_profile_id": "6aaf3ba6-8dc4-4fa2-b6cb-5eefb3280388",
   "profiles": [
     {
       "id": "6aaf3ba6-8dc4-4fa2-b6cb-5eefb3280388",
@@ -84,6 +84,7 @@
           "monitor_name": "DP-1"
         }
       ],
+      "move_all_windows_to_monitor": null,
       "focus_monitor_name": "DP-1",
       "focus_workspace_id": 2,
       "audio_sink": {
@@ -174,6 +175,7 @@
           "monitor_name": "HDMI-A-1"
         }
       ],
+      "move_all_windows_to_monitor": "HDMI-A-1",
       "focus_monitor_name": null,
       "focus_workspace_id": 1,
       "audio_sink": {

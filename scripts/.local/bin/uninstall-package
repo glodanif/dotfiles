@@ -20,6 +20,5 @@ if [[ -n $pkg_names ]]; then
   pkgs=(${(f)pkg_names})
   sudo pacman -Rns "${pkgs[@]}"
   echo ""
-  press_any_key
 fi
 

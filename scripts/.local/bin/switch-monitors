@@ -1,0 +1,70 @@
+#!/bin/bash
+STATE_FILE="/tmp/hypr-display-mode"
+
+if [ -z "$1" ]; then
+    CURRENT=$(cat "$STATE_FILE" 2>/dev/null || echo "pc")
+    if [ "$CURRENT" = "pc" ]; then
+        MODE="tv"
+    else
+        MODE="pc"
+    fi
+else
+    MODE=$1
+fi
+
+set_sink() {
+    local prefix=$1
+    local attempts=10
+    for ((i=1; i<=attempts; i++)); do
+        local sink
+        sink=$(pactl list short sinks | awk '{print $2}' | grep "^${prefix}" | head -1)
+        if [ -n "$sink" ] && pactl set-default-sink "$sink" 2>/dev/null; then
+            return 0
+        fi
+        sleep 0.5
+    done
+    return 1
+}
+
+move_all_windows_to_workspace() {
+    local target_ws=$1
+    hyprctl clients -j | jq -r '.[].address' | while read addr; do
+        hyprctl dispatch movetoworkspacesilent "$target_ws,address:$addr"
+    done
+}
+
+case $MODE in
+    pc)
+        hyprctl keyword monitor "HDMI-A-1,disable"
+        hyprctl keyword monitor "DP-2,preferred,0x0,1"
+        hyprctl keyword monitor "DP-1,preferred,1920x0,1"
+        sleep 0.5
+        # Force workspace bindings to prevent stuck workspaces
+        hyprctl dispatch moveworkspacetomonitor 1 DP-2
+        hyprctl dispatch moveworkspacetomonitor 2 DP-1
+        hyprctl dispatch focusmonitor DP-2
+        hyprctl dispatch workspace 1
+        set_sink "alsa_output.usb-Focusrite_Scarlett_2i2_USB-00"
+        echo "pc" > "$STATE_FILE"
+        notify-send "Display Mode" "Switched to PC monitors"
+        ;;
+    tv)
+        move_all_windows_to_workspace 1
+        hyprctl keyword monitor "HDMI-A-1,4096x2160@60,5000x0,2"
+        hyprctl keyword monitor "DP-1,disable"
+        hyprctl keyword monitor "DP-2,disable"
+        sleep 0.5
+        hyprctl keyword monitor "HDMI-A-1,4096x2160@60,0x0,2"
+        hyprctl dispatch workspace 2
+        hyprctl dispatch workspace 3
+        hyprctl dispatch moveworkspacetomonitor 1 HDMI-A-1
+        hyprctl dispatch moveworkspacetomonitor 2 HDMI-A-1
+        hyprctl dispatch moveworkspacetomonitor 3 HDMI-A-1
+        hyprctl dispatch workspace 1
+        hyprctl dispatch resizeactive exact 100% 100%
+        set_sink "alsa_output.pci-0000_01_00.1.hdmi"
+        echo "tv" > "$STATE_FILE"
+        notify-send "Display Mode" "Switched to TV"
+        ;;
+esac
+

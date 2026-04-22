@@ -6,6 +6,7 @@ jetbrains-toolbox
 localsend-bin
 mailspring-bin
 ookla-speedtest-bin
+openshot-bin
 pinta
 python-pyglet
 slack-desktop

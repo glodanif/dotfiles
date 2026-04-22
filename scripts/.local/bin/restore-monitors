@@ -1,0 +1,20 @@
+#!/bin/bash
+STATE_FILE="/tmp/hypr-display-mode"
+MONITOR_SCRIPT="switch-monitors"
+
+# Wait for Hyprland to fully initialize
+sleep 2
+
+# Read saved state
+SAVED_STATE=$(cat "$STATE_FILE" 2>/dev/null)
+
+# If we had TV mode active, or if no saved state exists, apply PC mode
+if [ "$SAVED_STATE" = "tv" ]; then
+    "$MONITOR_SCRIPT" "tv"
+elif [ "$SAVED_STATE" = "pc" ]; then
+    "$MONITOR_SCRIPT" "pc"
+else
+    # First boot or no state file - assume PC mode and save it
+    "$MONITOR_SCRIPT" "pc"
+fi
+
