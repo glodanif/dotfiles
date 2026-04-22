@@ -62,6 +62,7 @@ pacman-contrib
 pipewire
 pipewire-audio
 pipewire-pulse
+polkit-gnome
 python-pip
 qt5-wayland
 qt6-wayland
