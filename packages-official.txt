@@ -81,6 +81,7 @@ steam
 stow
 tcpdump
 telegram-desktop
+tmux
 ttf-font-awesome
 ttf-jetbrains-mono-nerd
 unzip

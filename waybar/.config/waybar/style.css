@@ -90,6 +90,12 @@ button:hover {
 #workspaces button.urgent {
     color: rgba(43, 48, 59, 0.75);
     background-color: #ff5b61;
+    animation: urgent-blink 0.5s ease-in-out infinite;
+}
+
+@keyframes urgent-blink {
+    0% { opacity: 0 }
+    100% { opacity: 0.75; }
 }
 
 #workspaces button.empty {
