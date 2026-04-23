@@ -42,8 +42,9 @@ case $MODE in
         # Force workspace bindings to prevent stuck workspaces
         hyprctl dispatch moveworkspacetomonitor 1 DP-2
         hyprctl dispatch moveworkspacetomonitor 2 DP-1
-        hyprctl dispatch focusmonitor DP-2
+        hyprctl dispatch focusmonitor DP-1
         hyprctl dispatch workspace 1
+        hyprctl dispatch workspace 2
         set_sink "alsa_output.usb-Focusrite_Scarlett_2i2_USB-00"
         echo "pc" > "$STATE_FILE"
         notify-send "Display Mode" "Switched to PC monitors"

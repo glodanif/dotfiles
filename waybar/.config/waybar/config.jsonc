@@ -6,7 +6,7 @@
   "spacing": 4,
   "modules-left": ["custom/artix", "hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock", "custom/weather"],
-  "modules-right": ["tray", "custom/updates", "custom/recording", "custom/voxtype", "custom/mic", "pulseaudio", "cpu", "memory", "bluetooth", "custom/vpn", "network", "custom/power"],
+  "modules-right": ["tray", "custom/updates", "custom/recording", "custom/voxtype", "custom/mic", "pulseaudio", "cpu", "memory", "bluetooth", "custom/vpn", "network"],
   "clock": {
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
     "format": "{:L%A %H:%M}",
@@ -92,7 +92,7 @@
     "interval": "once",
     "format": "{}",
     "tooltip-format": "Artix",
-    "on-click": "run-and-wait fastfetch"
+    "on-click": "walker --provider menus:main"
   },
   "custom/updates": {
     "exec": "cat /tmp/waybar-updates-cache 2>/dev/null",

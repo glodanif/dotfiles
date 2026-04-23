@@ -1,0 +1,22 @@
+name = "main"
+name_pretty = "Artix Main Menu"
+action = "%VALUE%"
+
+[[entries]]
+text = "Apps"
+subtext = "Open Walker"
+value = "walker"
+icon = "/home/glodanif/.local/share/assets/apps.png"
+
+[[entries]]
+text = "About"
+subtext = "fastfetch"
+value = "run-and-wait fastfetch"
+icon = "/home/glodanif/.local/share/assets/artix-logo.png"
+
+[[entries]]
+text = "Power Menu"
+subtext = "Power off/Log out/Reboot/Lock"
+value = "power-menu"
+icon = "/home/glodanif/.local/share/assets/power-on.png"
+

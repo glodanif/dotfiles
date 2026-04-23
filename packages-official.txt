@@ -11,6 +11,7 @@ btrfs-progs
 calcurse
 clang
 cliphist
+cmake
 cronie-openrc
 cryptsetup
 dhcpcd
@@ -44,11 +45,13 @@ linux-firmware
 linux-headers
 lvm2
 mako
+mesa-utils
 mpv
 nautilus
 neovim
 networkmanager
 networkmanager-openrc
+ninja
 noto-fonts
 noto-fonts-cjk
 noto-fonts-emoji
