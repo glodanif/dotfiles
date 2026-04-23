@@ -113,11 +113,16 @@
   },
   "custom/recording": {
     "exec": "echo '{\"text\": \"⏺\", \"class\": \"recording\"}'",
-    "exec-if": "[ -f /tmp/screenrecord-filename ]",
+    "exec-if": "[ -f /tmp/ongoing-screenrecording ]",
     "return-type": "json",
     "interval": "once",
     "signal": 8,
     "on-click": "screenrecord off"
+  },
+  "custom/screenshare": {
+    "exec": "screenshare-watch",
+    "return-type": "json",
+    "restart-interval": 1
   },
   "custom/vpn": {
     "exec": "vpn-status",

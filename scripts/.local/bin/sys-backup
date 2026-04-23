@@ -9,6 +9,7 @@ BACKUP_DISK_UUID="468df889-d691-4d07-8c89-31caa4c0b2ea"
 MOUNT_POINT="/mnt/backup"
 REPO="/mnt/backup/restic"
 PASSWORD_FILE="/root/.restic-password"
+HOSTNAME_TAG=$(hostname)
 
 keep_screen_on
 
@@ -58,6 +59,7 @@ sudo restic backup --repo "$REPO" \
 section "Pruning old snapshots..."
 sudo restic forget --repo "$REPO" \
   --password-file "$PASSWORD_FILE" \
+  --host "$HOSTNAME_TAG" \
   --keep-last 5 \
   --keep-daily 7 \
   --keep-weekly 4 \

@@ -1,0 +1,30 @@
+#!/bin/zsh
+
+check_sharing() {
+    [[ -f /tmp/ongoing-screenrecording ]] && echo "off" && return
+    pw-cli ls Node 2>/dev/null | grep -q 'media.class = "Video/Source"' && echo "on" || echo "off"
+}
+
+print_status() {
+    local state=$(check_sharing)
+    if [[ "$state" != "$LAST_STATE" ]]; then
+        LAST_STATE="$state"
+        [[ "$state" == "on" ]] &&
+            echo '{"text":"","class":"active","tooltip":"Screen is being shared"}' ||
+            echo '{"text":"","class":"idle","tooltip":""}'
+    fi
+}
+
+LAST_STATE=""
+print_status
+
+pw-mon 2>/dev/null | while read -r line; do
+    case "$line" in
+        *added*|*removed*|*changed*)
+            kill $TIMER_PID 2>/dev/null
+            { sleep 0.3; print_status; } &
+            TIMER_PID=$!
+            ;;
+    esac
+done
+
