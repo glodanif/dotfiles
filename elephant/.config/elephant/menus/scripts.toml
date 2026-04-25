@@ -1,7 +1,7 @@
 name = "scripts"
 name_pretty = "Scripts"
 icon = "application-x-executable"
-action = "run-and-wait '%VALUE%'"
+action = "%VALUE%"
 
 [[entries]]
 text = "Start screen recording"
@@ -16,35 +16,35 @@ value = "screenrecord on --audio"
 [[entries]]
 text = "System update"
 subtext = "sys-update"
-value = "sys-update"
+value = "run-and-wait sys-update"
 
 [[entries]]
 text = "System backup"
 subtext = "sys-backup"
-value = "sys-backup"
+value = "run-and-wait sys-backup"
 
 [[entries]]
 text = "Install package"
 subtext = "install-package"
-value = "install-package"
+value = "run-and-wait install-package"
 
 [[entries]]
 text = "Install AUR package"
 subtext = "install-aur-package"
-value = "install-aur-package"
+value = "run-and-wait install-aur-package"
 
 [[entries]]
 text = "Uninstall package"
 subtext = "uninstall-package"
-value = "uninstall-package"
+value = "run-and-wait uninstall-package"
 
 [[entries]]
 text = "Artix doctor"
 subtext = "artix-doctor"
-value = "artix-doctor"
+value = "run-and-wait artix-doctor"
 
 [[entries]]
 text = "Start VPN"
 subtext = "vpn-run on"
-value = "vpn-run on"
+value = "run-and-wait vpn-run on"
 

@@ -12,6 +12,7 @@ calcurse
 clang
 cliphist
 cmake
+cpio
 cronie-openrc
 cryptsetup
 dhcpcd
@@ -59,7 +60,6 @@ nvidia-open-dkms
 nvidia-utils
 obs-studio
 openrc
-openresolv
 openssh-openrc
 pacman-contrib
 pipewire

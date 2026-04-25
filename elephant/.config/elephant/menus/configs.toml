@@ -6,67 +6,62 @@ action = "ghostty -e sh -c 'cd $(dirname %VALUE%) && nvim %VALUE%; exec $SHELL'"
 [[entries]]
 text = "Hyprland"
 subtext = "hyprland.conf"
-value = "$HOME/.config/hypr/hyprland.conf"
+value = "~/.config/hypr/hyprland.conf"
 
 [[entries]]
 text = "Hyprland | Autostart"
 subtext = "autostart.conf"
-value = "$HOME/.config/hypr/autostart.conf"
+value = "~/.config/hypr/autostart.conf"
 
 [[entries]]
 text = "Hyprland | Keybinds"
 subtext = "keybinds.conf"
-value = "$HOME/.config/hypr/keybinds.conf"
+value = "~/.config/hypr/keybinds.conf"
 
 [[entries]]
 text = "Hyprland | Look and feel"
 subtext = "look-and-feel.conf"
-value = "$HOME/.config/hypr/look-and-feel.conf"
+value = "~/.config/hypr/look-and-feel.conf"
 
 [[entries]]
 text = "Hyprland | Apps"
 subtext = "programs.conf"
-value = "$HOME/.config/hypr/programs.conf"
+value = "~/.config/hypr/programs.conf"
 
 [[entries]]
 text = "Hyprland | Hypridle"
 subtext = "hypridle.conf"
-value = "$HOME/.config/hypr/hypridle.conf"
+value = "~/.config/hypr/hypridle.conf"
 
 [[entries]]
 text = "Hyprland | Hyprlock"
 subtext = "hyprlock.conf"
-value = "$HOME/.config/hypr/hyprlock.conf"
+value = "~/.config/hypr/hyprlock.conf"
 
 [[entries]]
 text = "Hyprland | Hyprpaper"
 subtext = "hyprpaper.conf"
-value = "$HOME/.config/hypr/hyprpaper.conf"
+value = "~/.config/hypr/hyprpaper.conf"
 
 [[entries]]
 text = "Waybar | Style"
 subtext = "style.css"
-value = "$HOME/.config/waybar/style.css"
+value = "~/.config/waybar/style.css"
 
 [[entries]]
 text = "Waybar | Config"
 subtext = "config.jsonc"
-value = "$HOME/.config/waybar/config.jsonc"
+value = "~/.config/waybar/config.jsonc"
 
 [[entries]]
 text = "Walker"
 subtext = "config.toml"
-value = "$HOME/.config/walker/config.toml"
+value = "~/.config/walker/config.toml"
 
 [[entries]]
 text = "Elephant | Menus"
 subtext = "/menus"
-value = "$HOME/.config/elephant/menus"
-
-[[entries]]
-text = "Profile IO"
-subtext = "config.json"
-value = "$HOME/.config/profile-io/config.json"
+value = "~/.config/elephant/menus"
 
 [[entries]]
 text = ".zshrc"
