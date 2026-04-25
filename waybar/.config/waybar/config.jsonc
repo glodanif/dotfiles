@@ -6,7 +6,7 @@
   "spacing": 4,
   "modules-left": ["custom/artix", "hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock", "custom/weather"],
-  "modules-right": ["tray", "custom/updates", "custom/recording", "custom/voxtype", "custom/mic", "pulseaudio", "cpu", "memory", "bluetooth", "custom/vpn", "network"],
+  "modules-right": ["custom/screenshare", "tray", "custom/updates", "custom/recording", "custom/voxtype", "custom/mic", "pulseaudio", "cpu", "memory", "bluetooth", "custom/vpn", "network"],
   "clock": {
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
     "format": "{:L%A %H:%M}",
@@ -122,7 +122,6 @@
   "custom/screenshare": {
     "exec": "screenshare-watch",
     "return-type": "json",
-    "restart-interval": 1
   },
   "custom/vpn": {
     "exec": "vpn-status",

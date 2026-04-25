@@ -2,5 +2,5 @@
 cmd="$*"
 ghostty \
   --title="float" \
-  -e bash -c "source $HOME/.config/bash/utils.sh; printf '\033]0;${cmd} - float\007'; ${cmd}; echo; press_any_key"
+  -e zsh -c "source $HOME/.config/bash/utils.sh; printf '\033]0;${cmd} - float\007'; ${cmd}; echo; press_any_key"
 

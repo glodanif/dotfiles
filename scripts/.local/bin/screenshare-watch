@@ -2,7 +2,7 @@
 
 check_sharing() {
     [[ -f /tmp/ongoing-screenrecording ]] && echo "off" && return
-    pw-cli ls Node 2>/dev/null | grep -q 'media.class = "Video/Source"' && echo "on" || echo "off"
+    pw-dump 2>/dev/null | jq -e '.[] | select(.info.props["media.class"] == "Video/Source" and .info.state == "running")' > /dev/null 2>&1 && echo "on" || echo "off"
 }
 
 print_status() {
@@ -10,7 +10,7 @@ print_status() {
     if [[ "$state" != "$LAST_STATE" ]]; then
         LAST_STATE="$state"
         [[ "$state" == "on" ]] &&
-            echo '{"text":"","class":"active","tooltip":"Screen is being shared"}' ||
+            echo '{"text":" Screensharing ","class":"active","tooltip":"Screen is being shared"}' ||
             echo '{"text":"","class":"idle","tooltip":""}'
     fi
 }

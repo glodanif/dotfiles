@@ -389,6 +389,7 @@ label:focus {
 
 #custom-voxtype,
 #custom-updates,
+#custom-screenshare,
 #custom-mic {
     padding: 0 8px;
     margin-top: 6px;
@@ -423,6 +424,14 @@ label:focus {
     margin-left: 6px;
     margin-right: 2px;
     border-radius: 8px;
+    animation: recording-blink 2s linear infinite;
+}
+
+#custom-screenshare {
+    background-color: #FF8C00;
+    padding: 0 8px;
+    margin: 6px;
+    border-radius: 16px;
     animation: recording-blink 2s linear infinite;
 }
 
