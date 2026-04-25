@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+LAST_STATE=""
+
 check_sharing() {
     [[ -f /tmp/ongoing-screenrecording ]] && echo "off" && return
     pw-dump 2>/dev/null | jq -e '.[] | select(.info.props["media.class"] == "Video/Source" and .info.state == "running")' > /dev/null 2>&1 && echo "on" || echo "off"
@@ -7,23 +9,25 @@ check_sharing() {
 
 print_status() {
     local state=$(check_sharing)
-    if [[ "$state" != "$LAST_STATE" ]]; then
-        LAST_STATE="$state"
-        [[ "$state" == "on" ]] &&
-            echo '{"text":" Screensharing ","class":"active","tooltip":"Screen is being shared"}' ||
-            echo '{"text":"","class":"idle","tooltip":""}'
+    [[ "$state" == "$LAST_STATE" ]] && return
+    LAST_STATE="$state"
+    if [[ "$state" == "on" ]]; then
+        echo '{"text":" Screensharing ","class":"active","tooltip":"Screen is being shared"}'
+    else
+        echo '{"text":"","class":"idle","tooltip":""}'
     fi
 }
 
-LAST_STATE=""
 print_status
 
-pw-mon 2>/dev/null | while read -r line; do
+LAST_EVENT=0
+pactl subscribe | while read -r line; do
     case "$line" in
-        *added*|*removed*|*changed*)
-            kill $TIMER_PID 2>/dev/null
-            { sleep 0.3; print_status; } &
-            TIMER_PID=$!
+        *"on client #"*|*"on source-output #"*)
+            NOW=$(date +%s)
+            (( NOW - LAST_EVENT < 2 )) && continue
+            LAST_EVENT=$NOW
+            print_status
             ;;
     esac
 done

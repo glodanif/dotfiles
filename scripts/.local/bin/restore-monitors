@@ -1,5 +1,5 @@
 #!/bin/bash
-STATE_FILE="/tmp/hypr-display-mode"
+STATE_FILE="/var/tmp/hypr-display-mode"
 MONITOR_SCRIPT="switch-monitors"
 
 # Wait for Hyprland to fully initialize

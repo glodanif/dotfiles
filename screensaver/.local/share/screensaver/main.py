@@ -1,14 +1,10 @@
 import os
-import time
 import random
 import pyglet
 from pyglet.gl import GL_NEAREST
 from pyglet.image import Texture
 
 Texture.default_mag_filter = Texture.default_min_filter = GL_NEAREST
-
-START_TIME = time.time()
-GRACE_PERIOD = 2.0
 
 image = pyglet.image.load(os.path.expanduser('~/.local/share/assets/artix-logo.png'))
 
@@ -33,13 +29,11 @@ def on_draw():
 
 @win.event
 def on_key_press(symbol, modifier):
-    if time.time() - START_TIME > GRACE_PERIOD:
-        pyglet.app.exit()
+    pyglet.app.exit()
 
 @win.event
 def on_mouse_press(x, y, button, modifiers):
-    if time.time() - START_TIME > GRACE_PERIOD:
-        pyglet.app.exit()
+    pyglet.app.exit()
 
 @win.event
 def on_close():
