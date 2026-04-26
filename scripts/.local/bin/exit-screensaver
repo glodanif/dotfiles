@@ -1,28 +1,3 @@
 #!/bin/zsh
-STATE_FILE="/tmp/screensaver-state"
-
-pkill -f screensaver/main.py 2>/dev/null
-
-[[ -f "$STATE_FILE" ]] || exit 0
-
-rounding=$(jq '.rounding' "$STATE_FILE")
-border_size=$(jq '.border_size' "$STATE_FILE")
-window=$(jq -r '.window' "$STATE_FILE")
-monitor=$(jq -r '.monitor' "$STATE_FILE")
-
-makoctl mode -r do-not-disturb &>/dev/null
-hyprctl keyword animations:enabled true &>/dev/null
-hyprctl keyword decoration:rounding "$rounding" &>/dev/null
-hyprctl keyword general:border_size "$border_size" &>/dev/null
-hyprctl keyword decoration:blur:enabled true &>/dev/null
-hyprctl keyword decoration:shadow:enabled true &>/dev/null
-hyprctl keyword cursor:invisible false &>/dev/null
-
-if [[ -n "$window" && "$window" != "null" ]]; then
-    hyprctl dispatch focuswindow "address:$window" &>/dev/null
-elif [[ -n "$monitor" && "$monitor" != "null" ]]; then
-    hyprctl dispatch focusmonitor "$monitor" &>/dev/null
-fi
-
-rm "$STATE_FILE"
+pkill -f "python.*screensaver/main.py"
 
