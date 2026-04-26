@@ -15,6 +15,13 @@ value = "run-and-wait fastfetch"
 icon = "/home/glodanif/.local/share/assets/artix-logo.png"
 
 [[entries]]
+text = "Audio Sinks"
+subtext = "Switch to audio sink"
+value = "switch-audio-sink"
+icon = "/home/glodanif/.local/share/assets/audio.png"
+
+
+[[entries]]
 text = "Power Menu"
 subtext = "Power off/Log out/Reboot/Lock"
 value = "power-menu"

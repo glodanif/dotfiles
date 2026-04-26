@@ -1,0 +1,16 @@
+#!/bin/zsh
+
+selected=$(pactl list sinks | awk '
+/^[[:space:]]*Name:/ { name=$2 }
+/^[[:space:]]*Description:/ {
+    desc=substr($0, index($0,$2))
+    print desc " [" name "]"
+}
+' | walker --dmenu -p "Audio output:" | sed 's/.*\[\(.*\)\]/\1/')
+
+[[ -z "$selected" ]] && exit 0
+
+pactl list sink-inputs short | awk '{print $1}' | while read input; do
+    pactl move-sink-input "$input" "$selected"
+done
+
