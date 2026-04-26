@@ -24,7 +24,7 @@ CDLL('libgtk4-layer-shell.so')
 import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Gtk4LayerShell', '1.0')
-from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
+from gi.repository import Gtk, Gdk, GLib
 from gi.repository import Gtk4LayerShell as LayerShell
 
 LOGO_PATH = os.path.expanduser('~/.local/share/assets/artix-logo.png')
@@ -41,19 +41,7 @@ class OverlayApp:
         self.app.connect('activate', self._on_activate)
 
     def _on_activate(self, app):
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file(LOGO_PATH)
-
-        # Scale logo if taller than max
-        orig_w = pixbuf.get_width()
-        orig_h = pixbuf.get_height()
-        if orig_h > LOGO_MAX_HEIGHT:
-            scale = LOGO_MAX_HEIGHT / orig_h
-            pixbuf = pixbuf.scale_simple(
-                int(orig_w * scale), LOGO_MAX_HEIGHT,
-                GdkPixbuf.InterpType.BILINEAR,
-            )
-
-        texture = Gdk.Texture.new_for_pixbuf(pixbuf)
+        texture = Gdk.Texture.new_from_filename(LOGO_PATH)
 
         css = Gtk.CssProvider()
         css.load_from_string(
@@ -69,9 +57,9 @@ class OverlayApp:
         monitors = display.get_monitors()
         for i in range(monitors.get_n_items()):
             monitor = monitors.get_item(i)
-            self._create_window(app, monitor, texture, pixbuf)
+            self._create_window(app, monitor, texture)
 
-    def _create_window(self, app, monitor, texture, pixbuf):
+    def _create_window(self, app, monitor, texture):
         window = Gtk.Window(application=app)
 
         LayerShell.init_for_window(window)
@@ -93,7 +81,8 @@ class OverlayApp:
         box.set_valign(Gtk.Align.CENTER)
 
         picture = Gtk.Picture.new_for_paintable(texture)
-        picture.set_size_request(pixbuf.get_width(), pixbuf.get_height())
+        picture.set_content_fit(Gtk.ContentFit.CONTAIN)
+        picture.set_size_request(LOGO_MAX_HEIGHT, LOGO_MAX_HEIGHT)
         box.append(picture)
 
         label = Gtk.Label(label=self.message)

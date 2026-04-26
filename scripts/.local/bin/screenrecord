@@ -49,6 +49,7 @@ start_recording() {
   nohup gpu-screen-recorder -w portal -k auto -s "$resolution" -f 60 -fm cfr -fallback-cpu-encoding yes $audio_args -o "$filename" &>/dev/null &
   local pid=$!
   disown
+  touch "$RECORDING_FILE"
   # Wait for portal selection and recording to start
   while kill -0 $pid 2>/dev/null && [[ ! -f $filename ]]; do
     sleep 0.2
@@ -60,6 +61,7 @@ start_recording() {
     signal_waybar
     exit 0
   fi
+  rm -f "$RECORDING_FILE"
 }
 stop_recording() {
   local pid

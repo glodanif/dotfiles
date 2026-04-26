@@ -27,8 +27,11 @@ pactl subscribe | while read -r line; do
             NOW=$(date +%s)
             (( NOW - LAST_EVENT < 2 )) && continue
             LAST_EVENT=$NOW
-            print_status
+            for i in 1 2 3 4; do
+                print_status
+                [[ "$LAST_STATE" == "on" ]] && break
+                sleep 0.5
+            done
             ;;
     esac
 done
-
