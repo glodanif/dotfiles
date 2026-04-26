@@ -1,15 +1,10 @@
 #!/bin/zsh
 case "$1" in
-  logout)   CMD="hyprctl dispatch exit" ; MSG="Logging out..." ;;
-  reboot)   CMD="loginctl reboot"       ; MSG="Rebooting..." ;;
-  shutdown) CMD="loginctl poweroff"     ; MSG="Shutting down..." ;;
-  reboot-windows)
-    sudo -v || exit 1
-    CMD="{ sudo efibootmgr --bootnext 0000 && sudo reboot; }"
-    MSG="Rebooting to Windows..."
-    ;;
+  logout)         CMD="hyprctl dispatch exit" ; MSG="Logging out..." ;;
+  reboot)         CMD="loginctl reboot"       ; MSG="Rebooting..." ;;
+  shutdown)       CMD="loginctl poweroff"     ; MSG="Shutting down..." ;;
   *)
-    echo "Usage: hyprland-power [logout|reboot|shutdown|reboot-windows]"
+    echo "Usage: hyprland-power [logout|reboot|shutdown]"
     exit 1
     ;;
 esac

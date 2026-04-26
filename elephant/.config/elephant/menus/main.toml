@@ -23,7 +23,7 @@ icon = "/home/glodanif/.local/share/assets/artix-logo.png"
 [[entries]]
 text = "4. Reboot into Windows"
 subtext = "Boot Windows once"
-value = "'ghostty -e hyprland-power reboot-windows'"
+value = "ghostty -e reboot-into-windows"
 icon = "/home/glodanif/.local/share/assets/windows.png"
 
 [[entries]]

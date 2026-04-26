@@ -1,0 +1,13 @@
+#!/bin/zsh
+
+source "$HOME/.config/bash/utils.sh"
+
+section "Reboot into Windows"
+
+sudo efibootmgr --bootnext 0000 || exit 1
+
+python $HOME/.config/wlogout/overlay.py "Rebooting into Windows..." &
+nohup zsh -c "sleep 2 && sudo reboot" >/dev/null 2>&1 &
+hypr-close-all-windows
+sleep 1
+
