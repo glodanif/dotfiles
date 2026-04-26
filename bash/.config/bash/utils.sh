@@ -15,8 +15,9 @@ warn()  { check "WRN" "$1"; }
 # ── Interaction ───────────────────────────────────────────
 confirm() {
   local msg="${1:-Continue?}"
-  read -r -p "$msg [y/N] " reply
-  [[ "$reply" =~ ^[Yy]$ ]]
+  read -r -p "$msg [Y/n] " reply
+  # empty input = yes
+  [[ -z "$reply" || "$reply" =~ ^[Yy]$ ]]
 }
 
 press_any_key() {
