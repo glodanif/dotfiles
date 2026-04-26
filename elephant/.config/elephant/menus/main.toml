@@ -24,7 +24,7 @@ icon = "/home/glodanif/.local/share/assets/artix-logo.png"
 text = "4. Reboot into Windows"
 subtext = "Boot Windows once"
 value = "hyprland-power reboot-windows"
-icon = "/home/glodanif/.local/share/assets/artix-logo.png"
+icon = "/home/glodanif/.local/share/assets/windows.png"
 
 [[entries]]
 text = "5. Power Menu"
