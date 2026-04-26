@@ -4,7 +4,6 @@ discord-latest-bin
 elephant-all
 jetbrains-toolbox
 localsend-bin
-mailspring-bin
 ookla-speedtest-bin
 openshot-bin
 pinta
