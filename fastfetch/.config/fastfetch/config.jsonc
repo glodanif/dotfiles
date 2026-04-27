@@ -133,7 +133,7 @@
     },
     {
       "type": "separator",
-      "string": "-",
+      "string": "─",
       "outputColor": "#67C3DF",
       "times": 50
     },
@@ -174,7 +174,12 @@
       "namePrefix": "",
       "keyColor": "#10A0CC"
     },
-    "break",
+    {
+      "type": "separator",
+      "string": "─",
+      "outputColor": "#67C3DF",
+      "times": 50
+    },
     {
       "type": "shell",
       "keyIcon": "",
@@ -185,7 +190,7 @@
       "keyIcon": "",
       "keyColor": "#10A0CC"
     },
-        {
+    {
       "type": "de",
       "keyIcon": "",
       "keyColor": "#10A0CC"
@@ -209,7 +214,12 @@
       "order": null,
       "keyColor": "#10A0CC"
     },
-    "break",
+    {
+      "type": "separator",
+      "string": "─",
+      "outputColor": "#67C3DF",
+      "times": 50
+    },
     {
       "type": "cpu",
       "keyIcon": "",
@@ -232,7 +242,12 @@
       },
       "keyColor": "#10A0CC"
     },
-    "break",
+    {
+      "type": "separator",
+      "string": "─",
+      "outputColor": "#67C3DF",
+      "times": 50
+    },
     {
       "type": "memory",
       "keyIcon": "",
@@ -274,7 +289,12 @@
       },
       "keyColor": "#10A0CC"
     },
-    "break",
+    {
+      "type": "separator",
+      "string": "─",
+      "outputColor": "#67C3DF",
+      "times": 50
+    },
     {
       "type": "colors",
       "key": " ",
