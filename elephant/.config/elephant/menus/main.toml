@@ -15,19 +15,31 @@ value = "switch-audio-sink"
 icon = "/home/glodanif/.local/share/assets/audio.png"
 
 [[entries]]
-text = "3. About"
+text = "3. System Backup"
+subtext = "sys-backup"
+value = "run-and-wait sys-backup"
+icon = "/home/glodanif/.local/share/assets/backup.png"
+
+[[entries]]
+text = "4. System Upgrade"
+subtext = "sys-update"
+value = "run-and-wait sys-update"
+icon = "/home/glodanif/.local/share/assets/update.png"
+
+[[entries]]
+text = "5. About"
 subtext = "fastfetch"
 value = "run-and-wait fastfetch"
 icon = "/home/glodanif/.local/share/assets/artix-logo.png"
 
 [[entries]]
-text = "4. Reboot into Windows"
+text = "6. Reboot into Windows"
 subtext = "Boot Windows once"
 value = "ghostty -e reboot-into-windows"
 icon = "/home/glodanif/.local/share/assets/windows.png"
 
 [[entries]]
-text = "5. Power Menu"
+text = "7. Power Menu"
 subtext = "Power off/Log out/Reboot/Lock"
 value = "power-menu"
 icon = "/home/glodanif/.local/share/assets/power-on.png"

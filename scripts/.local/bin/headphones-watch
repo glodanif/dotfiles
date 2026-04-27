@@ -1,0 +1,25 @@
+#!/bin/zsh
+
+HEADPHONES_MAC="80_99_E7_49_C7_D8"
+HEADPHONES_DESC="WH-1000XM4"
+
+until pactl info &>/dev/null; do
+    sleep 1
+done
+
+pactl subscribe | while read line; do
+    if echo "$line" | grep -q "Event 'new' on sink"; then
+        index=$(echo "$line" | grep -oP '#\K[0-9]+')
+
+        name=$(pactl list sinks short | awk -v idx="$index" '$1 == idx {print $2}')
+
+        [[ "$name" != *"$HEADPHONES_MAC"* ]] && continue
+
+        pactl list sink-inputs short | awk '{print $1}' | while read input; do
+            pactl move-sink-input "$input" "$name"
+        done
+
+        notify-send --app-name="Audio" "$HEADPHONES_DESC connected" "All streams moved"
+    fi
+done
+
