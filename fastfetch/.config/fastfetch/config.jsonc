@@ -17,7 +17,7 @@
     "width": null,
     "height": null,
     "padding": {
-      "top": 0,
+      "top": 2,
       "left": 2,
       "right": 4
     },
@@ -120,6 +120,7 @@
     "dsForceDrm": false
   },
   "modules": [
+    "break",
     {
       "type": "title",
       "key": " ",
@@ -135,7 +136,7 @@
       "type": "separator",
       "string": "─",
       "outputColor": "#67C3DF",
-      "times": 50
+      "times": 54
     },
     {
       "type": "os",
@@ -178,7 +179,7 @@
       "type": "separator",
       "string": "─",
       "outputColor": "#67C3DF",
-      "times": 50
+      "times": 54
     },
     {
       "type": "shell",
@@ -218,7 +219,7 @@
       "type": "separator",
       "string": "─",
       "outputColor": "#67C3DF",
-      "times": 50
+      "times": 54
     },
     {
       "type": "cpu",
@@ -246,7 +247,7 @@
       "type": "separator",
       "string": "─",
       "outputColor": "#67C3DF",
-      "times": 50
+      "times": 54
     },
     {
       "type": "memory",
@@ -293,7 +294,7 @@
       "type": "separator",
       "string": "─",
       "outputColor": "#67C3DF",
-      "times": 50
+      "times": 54
     },
     {
       "type": "colors",
