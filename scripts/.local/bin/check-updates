@@ -1,16 +1,14 @@
 #!/bin/zsh
-# check-updates (called by cron)
 
 cache_file="/tmp/waybar-updates-cache"
-
 official=$(checkupdates 2>/dev/null | wc -l)
 aur=$(yay -Qua 2>/dev/null | wc -l)
 count=$(( official + aur ))
 
 if (( count > 0 )); then
-    echo "$count" > "$cache_file"
+    printf '{"text":"%s","tooltip":"Official: %s\\nAUR: %s"}\n' "$count" "$official" "$aur" > "$cache_file"
 else
-    echo "" > "$cache_file"
+    printf '' > "$cache_file"
 fi
 
 pkill -SIGRTMIN+8 waybar

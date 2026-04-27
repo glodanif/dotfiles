@@ -154,6 +154,12 @@
       "keyColor": "#10A0CC"
     },
     {
+      "type": "command",
+      "key": "Age",
+      "keyColor": "#10A0CC",
+      "text": "echo $(( ($(date +%s) - $(stat -c %W /)) / 86400 )) days"
+    },
+    {
       "type": "uptime",
       "keyIcon": "",
       "keyColor": "#10A0CC"
@@ -300,7 +306,7 @@
       "type": "colors",
       "key": " ",
       "keyIcon": "",
-      "symbol": "block",
+      "symbol": "circle",
       "paddingLeft": 0,
       "block": {
         "width": 3,

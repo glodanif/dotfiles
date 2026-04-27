@@ -87,19 +87,20 @@
     "return-type": "json",
     "interval": 900
   },
+  "custom/updates": {
+    "exec": "cat /tmp/waybar-updates-cache 2>/dev/null",
+    "return-type": "json",
+    "interval": "5",
+    "format": "󰅢 {}",
+    "on-click": "run-and-wait sys-update",
+    "signal": 8
+  },
   "custom/artix": {
     "exec": "echo ' '",
     "interval": "once",
     "format": "{}",
     "tooltip-format": "Artix",
     "on-click": "walker --provider menus:main"
-  },
-  "custom/updates": {
-    "exec": "cat /tmp/waybar-updates-cache 2>/dev/null",
-    "interval": "once",
-    "format": "󰅢 {}",
-    "on-click": "run-and-wait sys-update",
-    "signal": 8
   },
   "custom/power": {
     "format": "⏻",
