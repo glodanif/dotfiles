@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-cache_file="/var/tmp/waybar-updates-cache"
+cache_file="$HOME/.cache/scripts/waybar-updates-cache"
 official_list=$(checkupdates 2>/dev/null)
 aur_list=$(yay -Qua 2>/dev/null)
 

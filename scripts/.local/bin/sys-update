@@ -11,17 +11,26 @@ sudo -v
 section "Syncing keyrings..."
 sudo pacman -Sy --noconfirm archlinux-keyring >/dev/null || true
 
+log_before_official=$(wc -l < /var/log/pacman.log)
+official_failed=0
+
 section "Updating system packages..."
-sudo pacman -Syyu --noconfirm || true
+sudo pacman -Syyu --noconfirm || official_failed=1
+
+official_count=$(tail -n +$((log_before_official+1)) /var/log/pacman.log | grep -c '\[ALPM\] upgraded' || true)
 
 if awk '/\[ALPM\] transaction started/{upgraded=0} /upgraded hyprland/{upgraded=1} END{exit !upgraded}' /var/log/pacman.log; then
   section "Updating Hyprland plugins..."
   hyprpm update
 fi
 
+log_before_aur=$(wc -l < /var/log/pacman.log)
+aur_count=0
+
 if command -v yay &>/dev/null && pacman -Qem &>/dev/null; then
   section "Updating AUR packages..."
-  yay -Sua --noconfirm --cleanafter
+  yay -Sua --noconfirm --cleanafter || true
+  aur_count=$(tail -n +$((log_before_aur+1)) /var/log/pacman.log | grep -c '\[ALPM\] upgraded' || true)
 fi
 
 orphans=$(pacman -Qtdq 2>/dev/null || true)
@@ -30,15 +39,31 @@ if [[ -n $orphans ]]; then
   sudo pacman -Rs --noconfirm $orphans
 fi
 
-section "Done."
-notify-send -t 2000 "Update complete."
-
-if [[ ! -d /usr/lib/modules/$(uname -r) ]]; then
-  section "Kernel updated — reboot when ready." "\e[33m"
-fi
-
 section "Rechecking updates..."
-rm -f /var/tmp/waybar-updates-cache
+rm -f $HOME/.cache/scripts/waybar-updates-cache
 pkill -RTMIN+8 waybar
 check-updates
+
+if [[ ! -d /usr/lib/modules/$(uname -r) ]]; then
+  section "Kernel updated — reboot when ready." "\e[32m"
+fi
+
+
+section "Summary"
+if (( official_failed )); then
+  fail "Official: update failed"
+elif (( official_count > 0 )); then
+  ok "Official: $official_count package(s) updated"
+else
+  ok "Official: already up to date"
+fi
+if (( aur_count > 0 )); then
+  ok "AUR:      $aur_count package(s) updated"
+else
+  ok "AUR:      already up to date"
+fi
+
+if (( official_count > 0 || aur_count > 0 )); then
+  notify-send -t 2000 "Update complete."
+fi
 

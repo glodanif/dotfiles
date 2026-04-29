@@ -1,5 +1,5 @@
 #!/bin/bash
-STATE_FILE="/var/tmp/hypr-display-mode"
+STATE_FILE="$HOME/.local/share/scripts/hypr-display-mode"
 
 if [ -z "$1" ]; then
     CURRENT=$(cat "$STATE_FILE" 2>/dev/null || echo "pc")
