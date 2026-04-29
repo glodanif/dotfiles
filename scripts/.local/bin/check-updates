@@ -1,12 +1,21 @@
 #!/bin/zsh
 
-cache_file="/tmp/waybar-updates-cache"
-official=$(checkupdates 2>/dev/null | wc -l)
-aur=$(yay -Qua 2>/dev/null | wc -l)
+cache_file="/var/tmp/waybar-updates-cache"
+official_list=$(checkupdates 2>/dev/null)
+aur_list=$(yay -Qua 2>/dev/null)
+
+official=$(echo "$official_list" | grep -c .)
+aur=$(echo "$aur_list" | grep -c .)
 count=$(( official + aur ))
 
 if (( count > 0 )); then
-    printf '{"text":"%s","tooltip":"Official: %s\\nAUR: %s"}\n' "$count" "$official" "$aur" > "$cache_file"
+    tooltip=""
+    [[ -n "$official_list" ]] && tooltip="Official ($official):\n$(echo "$official_list" | tr '\n' '|' | sed 's/|$//' | sed 's/|/\\n/g')"
+    [[ -n "$aur_list" ]] && {
+        [[ -n "$tooltip" ]] && tooltip="${tooltip}\nAUR ($aur):\n$(echo "$aur_list" | tr '\n' '|' | sed 's/|$//' | sed 's/|/\\n/g')" \
+                            || tooltip="AUR ($aur):\n$(echo "$aur_list" | tr '\n' '|' | sed 's/|$//' | sed 's/|/\\n/g')"
+    }
+    printf '{"text":"%s","tooltip":"%s"}\n' "$count" "$tooltip" > "$cache_file"
 else
     printf '' > "$cache_file"
 fi

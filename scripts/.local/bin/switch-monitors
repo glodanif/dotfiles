@@ -66,7 +66,7 @@ case $MODE in
         hyprctl dispatch moveworkspacetomonitor 2 HDMI-A-1
         hyprctl dispatch moveworkspacetomonitor 3 HDMI-A-1
         hyprctl dispatch workspace 1
-        set_sink "alsa_output.pci-0000_01_00.1.hdmi" "45%"
+        set_sink "alsa_output.pci-0000_01_00.1.hdmi" "40%"
         echo "tv" > "$STATE_FILE"
         notify-send "Display Mode" "Switched to TV"
         ;;
