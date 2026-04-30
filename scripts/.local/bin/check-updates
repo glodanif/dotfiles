@@ -15,10 +15,10 @@ if (( count > 0 )); then
         [[ -n "$tooltip" ]] && tooltip="${tooltip}\nAUR ($aur):\n$(echo "$aur_list" | tr '\n' '|' | sed 's/|$//' | sed 's/|/\\n/g')" \
                             || tooltip="AUR ($aur):\n$(echo "$aur_list" | tr '\n' '|' | sed 's/|$//' | sed 's/|/\\n/g')"
     }
-    printf '{"text":"%s","tooltip":"%s"}\n' "$count" "$tooltip" > "$cache_file"
+    printf '{"text":"󰅢 %s","tooltip":"%s"}\n' "$count" "$tooltip" > "$cache_file"
 else
     printf '' > "$cache_file"
 fi
 
-pkill -SIGRTMIN+8 waybar
+pkill -RTMIN+8 waybar 2>/dev/null
 

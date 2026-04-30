@@ -41,7 +41,7 @@ fi
 
 section "Rechecking updates..."
 rm -f "$HOME/.cache/scripts/waybar-updates-cache"
-pkill -RTMIN+8 waybar || true
+pkill -RTMIN+8 waybar 2>/dev/null || true
 check-updates
 
 cache_file="$HOME/.cache/scripts/waybar-updates-cache"

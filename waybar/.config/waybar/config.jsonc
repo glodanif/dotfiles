@@ -88,11 +88,11 @@
     "interval": 900
   },
   "custom/updates": {
-    "exec": "cat $HOME/.cache/scripts/waybar-updates-cache 2>/dev/null",
+    "exec": "[ -s $HOME/.cache/scripts/waybar-updates-cache ] && cat $HOME/.cache/scripts/waybar-updates-cache || echo '{\"text\":\"\"}'",
     "return-type": "json",
-    "interval": "5",
-    "format": "󰅢 {}",
+    "interval": "once",
     "on-click": "run-and-wait sys-update",
+    "on-click-middle": "rm -f $HOME/.cache/scripts/waybar-updates-cache && pkill -RTMIN+8 waybar",
     "signal": 8
   },
   "custom/artix": {
