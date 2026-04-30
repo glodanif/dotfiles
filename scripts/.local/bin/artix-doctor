@@ -19,9 +19,9 @@ source "$UTILS"
 
 typeset -gi ERRORS=0 WARNINGS=0 OKS=0
 
-ok() { check "OK " "$1"; ((OKS++)) || true; }
-warn() { check "WRN" "$1"; ((WARNINGS++)) || true; }
-err() { check "ERR" "$1"; ((ERRORS++)) || true; }
+ok() { check "\e[1;32mOK \e[0m" "$1"; ((OKS++)) || true; }
+warn() { check "\e[1;33mWRN\e[0m" "$1"; ((WARNINGS++)) || true; }
+err() { check "\e[1;31mERR\e[0m" "$1"; ((ERRORS++)) || true; }
 
 if [[ ! -d "$CHECKS_DIR" ]]; then
     echo "ERR: checks dir not found at $CHECKS_DIR" >&2

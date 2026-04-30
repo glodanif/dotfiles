@@ -9,6 +9,7 @@ bluez-utils
 btop
 btrfs-progs
 calcurse
+cifs-utils
 clang
 cliphist
 cmake
@@ -29,6 +30,7 @@ git
 gnome-themes-extra
 gpu-screen-recorder
 grim
+gvfs-smb
 hypridle
 hyprland
 hyprlock

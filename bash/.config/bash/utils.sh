@@ -7,10 +7,10 @@ section() {
   echo -e "─────────────────────────────────────────────\e[0m"
 }
 
-check() { echo "[ $1 ] $2"; }
-ok()    { check "OK " "$1"; }
-fail()  { check "ERR" "$1"; }
-warn()  { check "WRN" "$1"; }
+check() { echo -e "[ $1 ] $2\e[0m"; }
+ok()    { check "\e[1;32mOK \e[0m" "$1"; }
+fail()  { check "\e[1;31mERR\e[0m" "$1"; }
+warn()  { check "\e[1;33mWRN\e[0m" "$1"; }
 
 # ── Interaction ───────────────────────────────────────────
 confirm() {

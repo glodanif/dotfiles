@@ -40,9 +40,19 @@ if [[ -n $orphans ]]; then
 fi
 
 section "Rechecking updates..."
-rm -f $HOME/.cache/scripts/waybar-updates-cache
-pkill -RTMIN+8 waybar
+rm -f "$HOME/.cache/scripts/waybar-updates-cache"
+pkill -RTMIN+8 waybar || true
 check-updates
+
+cache_file="$HOME/.cache/scripts/waybar-updates-cache"
+if [[ -s "$cache_file" ]]; then
+  remaining_count=$(sed 's/.*"text":"//;s/".*//' "$cache_file")
+  remaining=$(sed 's/.*"tooltip":"//;s/"}[[:space:]]*$//' "$cache_file" | sed 's/\\n/\n/g')
+  warn "$remaining_count package(s) still pending:"
+  echo "$remaining"
+else
+  ok "All packages up to date"
+fi
 
 if [[ ! -d /usr/lib/modules/$(uname -r) ]]; then
   section "Kernel updated — reboot when ready." "\e[32m"
