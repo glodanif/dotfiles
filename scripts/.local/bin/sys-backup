@@ -1,44 +1,22 @@
 #!/bin/zsh
-# sys-backup — mount backup drive, run restic, prune, unmount
-
+# sys-backup — run restic backup to NAS, prune
 set -euo pipefail
-
 source "$HOME/.config/bash/utils.sh"
 
-BACKUP_DISK_UUID="468df889-d691-4d07-8c89-31caa4c0b2ea"
 MOUNT_POINT="/mnt/backup"
 REPO="/mnt/backup/restic"
 PASSWORD_FILE="/root/.restic-password"
 HOSTNAME_TAG=$(hostname)
 
 keep_screen_on
-
 section "System Backup"
 sudo -v
 
-DEVICE=$(sudo blkid -U "$BACKUP_DISK_UUID" 2>/dev/null || true)
-if [[ -z "$DEVICE" ]]; then
-  section "Backup drive not found. Skipping." "\e[33m"
+if ! mountpoint -q "$MOUNT_POINT"; then
+  section "NAS backup share not mounted. Skipping." "\e[33m"
   press_any_key
   exit 0
 fi
-section "Backup drive found at $DEVICE"
-
-if ! mountpoint -q "$MOUNT_POINT"; then
-  section "Mounting $DEVICE at $MOUNT_POINT..."
-  sudo mkdir -p "$MOUNT_POINT"
-  sudo mount "$DEVICE" "$MOUNT_POINT"
-  MOUNTED_BY_SCRIPT=1
-else
-  MOUNTED_BY_SCRIPT=0
-fi
-
-cleanup() {
-  if (( MOUNTED_BY_SCRIPT == 1 )) && mountpoint -q "$MOUNT_POINT"; then
-    sudo umount "$MOUNT_POINT" 2>/dev/null || true
-  fi
-}
-trap cleanup EXIT
 
 section "Running backup..."
 sudo restic backup --repo "$REPO" \
@@ -54,6 +32,9 @@ sudo restic backup --repo "$REPO" \
   --exclude "$HOME/.local/share/Steam/steamapps/common" \
   --exclude "$HOME/.local/share/Steam/steamapps/shadercache" \
   --exclude "$HOME/.local/share/Steam/steamapps/compatdata" \
+  --exclude "$HOME/.local/share/PrismLauncher/instances" \
+  --exclude "$HOME/.local/share/PrismLauncher/cache" \
+  --exclude "$HOME/.local/share/PrismLauncher/meta" \
   "$HOME" /etc
 
 section "Pruning old snapshots..."

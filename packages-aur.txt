@@ -7,8 +7,10 @@ localsend-bin
 ookla-speedtest-bin
 openshot-bin
 pinta
+prismlauncher-git
 slack-desktop
 voxtype
 walker
 windsurf
+witr
 yay-bin

@@ -28,6 +28,7 @@ fzf
 ghostty
 git
 gnome-themes-extra
+gptfdisk
 gpu-screen-recorder
 grim
 gvfs-smb
@@ -36,7 +37,6 @@ hyprland
 hyprlock
 hyprpaper
 impala
-imv
 iwd-openrc
 lazygit
 lib32-nvidia-utils
@@ -50,7 +50,6 @@ lvm2
 mako
 mesa-utils
 mpv
-nautilus
 neovim
 networkmanager
 networkmanager-openrc
@@ -65,6 +64,7 @@ obs-studio
 openrc
 openssh-openrc
 pacman-contrib
+papirus-icon-theme
 pipewire
 pipewire-audio
 pipewire-pulse
@@ -79,15 +79,19 @@ rustup
 satty
 seahorse
 slurp
+smartmontools
 socat
 sof-firmware
 steam
 stow
+swayimg
 tcpdump
 telegram-desktop
+thunar
 tmux
 ttf-font-awesome
 ttf-jetbrains-mono-nerd
+tumbler
 unzip
 vim
 waybar
