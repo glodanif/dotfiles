@@ -13,9 +13,12 @@ section "System Backup"
 sudo -v
 
 if ! mountpoint -q "$MOUNT_POINT"; then
-  section "NAS backup share not mounted. Skipping." "\e[33m"
-  press_any_key
-  exit 0
+  section "Mounting NAS backup share..."
+  sudo mount "$MOUNT_POINT" || {
+    section "Failed to mount NAS. Skipping." "\e[33m"
+    press_any_key
+    exit 0
+  }
 fi
 
 section "Running backup..."

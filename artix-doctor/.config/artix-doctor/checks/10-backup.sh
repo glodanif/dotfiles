@@ -10,14 +10,24 @@ if sudo -n test -r /root/.restic-password 2>/dev/null; then
 else
     warn "cannot verify /root/.restic-password"
 fi
-if mountpoint -q /mnt/backup 2>/dev/null; then
-    ok "NAS backup share mounted at /mnt/backup"
-else
-    warn "NAS backup share not mounted"
-fi
 if [[ -f /etc/samba/artix-creds ]]; then
     ok "Samba credentials file exists"
 else
     warn "Samba credentials file missing at /etc/samba/artix-creds"
+fi
+_nas_mounted_by_doctor=0
+if mountpoint -q /mnt/backup 2>/dev/null; then
+    ok "NAS backup share mounted at /mnt/backup"
+else
+    warn "NAS backup share not mounted, attempting to mount..."
+    if sudo mount /mnt/backup 2>/dev/null; then
+        ok "NAS backup share mounted successfully"
+        _nas_mounted_by_doctor=1
+    else
+        err "Failed to mount NAS backup share"
+    fi
+fi
+if (( _nas_mounted_by_doctor == 1 )); then
+    sudo umount /mnt/backup 2>/dev/null && ok "NAS backup share unmounted after check"
 fi
 
