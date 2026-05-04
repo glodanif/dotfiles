@@ -62,6 +62,7 @@ nvidia-open-dkms
 nvidia-utils
 obs-studio
 openrc
+openresolv
 openssh-openrc
 pacman-contrib
 papirus-icon-theme

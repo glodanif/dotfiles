@@ -17,7 +17,6 @@ case "$1" in
             echo "No config found in $CONFIGS_DIR"
             exit 1
         fi
-        sudo resolvconf -u
         sudo wg-quick up "$CONFIG"
         sleep 3
         LAST_HANDSHAKE=$(sudo wg show all latest-handshakes | awk '{print $3}')
