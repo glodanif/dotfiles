@@ -36,7 +36,7 @@ fi
 orphans=$(pacman -Qtdq 2>/dev/null || true)
 if [[ -n $orphans ]]; then
   section "Removing orphans..."
-  sudo pacman -Rs --noconfirm $orphans
+  echo "$orphans" | sudo pacman -Rs --noconfirm -
 fi
 
 section "Rechecking updates..."

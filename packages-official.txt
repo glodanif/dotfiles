@@ -22,6 +22,7 @@ dnscrypt-proxy-openrc
 dua-cli
 efibootmgr
 elogind-openrc
+eza
 fastfetch
 ffmpegthumbnailer
 fzf
@@ -83,6 +84,7 @@ slurp
 smartmontools
 socat
 sof-firmware
+sound-theme-freedesktop
 steam
 stow
 swayimg
