@@ -1,0 +1,22 @@
+#!/bin/zsh
+
+last_add=0
+last_remove=0
+
+udevadm monitor --udev --subsystem-match=usb | while read -r line; do
+  case "$line" in
+    *" add "*)
+      [[ "${line##*/}" == *:*.* ]] && continue
+      now=$(date +%s%3N)
+      (( now - last_add > 500 )) && pw-play /usr/share/sounds/freedesktop/stereo/device-added.oga &
+      last_add=$now
+      ;;
+    *" remove "*)
+      [[ "${line##*/}" == *:*.* ]] && continue
+      now=$(date +%s%3N)
+      (( now - last_remove > 500 )) && pw-play /usr/share/sounds/freedesktop/stereo/device-removed.oga &
+      last_remove=$now
+      ;;
+  esac
+done
+
