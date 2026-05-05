@@ -6,7 +6,7 @@ play_sound() {
   local now=$(date +%s%3N)
   if (( now - last_sound >= 500 )); then
     last_sound=$now
-    pw-play /usr/share/sounds/freedesktop/stereo/bell.oga &
+    pw-play /usr/share/sounds/freedesktop/stereo/dialog-information.oga &
   fi
 }
 

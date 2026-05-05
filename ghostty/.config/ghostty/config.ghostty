@@ -3,3 +3,8 @@ window-padding-x = 14
 window-padding-y = 14
 confirm-close-surface=false
 async-backend = epoll
+focus-follows-mouse = true
+
+keybind = alt+left_bracket=resize_split:left,100
+keybind = alt+right_bracket=resize_split:right,100
+

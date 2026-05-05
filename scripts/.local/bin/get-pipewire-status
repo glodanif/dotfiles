@@ -1,0 +1,4 @@
+#!/bin/zsh
+ps aux | grep -E "pipewire|wireplumber"
+wpctl status
+
