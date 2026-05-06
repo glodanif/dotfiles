@@ -11,6 +11,5 @@ prismlauncher-git
 slack-desktop
 voxtype
 walker
-windsurf
 witr
 yay-bin

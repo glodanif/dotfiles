@@ -5,13 +5,14 @@ if lsmod | grep -q "^nvidia"; then
 else
     err "NVIDIA modules not loaded"
 fi
-
-[[ -f /etc/udev/rules.d/51-android.rules ]] \
-    && ok "Android udev rule present" \
-    || warn "Android udev rule missing"
-
-if groups | grep -q plugdev; then
-    ok "user in plugdev group"
+if pacman -Qi android-udev &>/dev/null; then
+    ok "android-udev package installed"
 else
-    warn "user not in plugdev group"
+    warn "android-udev package not installed"
 fi
+if groups | grep -q adbusers; then
+    ok "user in adbusers group"
+else
+    warn "user not in adbusers group"
+fi
+

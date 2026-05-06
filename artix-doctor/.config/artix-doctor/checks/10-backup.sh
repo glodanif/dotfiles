@@ -19,7 +19,6 @@ _nas_mounted_by_doctor=0
 if mountpoint -q /mnt/backup 2>/dev/null; then
     ok "NAS backup share mounted at /mnt/backup"
 else
-    warn "NAS backup share not mounted, attempting to mount..."
     if sudo mount /mnt/backup 2>/dev/null; then
         ok "NAS backup share mounted successfully"
         _nas_mounted_by_doctor=1
