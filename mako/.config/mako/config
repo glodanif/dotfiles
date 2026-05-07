@@ -1,6 +1,7 @@
 anchor=top-right
 default-timeout=7500
 width=500
+height=200
 outer-margin=20
 padding=10,15
 border-size=2

@@ -99,7 +99,7 @@
     "exec": "echo ' '",
     "interval": "once",
     "format": "{}",
-    "tooltip-format": "Artix",
+    "tooltip-format": "Artix Menu",
     "on-click": "walker --provider menus:main"
   },
   "custom/power": {
