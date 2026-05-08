@@ -3,43 +3,61 @@ name_pretty = "Artix Main Menu"
 action = "%VALUE%"
 
 [[entries]]
-text = "1. Apps"
+text = "01. Apps"
 subtext = "Open Walker"
 value = "walker"
 icon = "/home/glodanif/.local/share/assets/apps.png"
 
 [[entries]]
-text = "2. Audio Sinks"
-subtext = "Switch to audio sink"
-value = "switch-audio-sink"
-icon = "/home/glodanif/.local/share/assets/audio.png"
-
-[[entries]]
-text = "3. System Backup"
-subtext = "sys-backup"
-value = "run-and-wait sys-backup"
-icon = "/home/glodanif/.local/share/assets/backup.png"
-
-[[entries]]
-text = "4. System Upgrade"
-subtext = "sys-update"
-value = "run-and-wait sys-update"
-icon = "/home/glodanif/.local/share/assets/update.png"
-
-[[entries]]
-text = "5. About"
+text = "02. About"
 subtext = "fastfetch"
 value = "run-and-wait fastfetch"
 icon = "/home/glodanif/.local/share/assets/artix-logo.png"
 
 [[entries]]
-text = "6. Reboot into Windows"
+text = "03. System Backup"
+subtext = "sys-backup"
+value = "run-and-wait sys-backup"
+icon = "/home/glodanif/.local/share/assets/backup.png"
+
+[[entries]]
+text = "04. System Upgrade"
+subtext = "sys-update"
+value = "run-and-wait sys-update"
+icon = "/home/glodanif/.local/share/assets/update.png"
+
+[[entries]]
+text = "05. Install official package"
+subtext = "install-package"
+value = "run-and-wait install-package"
+icon = "/home/glodanif/.local/share/assets/package-official.png"
+
+[[entries]]
+text = "06. Install AUR package"
+subtext = "install-aur-package"
+value = "run-and-wait install-aur-package"
+icon = "/home/glodanif/.local/share/assets/package.png"
+
+[[entries]]
+text = "07. Uninstall package"
+subtext = "uninstall-package"
+value = "run-and-wait uninstall-package"
+icon = "/home/glodanif/.local/share/assets/trash-bin.png"
+
+[[entries]]
+text = "08. Audio Sinks"
+subtext = "Switch to audio sink"
+value = "switch-audio-sink"
+icon = "/home/glodanif/.local/share/assets/audio.png"
+
+[[entries]]
+text = "09. Reboot into Windows"
 subtext = "Boot Windows once"
 value = "ghostty -e reboot-into-windows"
 icon = "/home/glodanif/.local/share/assets/windows.png"
 
 [[entries]]
-text = "7. Power Menu"
+text = "10. Power Menu"
 subtext = "Power off/Log out/Reboot/Lock"
 value = "power-menu"
 icon = "/home/glodanif/.local/share/assets/power-on.png"
