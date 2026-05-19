@@ -84,7 +84,7 @@ button:hover {
 #workspaces button.focused,
 #workspaces button.active {
     color: rgba(43, 48, 59, 0.75);
-    background-color: #9370da;
+    background-color: #66b2ff;
 }
 
 #workspaces button.urgent {
@@ -190,7 +190,7 @@ label:focus {
 #bluetooth,
 #cpu {
     padding: 0 8px;
-    background-color: #9370da;
+    background-color: #66b2ff;
     color: #001933;
     margin-top: 6px;
     margin-bottom: 6px;
@@ -199,7 +199,7 @@ label:focus {
 
 #custom-vpn {
     padding: 0 8px;
-    background-color: #9370da;
+    background-color: #66b2ff;
     color: #001933;
     margin-top: 6px;
     margin-bottom: 6px;
@@ -209,7 +209,7 @@ label:focus {
 #network,
 #memory {
     padding: 0 8px;
-    background-color: #9370da;
+    background-color: #66b2ff;
     color: #001933;
     margin-top: 6px;
     margin-bottom: 6px;
@@ -238,7 +238,7 @@ label:focus {
 
 #pulseaudio {
     padding: 0 8px;
-    background-color: #9370da;
+    background-color: #66b2ff;
     color: #001933;
     margin-top: 6px;
     margin-bottom: 6px;
@@ -436,6 +436,6 @@ label:focus {
 }
 
 #custom-updates {
-    background-color: #9370da;
+    background-color: #66b2ff;
 }
 

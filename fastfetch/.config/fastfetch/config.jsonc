@@ -127,42 +127,42 @@
       "keyIcon": "",
       "fqdn": false,
       "color": {
-        "user": "#9370DA",
+        "user": "#66b2ff",
         "at": "#FFFFFF",
-        "host": "#9370DA"
+        "host": "#66b2ff"
       }
     },
     {
       "type": "separator",
       "string": "─",
-      "outputColor": "#B266FF",
+      "outputColor": "#888888",
       "times": 54
     },
     {
       "type": "os",
       "keyIcon": "",
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "host",
       "keyIcon": "󰌢",
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "kernel",
       "keyIcon": "",
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "command",
       "key": "Age",
-      "keyColor": "#9370DA",
+      "keyColor": "#66b2ff",
       "text": "echo $(( ($(date +%s) - $(stat -c %W /)) / 86400 )) days"
     },
     {
       "type": "uptime",
       "keyIcon": "",
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "localip",
@@ -179,39 +179,39 @@
       "defaultRouteOnly": true,
       "showAllIps": false,
       "namePrefix": "",
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "separator",
       "string": "─",
-      "outputColor": "#B266FF",
+      "outputColor": "#888888",
       "times": 54
     },
     {
       "type": "shell",
       "keyIcon": "",
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "terminal",
       "keyIcon": "",
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "de",
       "keyIcon": "",
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "wm",
       "keyIcon": "",
       "detectPlugin": true,
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "wmtheme",
       "keyIcon": "󰓸",
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "display",
@@ -219,12 +219,12 @@
       "compactType": "none",
       "preciseRefreshRate": false,
       "order": null,
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "separator",
       "string": "─",
-      "outputColor": "#B266FF",
+      "outputColor": "#888888",
       "times": 54
     },
     {
@@ -233,7 +233,7 @@
       "temp": true,
       "showPeCoreCount": false,
       "tempSensor": "",
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "gpu",
@@ -247,12 +247,12 @@
         "yellow": 80,
         "type": 0
       },
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "separator",
       "string": "─",
-      "outputColor": "#B266FF",
+      "outputColor": "#888888",
       "times": 54
     },
     {
@@ -263,7 +263,7 @@
         "yellow": 80,
         "type": 0
       },
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "swap",
@@ -274,7 +274,7 @@
       },
       "keyIcon": "󰓡",
       "separate": false,
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "disk",
@@ -294,12 +294,12 @@
         "yellow": 80,
         "type": 0
       },
-      "keyColor": "#9370DA"
+      "keyColor": "#66b2ff"
     },
     {
       "type": "separator",
       "string": "─",
-      "outputColor": "#B266FF",
+      "outputColor": "#888888",
       "times": 54
     },
     {
