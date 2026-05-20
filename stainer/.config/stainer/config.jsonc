@@ -1,0 +1,11 @@
+{
+  "file_extensions": ["md", "sh", "py", "lua", "xml", "conf", "cfg", "html", "css", "ini", "yaml", "yml", "toml", "jsonc", "json", "txt"],
+  "ignored_files": [
+    "scripts/.local/bin/set-color-scheme"
+  ],
+  "ignored_directories": [".git"],
+  "check_no_extension_files": true,
+  "exclude_pound_argb": false,
+  "exclude_css": false,
+  "exclude_hyprland": false
+}

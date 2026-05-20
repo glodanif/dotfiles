@@ -5,7 +5,7 @@
     "source": "",
     "color": {
       "1": "#10A0CC",
-      "2": "#67C3DF",
+      "2": "#ff3030",
       "3": "#0B6F8E",
       "4": "",
       "5": "",
@@ -135,7 +135,7 @@
     {
       "type": "separator",
       "string": "─",
-      "outputColor": "#888888",
+      "outputColor": "#fafcff",
       "times": 54
     },
     {
@@ -184,7 +184,7 @@
     {
       "type": "separator",
       "string": "─",
-      "outputColor": "#888888",
+      "outputColor": "#fafcff",
       "times": 54
     },
     {
@@ -224,7 +224,7 @@
     {
       "type": "separator",
       "string": "─",
-      "outputColor": "#888888",
+      "outputColor": "#fafcff",
       "times": 54
     },
     {
@@ -252,7 +252,7 @@
     {
       "type": "separator",
       "string": "─",
-      "outputColor": "#888888",
+      "outputColor": "#fafcff",
       "times": 54
     },
     {
@@ -299,7 +299,7 @@
     {
       "type": "separator",
       "string": "─",
-      "outputColor": "#888888",
+      "outputColor": "#fafcff",
       "times": 54
     },
     {

@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ── Configuration ─────────────────────────────────────────────────────────────
+SCHEME_FILE="${HOME}/.local/share/scripts/color-scheme"
+SCAN_PATH="${HOME}/dotfiles"   # directory stainer scans for color replacements
+DEFAULT_COLOR="ff3030"
+LIGHT_DELTA=40                # percentage points added for the light variant
+DARK_DELTA=40                 # percentage points subtracted for the dark variant
+MAX_VARIANTS=50               # max attempts to find a collision-free variant
+# ──────────────────────────────────────────────────────────────────────────────
+
+die()  { echo "error: $*" >&2; exit 1; }
+info() { echo "$*"; }
+
+command -v stainer  >/dev/null 2>&1 || die "stainer not found in PATH"
+command -v python3  >/dev/null 2>&1 || die "python3 not found in PATH"
+command -v rewaybar >/dev/null 2>&1 || die "rewaybar not found in PATH"
+command -v pioctl   >/dev/null 2>&1 || die "pioctl not found in PATH"
+
+validate_hex() {
+    [[ "$1" =~ ^[0-9a-fA-F]{6}$ ]] || die "invalid color '$1' — expected 6 hex digits, no leading #"
+}
+
+# Shift the lightness of a hex color by <delta> percentage points (+20 or -15)
+adjust_lightness() {
+    python3 - "$1" "$2" <<'PYEOF'
+import sys, colorsys
+h, delta = sys.argv[1].lower(), float(sys.argv[2]) / 100.0
+r = int(h[0:2], 16) / 255.0
+g = int(h[2:4], 16) / 255.0
+b = int(h[4:6], 16) / 255.0
+hue, lit, sat = colorsys.rgb_to_hls(r, g, b)
+lit = max(0.0, min(1.0, lit + delta))
+r, g, b = colorsys.hls_to_rgb(hue, lit, sat)
+print(f"{round(r * 255):02x}{round(g * 255):02x}{round(b * 255):02x}")
+PYEOF
+}
+
+# Returns 0 if the color is absent from SCAN_PATH, 1 if found, aborts on error
+is_absent() {
+    local rc=0
+    stainer find "$SCAN_PATH" "$1" > /dev/null 2>&1 || rc=$?
+    case $rc in
+        0) return 1 ;;   # found — not absent
+        1) return 0 ;;   # not found — absent
+        *) die "stainer error (exit $rc) while checking color $1" ;;
+    esac
+}
+
+# Find a variant of <main> by scanning lightness adjustments around <base_delta>.
+# Remaining args are already-committed new colors that the variant must not equal.
+find_variant() {
+    local main="$1" base_delta="$2"
+    shift 2
+    local taken=("$@")
+
+    for (( i = 0; i <= MAX_VARIANTS; i++ )); do
+        local sign=$(( i % 2 == 0 ? 1 : -1 ))
+        local step=$(( (i + 1) / 2 ))
+        local delta=$(( base_delta + sign * step ))
+        local candidate
+        candidate=$(adjust_lightness "$main" "$delta")
+
+        [[ "$candidate" == "$main" ]] && continue
+
+        local taken_color
+        for taken_color in "${taken[@]+"${taken[@]}"}"; do
+            [[ "$candidate" == "$taken_color" ]] && continue 2
+        done
+
+        is_absent "$candidate" && { echo "$candidate"; return 0; }
+    done
+
+    die "could not find a collision-free variant after $MAX_VARIANTS attempts"
+}
+
+# ── Load / initialise scheme ──────────────────────────────────────────────────
+
+mkdir -p "$(dirname "$SCHEME_FILE")"
+
+if [[ ! -s "$SCHEME_FILE" ]]; then
+    info "No scheme found — initialising from default $DEFAULT_COLOR"
+    init_light=$(adjust_lightness "$DEFAULT_COLOR"  "$LIGHT_DELTA")
+    init_dark=$(adjust_lightness  "$DEFAULT_COLOR" "-$DARK_DELTA")
+    printf 'MAIN=%s\nLIGHT=%s\nDARK=%s\n' \
+        "$DEFAULT_COLOR" "$init_light" "$init_dark" > "$SCHEME_FILE"
+fi
+
+# shellcheck source=/dev/null
+source "$SCHEME_FILE"
+old_main="${MAIN,,}"
+old_light="${LIGHT,,}"
+old_dark="${DARK,,}"
+
+# ── Parse argument ────────────────────────────────────────────────────────────
+
+[[ $# -eq 1 ]] || die "usage: $(basename "$0") <hex-color>"
+new_main="${1#\#}"    # strip optional leading #
+new_main="${new_main,,}"
+validate_hex "$new_main"
+
+info "Old: main=$old_main  light=$old_light  dark=$old_dark"
+info "New main: $new_main"
+
+if [[ "$new_main" == "$old_main" ]]; then
+    info "Color unchanged — nothing to do."
+    exit 0
+fi
+
+# ── Pre-flight: verify scheme file and dotfiles are in sync ──────────────────
+
+is_absent "$old_main" \
+    && die "old color $old_main not found in $SCAN_PATH — dotfiles may be out of sync with the scheme file"
+
+# ── Check new_main for collisions ─────────────────────────────────────────────
+
+is_absent "$new_main" \
+    || die "$new_main already exists in $SCAN_PATH (collides with an unrelated color)"
+
+# ── Generate collision-free light and dark variants ───────────────────────────
+
+new_light=$(find_variant "$new_main"  "$LIGHT_DELTA"  "$new_main")
+new_dark=$(find_variant  "$new_main" "-$DARK_DELTA"   "$new_main" "$new_light")
+
+info "New:  main=$new_main  light=$new_light  dark=$new_dark"
+
+# ── Apply replacements (skip slots that haven't changed) ─────────────────────
+
+stainer replace "$SCAN_PATH" "$old_main"  "$new_main"
+[[ "$old_light" != "$new_light" ]] && stainer replace "$SCAN_PATH" "$old_light" "$new_light"
+[[ "$old_dark"  != "$new_dark"  ]] && stainer replace "$SCAN_PATH" "$old_dark"  "$new_dark"
+
+# ── Persist new scheme ────────────────────────────────────────────────────────
+
+printf 'MAIN=%s\nLIGHT=%s\nDARK=%s\n' "$new_main" "$new_light" "$new_dark" > "$SCHEME_FILE"
+
+info "Done — scheme saved to $SCHEME_FILE"
+
+info "Resetting stuff"
+makoctl reload
+rewaybar
+pioctl restore 1000
+

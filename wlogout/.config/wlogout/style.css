@@ -19,6 +19,7 @@ button {
     background-position: center;
     background-size: 25%;
     font-size: 36px;
+    min-width: 240px;
 }
 
 button:focus, button:active {
@@ -35,17 +36,17 @@ button:focus:hover {
 }
 
 #lock {
-    background-image: image(url("/usr/share/wlogout/icons/lock.png"), url("/usr/local/share/wlogout/icons/lock.png"));
+    background-image: image(url("/home/glodanif/.local/share/assets/padlock.png"), url("/home/glodanif/.local/share/assets/padlock.png"));
 }
 
 #logout {
-    background-image: image(url("/usr/share/wlogout/icons/logout.png"), url("/usr/local/share/wlogout/icons/logout.png"));
+    background-image: image(url("/home/glodanif/.local/share/assets/logout.png"), url("/home/glodanif/.local/share/assets/logout.png"));
 }
 
 #shutdown {
-    background-image: image(url("/usr/share/wlogout/icons/shutdown.png"), url("/usr/local/share/wlogout/icons/shutdown.png"));
+    background-image: image(url("/home/glodanif/.local/share/assets/power-off.png"), url("/home/glodanif/.local/share/assets/power-off.png"));
 }
 
 #reboot {
-    background-image: image(url("/usr/share/wlogout/icons/reboot.png"), url("/usr/local/share/wlogout/icons/reboot.png"));
+    background-image: image(url("/home/glodanif/.local/share/assets/reboot.png"), url("/home/glodanif/.local/share/assets/reboot.png"));
 }

@@ -17,7 +17,6 @@ export GPG_TTY=$(tty)
 
 alias lg='lazygit'
 alias ffs='sudo'
-alias rewaybar='pkill waybar; nohup waybar > /dev/null 2>&1 &'
 
 alias dl='yt-dlp -P "~/Downloads/Videos" --cookies-from-browser "brave+gnomekeyring"'
 alias dl-batch='yt-dlp -P "~/Downloads/Videos" --cookies-from-browser "brave+gnomekeyring" --batch-file'

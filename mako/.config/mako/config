@@ -10,7 +10,7 @@ font=montserrat 16px
 border-radius=6
 text-color=#ffffff
 border-color=#66b2ff
-background-color=#230043
+background-color=#004c99
 format=<b>%s</b>\n%b
 on-button-left=invoke-action default
 

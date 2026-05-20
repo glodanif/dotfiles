@@ -28,7 +28,7 @@ from gi.repository import Gtk, Gdk, GLib
 from gi.repository import Gtk4LayerShell as LayerShell
 
 LOGO_PATH = os.path.expanduser('~/.local/share/assets/artix-logo.png')
-BG_COLOR = '#330066'
+BG_COLOR = '#004c99'
 TEXT_COLOR = '#ffffff'
 TEXT_SIZE_PT = 24
 LOGO_MAX_HEIGHT = 128
