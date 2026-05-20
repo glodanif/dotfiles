@@ -5,9 +5,9 @@ set -euo pipefail
 SCHEME_FILE="${HOME}/.local/share/scripts/color-scheme"
 SCAN_PATH="${HOME}/dotfiles"   # directory stainer scans for color replacements
 DEFAULT_COLOR="ff3030"
-LIGHT_DELTA=40                # percentage points added for the light variant
-DARK_DELTA=40                 # percentage points subtracted for the dark variant
-MAX_VARIANTS=50               # max attempts to find a collision-free variant
+LIGHT_DELTA=50                 # percentage points added for the light variant
+DARK_DELTA=50                  # percentage points subtracted for the dark variant
+MAX_VARIANTS=100               # max attempts to find a collision-free variant
 # ──────────────────────────────────────────────────────────────────────────────
 
 die()  { echo "error: $*" >&2; exit 1; }

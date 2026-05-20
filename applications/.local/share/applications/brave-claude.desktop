@@ -1,0 +1,10 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=1.0
+Terminal=false
+Type=Application
+Name=Claude
+GenericName=New Chat
+Exec=/opt/brave-bin/brave --profile-directory=Default --app="https://claude.ai/new"
+Icon=/home/glodanif/.local/share/applications/icons/claude.webp
+
