@@ -1,0 +1,15 @@
+#!/bin/zsh
+
+devices=$(adb devices | sed '1d' | grep -w 'device' | awk '{print $1}')
+count=$(echo "$devices" | grep -c .)
+
+if [ "$count" -eq 0 ]; then
+    notify-send "scrcpy" "No devices connected"
+    exit 1
+elif [ "$count" -eq 1 ]; then
+    scrcpy -s "$devices"
+else
+    selected=$(echo "$devices" | walker --dmenu -p "Select device")
+    [ -n "$selected" ] && scrcpy -s "$selected"
+fi
+

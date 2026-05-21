@@ -81,6 +81,7 @@ restic
 rsync
 rustup
 satty
+scrcpy
 seahorse
 slurp
 smartmontools

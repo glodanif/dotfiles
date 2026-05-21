@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=scrcpy
+GenericName=Android screen mirror
+Comment=Android screen mirror
+Exec=launch-scrcpy
+Icon=scrcpy
+Type=Application
+Categories=Development;Utility;RemoteAccess;
+
