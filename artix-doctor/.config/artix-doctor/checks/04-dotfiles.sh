@@ -12,7 +12,7 @@ while IFS= read -r src; do
 
     # Skip repo-root metadata files
     case "$relative" in
-        LICENSE|README.md|.gitignore|packages-*.txt|refresh.sh) continue ;;
+        LICENSE|README.md|.gitignore|.stowignore|packages-*.txt|refresh.sh) continue ;;
     esac
 
     if [[ -L "$target" ]]; then
@@ -29,7 +29,7 @@ while IFS= read -r src; do
         err "missing: ${target/#$HOME/~}"
         ((missing++)) || true
     fi
-done < <(find ~/dotfiles -type f -not -path '*/.git/*')
+done < <(find ~/dotfiles -type f -not -path '*/.git/*' -not -path '*/.claude/*')
 
 if (( shadowed == 0 && missing == 0 && mismatch == 0 )); then
     ok "all dotfiles properly stowed"

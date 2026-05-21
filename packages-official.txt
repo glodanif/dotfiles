@@ -107,6 +107,7 @@ wireplumber
 wl-clip-persist
 wlogout
 wofi
+xarchiver
 xdg-desktop-portal
 xdg-desktop-portal-gtk
 xdg-desktop-portal-hyprland

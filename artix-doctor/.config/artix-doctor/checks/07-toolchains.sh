@@ -9,3 +9,6 @@ command -v java &>/dev/null && ok "java in PATH" || warn "java not in PATH"
 
 [[ -d ~/.jdks ]] && ok "~/.jdks exists" || warn "~/.jdks missing"
 [[ -d ~/.android ]] && ok "~/.android exists" || warn "~/.android missing"
+
+command -v espflash &>/dev/null && ok "espflash in PATH" || warn "espflash not in PATH"
+rustup target list --installed 2>/dev/null | grep -q "riscv32imac-unknown-none-elf" && ok "riscv32imac-unknown-none-elf target installed" || warn "riscv32imac-unknown-none-elf target not installed (run: rustup target add riscv32imac-unknown-none-elf)"

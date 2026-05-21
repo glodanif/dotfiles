@@ -9,6 +9,7 @@ openshot-bin
 pinta
 prismlauncher-git
 slack-desktop
+viber
 voxtype
 walker
 witr
