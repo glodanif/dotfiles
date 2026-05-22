@@ -53,7 +53,7 @@ icon = "/home/glodanif/.local/share/assets/audio.png"
 [[entries]]
 text = "09. Reboot into Windows"
 subtext = "Boot Windows once"
-value = "ghostty -e reboot-into-windows"
+value = "run-and-wait reboot-into-windows"
 icon = "/home/glodanif/.local/share/assets/windows.png"
 
 [[entries]]
