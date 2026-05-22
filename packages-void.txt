@@ -23,9 +23,11 @@ linux
 lvm2
 mdadm
 neovim
+restic
 ripgrep
 rustup
 samba
+smartmontools
 stow
 tmux
 transmission
