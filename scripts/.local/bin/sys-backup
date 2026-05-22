@@ -24,6 +24,7 @@ fi
 section "Running backup..."
 sudo restic backup --repo "$REPO" \
   --password-file "$PASSWORD_FILE" \
+  --exclude "/var/lib/libvirt/images/" \
   --exclude "$HOME/.cache" \
   --exclude "$HOME/.local/share/Trash" \
   --exclude "$HOME/.gradle/caches" \
