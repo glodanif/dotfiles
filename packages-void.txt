@@ -32,5 +32,6 @@ stow
 tmux
 transmission
 yazi
+zip
 zoxide
 zsh
