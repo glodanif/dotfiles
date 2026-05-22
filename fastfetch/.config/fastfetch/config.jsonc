@@ -124,9 +124,9 @@
       "keyIcon": "",
       "fqdn": false,
       "color": {
-        "user": "#ACC2AB",
+        "user": "#7FD962",
         "at": "#FFFFFF",
-        "host": "#ACC2AB",
+        "host": "#7FD962",
       },
     },
     {
@@ -138,28 +138,28 @@
     {
       "type": "os",
       "keyIcon": "",
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
     },
     {
       "type": "host",
       "keyIcon": "󰌢",
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
     },
     {
       "type": "kernel",
       "keyIcon": "",
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
     },
     {
       "type": "command",
       "key": "Age",
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
       "text": "echo $(( ($(date +%s) - $(stat -c %W /)) / 86400 )) days",
     },
     {
       "type": "uptime",
       "keyIcon": "",
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
     },
     {
       "type": "localip",
@@ -176,7 +176,7 @@
       "defaultRouteOnly": false,
       "showAllIps": false,
       "namePrefix": "",
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
     },
     {
       "type": "separator",
@@ -187,12 +187,12 @@
     {
       "type": "shell",
       "keyIcon": "",
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
     },
     {
       "type": "terminal",
       "keyIcon": "",
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
     },
     {
       "type": "separator",
@@ -206,7 +206,7 @@
       "temp": true,
       "showPeCoreCount": false,
       "tempSensor": "",
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
     },
     {
       "type": "separator",
@@ -222,7 +222,7 @@
         "yellow": 80,
         "type": 0,
       },
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
     },
     {
       "type": "swap",
@@ -233,7 +233,7 @@
       },
       "keyIcon": "󰓡",
       "separate": false,
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
     },
     {
       "type": "disk",
@@ -253,18 +253,18 @@
         "yellow": 80,
         "type": 0,
       },
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
     },
     {
       "type": "command",
       "key": "RAID",
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
       "text": "awk '/^md/{name=$1} /blocks/{print name\": \"$NF}' /proc/mdstat 2>/dev/null || echo 'none'",
     },
     {
       "type": "command",
       "key": "Load",
-      "keyColor": "#ACC2AB",
+      "keyColor": "#7FD962",
       "text": "awk '{print $1\", \"$2\", \"$3}' /proc/loadavg",
     },
     {

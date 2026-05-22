@@ -19,7 +19,7 @@ else
     err "DNS resolution failing"
 fi
 
-if sv status avahi-daemon 2>/dev/null | grep -q "^run:"; then
+if sv status avahi-daemon 2>/dev/null | grep -q "^run:" || pgrep -x avahi-daemon &>/dev/null; then
     ok "avahi-daemon running (mDNS active)"
 else
     warn "avahi-daemon not running (local .local hostname resolution unavailable)"

@@ -7,10 +7,10 @@ command -v grub-mkconfig &>/dev/null && ok "grub-mkconfig in PATH" || warn "grub
 
 if [[ -d /boot/EFI ]] || [[ -d /boot/efi ]]; then
     ok "EFI boot directory present"
-    if ls /boot/EFI/*/grubx64.efi /boot/EFI/BOOT/BOOTX64.EFI &>/dev/null 2>&1; then
+    if find /boot/EFI \( -name "grubx64.efi" -o -name "BOOTX64.EFI" \) 2>/dev/null | grep -q .; then
         ok "GRUB EFI binary present"
     else
-        warn "GRUB EFI binary not found in expected locations"
+        warn "GRUB EFI binary not found in /boot/EFI"
     fi
 else
     warn "No /boot/EFI directory found (BIOS mode?)"
