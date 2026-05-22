@@ -26,6 +26,7 @@ neovim
 ripgrep
 rustup
 samba
+smartmontools
 stow
 tmux
 transmission
