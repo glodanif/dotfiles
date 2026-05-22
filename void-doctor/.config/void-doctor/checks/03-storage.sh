@@ -27,8 +27,7 @@ fi
 # Disk health via SMART
 if command -v smartctl &>/dev/null; then
     checked=0
-    for dev in /dev/sd[a-z] /dev/nvme[0-9]n[0-9]; do
-        [[ -e "$dev" ]] || continue
+    while IFS= read -r dev; do
         ((checked++)) || true
         attrs=$(sudo smartctl -a "$dev" 2>/dev/null)
 
@@ -57,7 +56,7 @@ if command -v smartctl &>/dev/null; then
         if [[ -n "$upl" ]] && (( upl > 500 )); then
             warn "SMART $dev: high unexpected power loss count ($upl) — check UPS/shutdown hygiene"
         fi
-    done
+    done < <(find /dev -maxdepth 1 -type b \( -name 'sd[a-z]' -o -name 'nvme[0-9]n[0-9]' \) 2>/dev/null | sort)
     (( checked == 0 )) && warn "no drives found for SMART check"
 else
     warn "smartctl not installed (install smartmontools for disk health checks)"
