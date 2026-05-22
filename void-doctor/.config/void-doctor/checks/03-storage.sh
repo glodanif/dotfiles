@@ -31,11 +31,18 @@ if command -v smartctl &>/dev/null; then
         ((checked++)) || true
         attrs=$(sudo smartctl -a "$dev" 2>/dev/null)
 
+        size=$(lsblk -d -n -o SIZE "$dev" 2>/dev/null | tr -d ' ')
+        mounts=$(lsblk -n -o MOUNTPOINT "$dev" 2>/dev/null | grep -v "^$" | paste -sd ',' -)
+        label="$dev"
+        [[ -n "$size" ]] && label+=" [${size}"
+        [[ -n "$mounts" ]] && label+=" → ${mounts}"
+        [[ -n "$size" ]] && label+="]"
+
         result=$(echo "$attrs" | grep -oP '(?<=test result: ).*' || true)
         if [[ "$result" == "PASSED" ]]; then
-            ok "SMART $dev: PASSED"
+            ok "SMART $label: PASSED"
         elif [[ -n "$result" ]]; then
-            err "SMART $dev: $result"
+            err "SMART $label: $result"
         fi
 
         # SSD wear level (ID 231, SSD_Life_Left — VALUE column = % remaining)
@@ -43,18 +50,18 @@ if command -v smartctl &>/dev/null; then
         if [[ -n "$life" ]]; then
             life=$((10#$life))
             if (( life <= 20 )); then
-                err "SMART $dev: SSD life critical (${life}% remaining)"
+                err "SMART $label: SSD life critical (${life}% remaining)"
             elif (( life <= 40 )); then
-                warn "SMART $dev: SSD life low (${life}% remaining)"
+                warn "SMART $label: SSD life low (${life}% remaining)"
             else
-                ok "SMART $dev: SSD life ${life}% remaining"
+                ok "SMART $label: SSD life ${life}% remaining"
             fi
         fi
 
         # Unexpected power losses (ID 174 — RAW_VALUE)
         upl=$(echo "$attrs" | awk '$1==174{print $NF}')
         if [[ -n "$upl" ]] && (( upl > 500 )); then
-            warn "SMART $dev: high unexpected power loss count ($upl) — check UPS/shutdown hygiene"
+            warn "SMART $label: high unexpected power loss count ($upl)"
         fi
     done < <(find /dev -maxdepth 1 -type b \( -name 'sd[a-z]' -o -name 'nvme[0-9]n[0-9]' \) 2>/dev/null | sort)
     (( checked == 0 )) && warn "no drives found for SMART check"
