@@ -5,4 +5,3 @@ export EDITOR=nvim
 export VISUAL=nvim
 export BAT_THEME=ansi
 export SUDO_EDITOR="$EDITOR"
-

@@ -1,12 +1,12 @@
 #!/bin/zsh
-# Show a fuzzy-finder TUI for picking new Arch packages to install.
+# Show a fuzzy-finder TUI for picking Void Linux packages to install.
 
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 source "$HOME/.config/bash/utils.sh"
 
 fzf_args=(
   --multi
-  --preview 'pacman -Sii {1}'
+  --preview 'xbps-query -RS {1} 2>/dev/null || echo "No info available"'
   --preview-label='alt-p: toggle description, alt-j/k: scroll, tab: multi-select'
   --preview-label-pos='bottom'
   --preview-window 'down:65%:wrap'
@@ -16,10 +16,14 @@ fzf_args=(
   --color 'pointer:green,marker:green'
 )
 
-pkg_names=$(pacman -Slq | sort -u | fzf "${fzf_args[@]}")
+pkg_names=$(xbps-query -Rs '*' 2>/dev/null \
+  | awk '{print $2}' \
+  | sed 's/-[0-9][^-]*$//' \
+  | sort -u \
+  | fzf "${fzf_args[@]}")
+
 if [[ -n $pkg_names ]]; then
   pkgs=(${(f)pkg_names})
-  sudo pacman -S "${pkgs[@]}"
+  sudo xbps-install "${pkgs[@]}"
   echo ""
 fi
-

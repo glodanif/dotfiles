@@ -15,7 +15,6 @@ ffmpeg
 fzf
 git
 gptfdisk
-grub-i386-efi
 grub-x86_64-efi
 jq
 lazygit
@@ -24,16 +23,12 @@ linux
 lvm2
 mdadm
 neovim
-poppler
-resvg
 ripgrep
 rustup
 samba
 stow
 tmux
 transmission
-void-docs-browse
-void-live-audio
 yazi
 zoxide
 zsh

@@ -19,21 +19,3 @@ confirm() {
   # empty input = yes
   [[ -z "$reply" || "$reply" =~ ^[Yy]$ ]]
 }
-
-press_any_key() {
-  sleep 0.2
-  echo -n "${1:-Press any key to exit...}"
-  if [[ -n "$ZSH_VERSION" ]]; then
-    read -rsk 1
-  else
-    read -rsn 1
-  fi
-  echo
-}
-
-# ── Idle prevention ───────────────────────────────────────
-keep_screen_on() {
-  hyprctl dispatch tagwindow +noidle &>/dev/null || true
-  trap 'hyprctl dispatch tagwindow -- -noidle &>/dev/null || true' EXIT
-}
-

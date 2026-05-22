@@ -1,79 +1,24 @@
 #!/bin/zsh
-# sys-update — update Arch system packages and AUR
+# sys-update — update Void Linux system packages
 
 source "$HOME/.config/bash/utils.sh"
-
-keep_screen_on
 
 section "System Update"
 sudo -v
 
-section "Syncing keyrings..."
-sudo pacman -Sy --noconfirm archlinux-keyring >/dev/null || true
+section "Syncing and upgrading packages..."
+sudo xbps-install -Su
 
-log_before_official=$(wc -l < /var/log/pacman.log)
-official_failed=0
-
-section "Updating system packages..."
-sudo pacman -Syyu --noconfirm || official_failed=1
-
-official_count=$(tail -n +$((log_before_official+1)) /var/log/pacman.log | grep -c '\[ALPM\] upgraded' || true)
-
-if awk '/\[ALPM\] transaction started/{upgraded=0} /upgraded hyprland/{upgraded=1} END{exit !upgraded}' /var/log/pacman.log; then
-  section "Updating Hyprland plugins..."
-  hyprpm update
-fi
-
-log_before_aur=$(wc -l < /var/log/pacman.log)
-aur_count=0
-
-if command -v yay &>/dev/null && pacman -Qem &>/dev/null; then
-  section "Updating AUR packages..."
-  yay -Sua --noconfirm --cleanafter || true
-  aur_count=$(tail -n +$((log_before_aur+1)) /var/log/pacman.log | grep -c '\[ALPM\] upgraded' || true)
-fi
-
-orphans=$(pacman -Qtdq 2>/dev/null || true)
-if [[ -n $orphans ]]; then
-  section "Removing orphans..."
-  echo "$orphans" | sudo pacman -Rs --noconfirm -
-fi
-
-section "Rechecking updates..."
-rm -f "$HOME/.cache/scripts/waybar-updates-cache"
-pkill -RTMIN+8 waybar 2>/dev/null || true
-check-updates
-
-cache_file="$HOME/.cache/scripts/waybar-updates-cache"
-if [[ -s "$cache_file" ]]; then
-  remaining_count=$(sed 's/.*"text":"//;s/".*//' "$cache_file")
-  remaining=$(sed 's/.*"tooltip":"//;s/"}[[:space:]]*$//' "$cache_file" | sed 's/\\n/\n/g')
-  warn "$remaining_count package(s) still pending:"
-  echo "$remaining"
+section "Removing orphaned packages..."
+if xbps-query -O 2>/dev/null | grep -q .; then
+    warn "Orphaned packages found, removing..."
+    sudo xbps-remove -Oo
 else
-  ok "All packages up to date"
+    ok "No orphaned packages"
 fi
 
 if [[ ! -d /usr/lib/modules/$(uname -r) ]]; then
-  section "Kernel updated — reboot when ready." "\e[32m"
+    warn "Kernel updated — reboot when ready"
 fi
 
-
-section "Summary"
-if (( official_failed )); then
-  fail "Official: update failed"
-elif (( official_count > 0 )); then
-  ok "Official: $official_count package(s) updated"
-else
-  ok "Official: already up to date"
-fi
-if (( aur_count > 0 )); then
-  ok "AUR:      $aur_count package(s) updated"
-else
-  ok "AUR:      already up to date"
-fi
-
-if (( official_count > 0 || aur_count > 0 )); then
-  notify-send -t 2000 "Update complete."
-fi
-
+section "Done"

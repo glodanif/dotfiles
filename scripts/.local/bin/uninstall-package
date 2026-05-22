@@ -1,11 +1,11 @@
 #!/bin/zsh
-# Show a fuzzy-finder TUI for picking packages installed on the system to be removed.
+# Show a fuzzy-finder TUI for picking installed packages to remove.
 
 source "$HOME/.config/bash/utils.sh"
 
 fzf_args=(
   --multi
-  --preview 'yay -Qi {1}'
+  --preview 'xbps-query {1} 2>/dev/null || echo "No info available"'
   --preview-label='alt-p: toggle description, alt-j/k: scroll, tab: multi-select'
   --preview-label-pos='bottom'
   --preview-window 'down:65%:wrap'
@@ -15,10 +15,13 @@ fzf_args=(
   --color 'pointer:red,marker:red'
 )
 
-pkg_names=$(yay -Qqe | fzf "${fzf_args[@]}")
+pkg_names=$(xbps-query -l 2>/dev/null \
+  | awk '{print $2}' \
+  | sed 's/-[0-9][^-]*$//' \
+  | fzf "${fzf_args[@]}")
+
 if [[ -n $pkg_names ]]; then
   pkgs=(${(f)pkg_names})
-  sudo pacman -Rns "${pkgs[@]}"
+  sudo xbps-remove -R "${pkgs[@]}"
   echo ""
 fi
-

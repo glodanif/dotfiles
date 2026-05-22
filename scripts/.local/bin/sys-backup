@@ -1,55 +1,47 @@
 #!/bin/zsh
-# sys-backup — run restic backup to NAS, prune
+# sys-backup — run restic backup to external storage, prune old snapshots
+# TODO: update MOUNT_POINT and REPO before first use
+
 set -euo pipefail
 source "$HOME/.config/bash/utils.sh"
 
-MOUNT_POINT="/mnt/backup"
-REPO="/mnt/backup/restic"
+MOUNT_POINT="/mnt/backup"     # TODO: set to your backup destination mount point
+REPO="/mnt/backup/restic"     # TODO: or use a cloud repo URL (s3:, b2:, etc.)
 PASSWORD_FILE="/root/.restic-password"
 HOSTNAME_TAG=$(hostname)
 
-keep_screen_on
 section "System Backup"
 sudo -v
 
 if ! mountpoint -q "$MOUNT_POINT"; then
-  section "Mounting NAS backup share..."
-  sudo mount "$MOUNT_POINT" || {
-    section "Failed to mount NAS. Skipping." "\e[33m"
-    press_any_key
-    exit 0
-  }
+    section "Mounting backup storage..."
+    sudo mount "$MOUNT_POINT" || {
+        warn "Failed to mount backup storage. Skipping."
+        exit 0
+    }
 fi
 
 section "Running backup..."
 sudo restic backup --repo "$REPO" \
-  --password-file "$PASSWORD_FILE" \
-  --exclude "$HOME/.cache" \
-  --exclude "$HOME/.local/share/Trash" \
-  --exclude "$HOME/.gradle/caches" \
-  --exclude "$HOME/.gradle/daemon" \
-  --exclude "$HOME/.gradle/native" \
-  --exclude "$HOME/.gradle/kotlin-profile" \
-  --exclude "$HOME/.gradle/.tmp" \
-  --exclude "$HOME/Development/Work/**/build" \
-  --exclude "$HOME/.local/share/Steam/steamapps/common" \
-  --exclude "$HOME/.local/share/Steam/steamapps/shadercache" \
-  --exclude "$HOME/.local/share/Steam/steamapps/compatdata" \
-  --exclude "$HOME/.local/share/PrismLauncher/instances" \
-  --exclude "$HOME/.local/share/PrismLauncher/cache" \
-  --exclude "$HOME/.local/share/PrismLauncher/meta" \
-  "$HOME" /etc
+    --password-file "$PASSWORD_FILE" \
+    --tag "$HOSTNAME_TAG" \
+    --exclude "$HOME/.cache" \
+    --exclude "/tmp" \
+    --exclude "/var/tmp" \
+    --exclude "/proc" \
+    --exclude "/sys" \
+    --exclude "/dev" \
+    --exclude "/run" \
+    "$HOME" /etc /var/lib/samba
 
 section "Pruning old snapshots..."
 sudo restic forget --repo "$REPO" \
-  --password-file "$PASSWORD_FILE" \
-  --host "$HOSTNAME_TAG" \
-  --keep-last 5 \
-  --keep-daily 7 \
-  --keep-weekly 4 \
-  --keep-monthly 6 \
-  --prune
+    --password-file "$PASSWORD_FILE" \
+    --host "$HOSTNAME_TAG" \
+    --keep-last 5 \
+    --keep-daily 7 \
+    --keep-weekly 4 \
+    --keep-monthly 6 \
+    --prune
 
 section "Backup complete."
-notify-send -t 2000 "Backup complete."
-
