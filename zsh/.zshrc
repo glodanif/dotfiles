@@ -41,6 +41,7 @@ sudov() { if [ "$#" -eq 0 ]; then sudo nvim . ; else sudo nvim "$@"; fi; }
 autoload -Uz compinit && compinit
 zstyle ':completion:*' menu select
 
+HISTFILE="$HOME/.zsh_history"
 HISTSIZE=32768
-HISTFILESIZE=32768
+SAVEHIST=32768
 

@@ -116,4 +116,5 @@ xournalpp
 yazi
 yt-dlp
 zed
+zip
 zsh
