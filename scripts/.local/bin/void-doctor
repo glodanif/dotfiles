@@ -1,0 +1,48 @@
+#!/bin/zsh
+# void-doctor — check system health against known good state
+
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+
+set -uo pipefail
+
+UTILS="$HOME/.config/bash/utils.sh"
+CHECKS_DIR="$HOME/.config/void-doctor/checks"
+LOCAL_CONF="$HOME/.config/void-doctor/local.conf"
+
+if [[ ! -f "$UTILS" ]]; then
+    echo "ERR: utils not found at $UTILS" >&2
+    exit 2
+fi
+source "$UTILS"
+
+[[ -f "$LOCAL_CONF" ]] && source "$LOCAL_CONF"
+
+typeset -gi ERRORS=0 WARNINGS=0 OKS=0
+
+ok() { check "\e[1;32mOK \e[0m" "$1"; ((OKS++)) || true; }
+warn() { check "\e[1;33mWRN\e[0m" "$1"; ((WARNINGS++)) || true; }
+err() { check "\e[1;31mERR\e[0m" "$1"; ((ERRORS++)) || true; }
+
+if [[ ! -d "$CHECKS_DIR" ]]; then
+    echo "ERR: checks dir not found at $CHECKS_DIR" >&2
+    exit 2
+fi
+
+if (( EUID != 0 )); then
+    sudo -v 2>/dev/null || true
+fi
+
+for check_file in "$CHECKS_DIR"/*.sh; do
+    [[ -f "$check_file" ]] || continue
+    source "$check_file"
+done
+
+echo
+section "Summary"
+echo "  OK:       $OKS"
+echo "  Warnings: $WARNINGS"
+echo "  Errors:   $ERRORS"
+
+(( ERRORS > 0 )) && exit 1
+exit 0
+

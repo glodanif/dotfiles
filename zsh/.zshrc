@@ -18,18 +18,9 @@ export GPG_TTY=$(tty)
 alias lg='lazygit'
 alias ffs='sudo'
 
-alias dl='yt-dlp -P "~/Downloads/Videos" --cookies-from-browser "brave+gnomekeyring"'
-alias dl-batch='yt-dlp -P "~/Downloads/Videos" --cookies-from-browser "brave+gnomekeyring" --batch-file'
-
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
-
-alias personal-claude="CLAUDE_CONFIG_DIR=$HOME/.claude-personal command claude"
-alias work-claude="CLAUDE_CONFIG_DIR=$HOME/.claude-work command claude"
-
-alias java17='export JAVA_HOME=/usr/lib/jvm/java-17-openjdk; export PATH=$JAVA_HOME/bin:$PATH'
-alias java26='export JAVA_HOME=$HOME/.jdks/openjdk-26; export PATH=$JAVA_HOME/bin:$PATH'
 
 alias ls='eza --icons'
 alias ll='eza -la --icons --git'
@@ -40,6 +31,10 @@ sudov() { if [ "$#" -eq 0 ]; then sudo nvim . ; else sudo nvim "$@"; fi; }
 
 autoload -Uz compinit && compinit
 zstyle ':completion:*' menu select
+
+. "$HOME/.local/bin/env"
+
+source $HOME/.local/bin/env
 
 HISTSIZE=32768
 HISTFILESIZE=32768

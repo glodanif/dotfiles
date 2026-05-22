@@ -1,5 +1,4 @@
 #!/bin/zsh
-pacman -Qqen > packages-official.txt
-pacman -Qqem > packages-aur.txt
+xbps-query -m | sed 's/-[^-]*$//' | sort > packages-void.txt
 for d in */; do stow --no-folding "$d"; done
 

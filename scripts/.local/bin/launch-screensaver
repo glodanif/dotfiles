@@ -1,3 +1,0 @@
-#!/bin/zsh
-python "$HOME/.local/share/screensaver/main.py"
-

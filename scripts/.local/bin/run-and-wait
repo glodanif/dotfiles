@@ -1,6 +1,0 @@
-#!/bin/zsh
-cmd="$*"
-ghostty \
-  --title="${cmd} - float" \
-  -e zsh -c "source \$HOME/.config/bash/utils.sh; ${cmd}; echo; press_any_key"
-
