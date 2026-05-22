@@ -12,7 +12,7 @@ if command -v testparm &>/dev/null && [[ -f /etc/samba/smb.conf ]]; then
     fi
 fi
 
-sv_running() { sv status "$1" 2>/dev/null | grep -q "^run:" || pgrep -x "$1" &>/dev/null; }
+sv_running() { sv status "$1" 2>/dev/null | grep -q "^run:" || pgrep -f "$1" &>/dev/null; }
 for svc in smbd nmbd; do
     if sv_running "$svc"; then
         ok "$svc running"

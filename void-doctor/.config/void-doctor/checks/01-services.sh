@@ -1,7 +1,7 @@
 section "Services"
 
 sv_enabled() { [[ -L "/var/service/$1" ]]; }
-sv_running() { sv status "$1" 2>/dev/null | grep -q "^run:" || pgrep -x "$1" &>/dev/null; }
+sv_running() { sv status "$1" 2>/dev/null | grep -q "^run:" || pgrep -f "$1" &>/dev/null; }
 
 required=(sshd smbd nmbd)
 optional=(transmission-daemon avahi-daemon chronyd)

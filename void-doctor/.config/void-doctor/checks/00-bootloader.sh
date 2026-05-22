@@ -5,15 +5,19 @@ command -v grub-mkconfig &>/dev/null && ok "grub-mkconfig in PATH" || warn "grub
 
 [[ -f /boot/grub/grub.cfg ]] && ok "grub.cfg present" || err "grub.cfg missing at /boot/grub/grub.cfg"
 
-if [[ -d /boot/EFI ]] || [[ -d /boot/efi ]]; then
-    ok "EFI boot directory present"
-    if find /boot/EFI \( -name "grubx64.efi" -o -name "BOOTX64.EFI" \) 2>/dev/null | grep -q .; then
+efi_dir=""
+[[ -d /boot/EFI ]] && efi_dir="/boot/EFI"
+[[ -d /boot/efi ]] && efi_dir="/boot/efi"
+
+if [[ -n "$efi_dir" ]]; then
+    ok "EFI boot directory present ($efi_dir)"
+    if find "$efi_dir" \( -name "grubx64.efi" -o -name "BOOTX64.EFI" \) 2>/dev/null | grep -q .; then
         ok "GRUB EFI binary present"
     else
-        warn "GRUB EFI binary not found in /boot/EFI"
+        warn "GRUB EFI binary not found in $efi_dir"
     fi
 else
-    warn "No /boot/EFI directory found (BIOS mode?)"
+    warn "No EFI boot directory found (BIOS mode?)"
 fi
 
 kernel_count=$(ls /boot/vmlinuz* 2>/dev/null | wc -l)
