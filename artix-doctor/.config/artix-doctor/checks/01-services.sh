@@ -1,6 +1,6 @@
 section "Services"
 
-required=(NetworkManager elogind dbus)
+required=(NetworkManager elogind dbus greetd)
 optional=(bluetoothd iwd netmount sshd cronie)
 
 for svc in "${required[@]}"; do
@@ -18,3 +18,10 @@ for svc in "${optional[@]}"; do
         warn "$svc not enabled"
     fi
 done
+
+greetd_conf_path="/home/glodanif/.config/greetd/config.toml"
+if [[ -f /etc/conf.d/greetd ]] && grep -q "$greetd_conf_path" /etc/conf.d/greetd; then
+    ok "/etc/conf.d/greetd points to config"
+else
+    err "/etc/conf.d/greetd not configured — add: command_args=\"--config $greetd_conf_path\""
+fi

@@ -9,55 +9,61 @@ value = "walker"
 icon = "/home/glodanif/.local/share/assets/apps.png"
 
 [[entries]]
-text = "02. About"
+text = "02. Files"
+subtext = "Open Thunar"
+value = "thunar"
+icon = "/home/glodanif/.local/share/assets/folder.png"
+
+[[entries]]
+text = "03. About"
 subtext = "fastfetch"
 value = "run-and-wait fastfetch"
 icon = "/home/glodanif/.local/share/assets/artix-logo.png"
 
 [[entries]]
-text = "03. System Backup"
+text = "04. System Backup"
 subtext = "sys-backup"
 value = "run-and-wait sys-backup"
 icon = "/home/glodanif/.local/share/assets/backup.png"
 
 [[entries]]
-text = "04. System Upgrade"
+text = "05. System Upgrade"
 subtext = "sys-update"
 value = "run-and-wait sys-update"
 icon = "/home/glodanif/.local/share/assets/update.png"
 
 [[entries]]
-text = "05. Install official package"
+text = "06. Install official package"
 subtext = "install-package"
 value = "run-and-wait install-package"
 icon = "/home/glodanif/.local/share/assets/package-official.png"
 
 [[entries]]
-text = "06. Install AUR package"
+text = "07. Install AUR package"
 subtext = "install-aur-package"
 value = "run-and-wait install-aur-package"
 icon = "/home/glodanif/.local/share/assets/package.png"
 
 [[entries]]
-text = "07. Uninstall package"
+text = "08. Uninstall package"
 subtext = "uninstall-package"
 value = "run-and-wait uninstall-package"
 icon = "/home/glodanif/.local/share/assets/trash-bin.png"
 
 [[entries]]
-text = "08. Audio Sinks"
+text = "09. Audio Sinks"
 subtext = "Switch to audio sink"
 value = "switch-audio-sink"
 icon = "/home/glodanif/.local/share/assets/audio.png"
 
 [[entries]]
-text = "09. Reboot into Windows"
+text = "10. Reboot into Windows"
 subtext = "Boot Windows once"
 value = "run-and-wait reboot-into-windows"
 icon = "/home/glodanif/.local/share/assets/windows.png"
 
 [[entries]]
-text = "10. Power Menu"
+text = "11. Power Menu"
 subtext = "Power off/Log out/Reboot/Lock"
 value = "power-menu"
 icon = "/home/glodanif/.local/share/assets/power-on.png"

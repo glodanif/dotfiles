@@ -5,12 +5,6 @@
     "keybind" : "l"
 }
 {
-    "label" : "logout",
-    "action" : "hyprland-power logout",
-    "text" : "Logout",
-    "keybind" : "e"
-}
-{
     "label" : "reboot",
     "action" : "hyprland-power reboot",
     "text" : "Reboot",

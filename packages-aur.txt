@@ -1,5 +1,6 @@
 affine-bin
 brave-bin
+bridge-utils
 discord-latest-bin
 elephant-all
 jetbrains-toolbox
@@ -7,6 +8,7 @@ localsend-bin
 ookla-speedtest-bin
 openshot-bin
 pinta
+plymouth-openrc-plugin
 prismlauncher-git
 slack-desktop
 viber

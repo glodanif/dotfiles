@@ -15,5 +15,5 @@ else
     MARGIN=200
 fi
 
-wlogout --buttons-per-row 4 --column-spacing 36 --margin $MARGIN
+wlogout --buttons-per-row 3 --column-spacing 36 --margin $MARGIN
 

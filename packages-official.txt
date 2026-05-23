@@ -20,6 +20,7 @@ cryptsetup
 dhcpcd
 dnscrypt-proxy
 dnscrypt-proxy-openrc
+dnsmasq
 dua-cli
 efibootmgr
 elogind-openrc
@@ -32,6 +33,8 @@ git
 gnome-themes-extra
 gptfdisk
 gpu-screen-recorder
+greetd
+greetd-openrc
 grim
 gvfs-smb
 hypridle
@@ -44,6 +47,8 @@ lazygit
 lib32-nvidia-utils
 libva-nvidia-driver
 libva-utils
+libvirt
+libvirt-openrc
 limine
 linux
 linux-firmware
@@ -72,9 +77,11 @@ papirus-icon-theme
 pipewire
 pipewire-audio
 pipewire-pulse
+plymouth
 polkit-gnome
 python-gobject
 python-pip
+qemu-full
 qt5-wayland
 qt6-wayland
 restic
@@ -87,10 +94,12 @@ slurp
 smartmontools
 socat
 sof-firmware
+solaar
 sound-theme-freedesktop
 steam
 stow
 swayimg
+swtpm
 tcpdump
 telegram-desktop
 thunar
@@ -100,6 +109,7 @@ ttf-jetbrains-mono-nerd
 tumbler
 unzip
 vim
+virt-manager
 waybar
 wget
 wireguard-tools

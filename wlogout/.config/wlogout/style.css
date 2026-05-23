@@ -39,10 +39,6 @@ button:focus:hover {
     background-image: image(url("/home/glodanif/.local/share/assets/padlock.png"), url("/home/glodanif/.local/share/assets/padlock.png"));
 }
 
-#logout {
-    background-image: image(url("/home/glodanif/.local/share/assets/logout.png"), url("/home/glodanif/.local/share/assets/logout.png"));
-}
-
 #shutdown {
     background-image: image(url("/home/glodanif/.local/share/assets/power-off.png"), url("/home/glodanif/.local/share/assets/power-off.png"));
 }
