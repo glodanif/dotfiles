@@ -8,7 +8,6 @@ localsend-bin
 ookla-speedtest-bin
 openshot-bin
 pinta
-plymouth-openrc-plugin
 prismlauncher-git
 slack-desktop
 viber
