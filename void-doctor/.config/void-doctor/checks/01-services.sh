@@ -11,10 +11,10 @@ for svc in "${required[@]}"; do
         if sv_running "$svc"; then
             ok "$svc enabled and running"
         else
-            err "$svc enabled but not running"
+            err "$svc enabled but not running" "Start it:" "sudo sv up $svc"
         fi
     else
-        err "$svc not enabled in /var/service"
+        err "$svc not enabled in /var/service" "Enable it:" "sudo ln -s /etc/sv/$svc /var/service/"
     fi
 done
 
@@ -23,9 +23,9 @@ for svc in "${optional[@]}"; do
         if sv_running "$svc"; then
             ok "$svc enabled and running"
         else
-            warn "$svc enabled but not running"
+            warn "$svc enabled but not running" "Start it:" "sudo sv up $svc"
         fi
     else
-        warn "$svc not enabled"
+        warn "$svc not enabled" "Enable it:" "sudo ln -s /etc/sv/$svc /var/service/"
     fi
 done

@@ -5,9 +5,9 @@ if [[ -f /proc/mdstat ]] && grep -q "^md" /proc/mdstat 2>/dev/null; then
     while IFS= read -r name; do
         state=$(grep -A2 "^${name}" /proc/mdstat | grep "blocks" | grep -oP '\[[U_]+\]' || true)
         if [[ -z "$state" ]]; then
-            warn "RAID $name: status unknown"
+            warn "RAID $name: status unknown" "Inspect it manually:" "cat /proc/mdstat"
         elif [[ "$state" == *_* ]]; then
-            err "RAID $name: degraded $state"
+            err "RAID $name: degraded $state" "Inspect the array and re-add/replace the failed disk:" "sudo mdadm --detail /dev/$name"
         else
             ok "RAID $name: healthy $state"
         fi
@@ -42,7 +42,7 @@ if command -v smartctl &>/dev/null; then
         if [[ "$result" == "PASSED" ]]; then
             ok "SMART $label: PASSED"
         elif [[ -n "$result" ]]; then
-            err "SMART $label: $result"
+            err "SMART $label: $result" "Inspect the drive and back up its data:" "sudo smartctl -a $dev"
         fi
 
         # SSD wear level (ID 231, SSD_Life_Left — VALUE column = % remaining)
@@ -50,9 +50,9 @@ if command -v smartctl &>/dev/null; then
         if [[ -n "$life" ]]; then
             life=$((10#$life))
             if (( life <= 20 )); then
-                err "SMART $label: SSD life critical (${life}% remaining)"
+                err "SMART $label: SSD life critical (${life}% remaining)" "Plan to replace this drive soon — back up its data."
             elif (( life <= 40 )); then
-                warn "SMART $label: SSD life low (${life}% remaining)"
+                warn "SMART $label: SSD life low (${life}% remaining)" "Monitor wear and plan eventual replacement."
             else
                 ok "SMART $label: SSD life ${life}% remaining"
             fi
@@ -61,12 +61,12 @@ if command -v smartctl &>/dev/null; then
         # Unexpected power losses (ID 174 — RAW_VALUE)
         upl=$(echo "$attrs" | awk '$1==174{print $NF}')
         if [[ -n "$upl" ]] && (( upl > 500 )); then
-            warn "SMART $label: high unexpected power loss count ($upl)"
+            warn "SMART $label: high unexpected power loss count ($upl)" "Check power supply and cabling — frequent unsafe shutdowns risk data loss."
         fi
     done < <(find /dev -maxdepth 1 -type b \( -name 'sd[a-z]' -o -name 'nvme[0-9]n[0-9]' \) 2>/dev/null | sort)
-    (( checked == 0 )) && warn "no drives found for SMART check"
+    (( checked == 0 )) && warn "no drives found for SMART check" "No sd*/nvme* block devices detected."
 else
-    warn "smartctl not installed (install smartmontools for disk health checks)"
+    warn "smartctl not installed (install smartmontools for disk health checks)" "Install:" "sudo xbps-install -S smartmontools"
 fi
 
 # Filesystem usage
@@ -76,10 +76,10 @@ while IFS= read -r line; do
     mnt=$(echo "$line" | awk '{print $6}')
     [[ "$pct" =~ ^[0-9]+$ ]] || continue
     if (( pct >= 90 )); then
-        err "disk usage critical: $mnt at ${pct}%"
+        err "disk usage critical: $mnt at ${pct}%" "Free up space on $mnt:" "du -xh $mnt | sort -rh | head"
         any_warn=1
     elif (( pct >= 80 )); then
-        warn "disk usage high: $mnt at ${pct}%"
+        warn "disk usage high: $mnt at ${pct}%" "Free up space on $mnt soon."
         any_warn=1
     fi
 done < <(df -h 2>/dev/null | tail -n +2 | grep -v "^tmpfs\|^devtmpfs\|^udev\|^/dev/loop")
