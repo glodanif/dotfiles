@@ -19,7 +19,7 @@ sudo pacman -Syyu --noconfirm || official_failed=1
 
 official_count=$(tail -n +$((log_before_official+1)) /var/log/pacman.log | grep -c '\[ALPM\] upgraded' || true)
 
-if awk '/\[ALPM\] transaction started/{upgraded=0} /upgraded hyprland/{upgraded=1} END{exit !upgraded}' /var/log/pacman.log; then
+if command -v hyprpm &>/dev/null; then
   section "Updating Hyprland plugins..."
   hyprpm update
 fi
