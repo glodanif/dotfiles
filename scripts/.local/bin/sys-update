@@ -17,7 +17,10 @@ else
     ok "No orphaned packages"
 fi
 
-if [[ ! -d /usr/lib/modules/$(uname -r) ]]; then
+running=$(uname -r)
+major_minor=$(echo "$running" | grep -oP '^\d+\.\d+')
+installed=$(xbps-query -p pkgver "linux${major_minor}" 2>/dev/null | sed "s/^linux${major_minor}-//")
+if [[ -n "$installed" && "$installed" != "$running" ]]; then
     warn "Kernel updated — reboot when ready"
 fi
 
