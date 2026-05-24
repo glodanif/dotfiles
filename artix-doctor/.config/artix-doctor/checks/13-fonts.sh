@@ -15,7 +15,7 @@ for font in "${required_fonts[@]}"; do
     if fc-match "$font" 2>/dev/null | grep -qiF "$first_word"; then
         ok "$font installed"
     else
-        err "$font not installed"
+        err "$font not installed" "Install via pacman/AUR (e.g. ttf-jetbrains-mono-nerd, noto-fonts-cjk, noto-fonts-emoji, ttf-lato), then:" "fc-cache -f"
     fi
 done
 

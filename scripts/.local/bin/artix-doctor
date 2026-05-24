@@ -20,8 +20,24 @@ source "$UTILS"
 typeset -gi ERRORS=0 WARNINGS=0 OKS=0
 
 ok() { check "\e[1;32mOK \e[0m" "$1"; ((OKS++)) || true; }
-warn() { check "\e[1;33mWRN\e[0m" "$1"; ((WARNINGS++)) || true; }
-err() { check "\e[1;31mERR\e[0m" "$1"; ((ERRORS++)) || true; }
+warn() { check "\e[1;33mWRN\e[0m" "$1"; ((WARNINGS++)) || true; [[ -n "${2:-}" || -n "${3:-}" ]] && fix "${2:-}" "${3:-}"; }
+err() { check "\e[1;31mERR\e[0m" "$1"; ((ERRORS++)) || true; [[ -n "${2:-}" || -n "${3:-}" ]] && fix "${2:-}" "${3:-}"; }
+
+# fix <explanation> [command]
+# Prints an indented fix hint with blank lines above and below.
+# The command (if given) is highlighted bold cyan.
+fix() {
+    local text="${1:-}" cmd="${2:-}"
+    echo
+    if [[ -n "$text" && -n "$cmd" ]]; then
+        echo -e "      \e[2m$text\e[0m \e[1;36m$cmd\e[0m"
+    elif [[ -n "$cmd" ]]; then
+        echo -e "      \e[1;36m$cmd\e[0m"
+    else
+        echo -e "      \e[2m$text\e[0m"
+    fi
+    echo
+}
 
 if [[ ! -d "$CHECKS_DIR" ]]; then
     echo "ERR: checks dir not found at $CHECKS_DIR" >&2
