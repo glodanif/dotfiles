@@ -1,3 +1,4 @@
+export GPG_TTY=$(tty)
 if [[ -z "$SSH_CONNECTION" ]] && [[ "$(tty)" == "/dev/tty1" ]]; then
     mkdir -p ~/.local/share/hyprland
     logfile=~/.local/share/hyprland/hyprland-$(date +%Y%m%d-%H%M%S).log

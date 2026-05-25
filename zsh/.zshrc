@@ -11,7 +11,6 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting sudo)
 
 source $ZSH/oh-my-zsh.sh
-export GPG_TTY=$(tty)
 
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
