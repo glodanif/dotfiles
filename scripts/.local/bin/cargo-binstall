@@ -1,0 +1,3 @@
+#!/bin/zsh
+cargo binstall -y "$1" && echo "$1" >> ~/.local/bin/cargo-binaries.txt && sort -uo ~/.local/bin/cargo-binaries.txt ~/.local/bin/cargo-binaries.txt
+
