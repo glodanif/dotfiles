@@ -1,5 +1,7 @@
 section "Packages"
 
+command -v cargo-binstall &>/dev/null && ok "cargo-binstall available" || warn "cargo-binstall not installed" "Install it:" "cargo install cargo-binstall"
+
 command -v xbps-install &>/dev/null && ok "xbps-install available" || err "xbps package manager not found" "Core Void tooling is missing — reinstall the xbps package."
 command -v xbps-query &>/dev/null && ok "xbps-query available" || err "xbps-query not found" "Core Void tooling is missing — reinstall the xbps package."
 

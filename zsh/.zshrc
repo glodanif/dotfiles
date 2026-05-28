@@ -27,7 +27,7 @@ alias ll='eza -la --icons --git'
 alias la='eza -la --icons'
 
 v() { if [ "$#" -eq 0 ]; then command nvim . ; else command nvim "$@"; fi; }
-sudov() { if [ "$#" -eq 0 ]; then sudo nvim . ; else sudo nvim "$@"; fi; }
+sv() { if [ "$#" -eq 0 ]; then sudo nvim . ; else sudo nvim "$@"; fi; }
 
 autoload -Uz compinit && compinit
 zstyle ':completion:*' menu select

@@ -23,6 +23,7 @@ linux
 lvm2
 mdadm
 neovim
+openssl-devel
 restic
 ripgrep
 rustup
