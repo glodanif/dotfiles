@@ -2,6 +2,7 @@
 
 HEADPHONES_MAC="80_99_E7_49_C7_D8"
 HEADPHONES_DESC="WH-1000XM4"
+LAST_NOTIFY=0
 
 until pactl info &>/dev/null; do
     sleep 1
@@ -14,6 +15,10 @@ pactl subscribe | while read line; do
         name=$(pactl list sinks short | awk -v idx="$index" '$1 == idx {print $2}')
 
         [[ "$name" != *"$HEADPHONES_MAC"* ]] && continue
+
+        now=$(date +%s)
+        (( now - LAST_NOTIFY < 5 )) && continue
+        LAST_NOTIFY=$now
 
         pactl list sink-inputs short | awk '{print $1}' | while read input; do
             pactl move-sink-input "$input" "$name"
