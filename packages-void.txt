@@ -19,7 +19,6 @@ grub-x86_64-efi
 jq
 lazygit
 libclang
-linux
 lvm2
 mdadm
 neovim
