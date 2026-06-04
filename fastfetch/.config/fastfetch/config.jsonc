@@ -12,14 +12,14 @@
       "6": "",
       "7": "",
       "8": "",
-      "9": "",
+      "9": ""
     },
     "width": null,
     "height": null,
     "padding": {
       "top": 2,
       "left": 2,
-      "right": 4,
+      "right": 4
     },
     "printRemaining": true,
     "preserveAspectRatio": false,
@@ -27,8 +27,8 @@
     "position": "left",
     "chafa": {
       "fgOnly": false,
-      "symbols": "block+border+space-wide-inverted",
-    },
+      "symbols": "block+border+space-wide-inverted"
+    }
   },
   "display": {
     "stat": false,
@@ -41,18 +41,18 @@
       "keys": "",
       "title": "",
       "output": "",
-      "separator": "",
+      "separator": ""
     },
     "brightColor": true,
     "duration": {
       "abbreviation": false,
-      "spaceBeforeUnit": "default",
+      "spaceBeforeUnit": "default"
     },
     "size": {
       "maxPrefix": "YB",
       "binaryPrefix": "iec",
       "ndigits": 2,
-      "spaceBeforeUnit": "default",
+      "spaceBeforeUnit": "default"
     },
     "temp": {
       "unit": "D",
@@ -60,9 +60,9 @@
       "color": {
         "green": "32",
         "yellow": "93",
-        "red": "91",
+        "red": "91"
       },
-      "spaceBeforeUnit": "default",
+      "spaceBeforeUnit": "default"
     },
     "percent": {
       "type": ["num", "num-color"],
@@ -70,51 +70,51 @@
       "color": {
         "green": "32",
         "yellow": "93",
-        "red": "91",
+        "red": "91"
       },
       "spaceBeforeUnit": "default",
-      "width": 0,
+      "width": 0
     },
     "bar": {
       "char": {
         "elapsed": "■",
-        "total": "-",
+        "total": "-"
       },
       "border": {
         "left": "[ ",
         "right": " ]",
         "leftElapsed": "",
-        "rightElapsed": "",
+        "rightElapsed": ""
       },
       "color": {
         "elapsed": "auto",
         "total": "97",
-        "border": "97",
+        "border": "97"
       },
-      "width": 10,
+      "width": 10
     },
     "fraction": {
       "ndigits": 2,
-      "trailingZeros": "default",
+      "trailingZeros": "default"
     },
     "noBuffer": false,
     "key": {
       "width": 0,
       "type": "string",
-      "paddingLeft": 0,
+      "paddingLeft": 0
     },
     "freq": {
       "ndigits": 2,
-      "spaceBeforeUnit": "default",
+      "spaceBeforeUnit": "default"
     },
-    "constants": [],
+    "constants": []
   },
   "general": {
     "thread": true,
     "processingTimeout": 5000,
     "detectVersion": true,
     "playerName": "",
-    "dsForceDrm": false,
+    "dsForceDrm": false
   },
   "modules": [
     "break",
@@ -126,40 +126,40 @@
       "color": {
         "user": "#7FD962",
         "at": "#FFFFFF",
-        "host": "#7FD962",
-      },
+        "host": "#7FD962"
+      }
     },
     {
       "type": "separator",
       "string": "─",
       "outputColor": "#fafffc",
-      "times": 54,
+      "times": 54
     },
     {
       "type": "os",
       "keyIcon": "",
-      "keyColor": "#7FD962",
+      "keyColor": "#7FD962"
     },
     {
       "type": "host",
       "keyIcon": "󰌢",
-      "keyColor": "#7FD962",
+      "keyColor": "#7FD962"
     },
     {
       "type": "kernel",
       "keyIcon": "",
-      "keyColor": "#7FD962",
+      "keyColor": "#7FD962"
     },
     {
       "type": "command",
       "key": "Age",
       "keyColor": "#7FD962",
-      "text": "echo $(( ($(date +%s) - $(stat -c %W /)) / 86400 )) days",
+      "text": "echo $(( ($(date +%s) - $(stat -c %W /)) / 86400 )) days"
     },
     {
       "type": "uptime",
       "keyIcon": "",
-      "keyColor": "#7FD962",
+      "keyColor": "#7FD962"
     },
     {
       "type": "localip",
@@ -176,29 +176,29 @@
       "defaultRouteOnly": false,
       "showAllIps": false,
       "namePrefix": "",
-      "keyColor": "#7FD962",
+      "keyColor": "#7FD962"
     },
     {
       "type": "separator",
       "string": "─",
       "outputColor": "#fafffc",
-      "times": 54,
+      "times": 54
     },
     {
       "type": "shell",
       "keyIcon": "",
-      "keyColor": "#7FD962",
+      "keyColor": "#7FD962"
     },
     {
       "type": "terminal",
       "keyIcon": "",
-      "keyColor": "#7FD962",
+      "keyColor": "#7FD962"
     },
     {
       "type": "separator",
       "string": "─",
       "outputColor": "#fafffc",
-      "times": 54,
+      "times": 54
     },
     {
       "type": "cpu",
@@ -206,13 +206,27 @@
       "temp": true,
       "showPeCoreCount": false,
       "tempSensor": "",
-      "keyColor": "#7FD962",
+      "keyColor": "#7FD962"
+    },
+    {
+      "type": "gpu",
+      "keyIcon": "󰾲",
+      "driverSpecific": false,
+      "detectionMethod": "pci",
+      "temp": true,
+      "hideType": "none",
+      "percent": {
+        "green": 50,
+        "yellow": 80,
+        "type": 0
+      },
+      "keyColor": "#7FD962"
     },
     {
       "type": "separator",
       "string": "─",
       "outputColor": "#fafffc",
-      "times": 54,
+      "times": 54
     },
     {
       "type": "memory",
@@ -220,20 +234,9 @@
       "percent": {
         "green": 50,
         "yellow": 80,
-        "type": 0,
+        "type": 0
       },
-      "keyColor": "#7FD962",
-    },
-    {
-      "type": "swap",
-      "percent": {
-        "green": 50,
-        "yellow": 80,
-        "type": 0,
-      },
-      "keyIcon": "󰓡",
-      "separate": false,
-      "keyColor": "#7FD962",
+      "keyColor": "#7FD962"
     },
     {
       "type": "disk",
@@ -251,27 +254,21 @@
       "percent": {
         "green": 50,
         "yellow": 80,
-        "type": 0,
+        "type": 0
       },
-      "keyColor": "#7FD962",
-    },
-    {
-      "type": "command",
-      "key": "RAID",
-      "keyColor": "#7FD962",
-      "text": "awk '/^md/{name=$1} /blocks/{print name\": \"$NF}' /proc/mdstat 2>/dev/null || echo 'none'",
+      "keyColor": "#7FD962"
     },
     {
       "type": "command",
       "key": "Load",
       "keyColor": "#7FD962",
-      "text": "awk '{print $1\", \"$2\", \"$3}' /proc/loadavg",
+      "text": "awk '{print $1\", \"$2\", \"$3}' /proc/loadavg"
     },
     {
       "type": "separator",
       "string": "─",
       "outputColor": "#fafffc",
-      "times": 54,
+      "times": 54
     },
     {
       "type": "colors",
@@ -281,9 +278,9 @@
       "paddingLeft": 0,
       "block": {
         "width": 3,
-        "range": [0, 15],
+        "range": [0, 15]
       },
-      "brightness": "default",
-    },
-  ],
+      "brightness": "default"
+    }
+  ]
 }

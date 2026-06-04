@@ -31,7 +31,9 @@ smartmontools
 stow
 tmux
 transmission
+uv
 yazi
+zellij
 zip
 zoxide
 zsh
