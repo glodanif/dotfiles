@@ -30,6 +30,7 @@ ffmpegthumbnailer
 fzf
 ghostty
 git
+github-cli
 gnome-themes-extra
 gptfdisk
 gpu-screen-recorder
