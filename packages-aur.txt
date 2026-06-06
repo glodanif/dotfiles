@@ -1,5 +1,5 @@
 affine-bin
-brave-bin
+brave-origin-bin
 bridge-utils
 discord-latest-bin
 elephant-all
