@@ -102,6 +102,7 @@ steam
 stow
 swayimg
 swtpm
+syncthing
 tcpdump
 telegram-desktop
 thunar
