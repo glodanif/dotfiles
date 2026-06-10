@@ -6,7 +6,7 @@ Comment=Access the Internet
 StartupNotify=true
 StartupWMClass=brave-origin
 TryExec=brave-origin
-Exec=brave-origin --enable-features=WebRTCPipeWireCapturer --profile-directory="Profile 1" %U
+Exec=brave-origin --enable-features=WebRTCPipeWireCapturer --profile-directory=Default %U
 Terminal=false
 Icon=brave-origin
 Type=Application

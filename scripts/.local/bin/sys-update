@@ -15,7 +15,16 @@ log_before_official=$(wc -l < /var/log/pacman.log)
 official_failed=0
 
 section "Updating system packages..."
-sudo pacman -Syyu --noconfirm || official_failed=1
+sudo pacman -Syyu --noconfirm 2>&1 | tee /tmp/pacman-out.txt
+first_exit=${PIPESTATUS[0]}
+if grep -q "cannot resolve" /tmp/pacman-out.txt; then
+  failing=$(grep "cannot resolve" /tmp/pacman-out.txt \
+    | grep -oP 'dependency of "\K[^"]+' \
+    | sort -u | tr '\n' ',')
+  sudo pacman -Syyu --noconfirm --ignore "${failing%,}" || official_failed=1
+else
+  (( first_exit != 0 )) && official_failed=1
+fi
 
 official_count=$(tail -n +$((log_before_official+1)) /var/log/pacman.log | grep -c '\[ALPM\] upgraded' || true)
 
