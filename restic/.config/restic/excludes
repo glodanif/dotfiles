@@ -1,0 +1,50 @@
+# ── caches & trash ──
+/home/glodanif/.cache
+/home/glodanif/.local/share/Trash
+
+# ── rust ──
+/home/glodanif/.cargo/registry
+/home/glodanif/.cargo/git
+/home/glodanif/.rustup
+
+# ── flutter / dart ──
+/home/glodanif/.pub-cache
+/home/glodanif/.dart-tool
+/home/glodanif/.dartServer
+/home/glodanif/.flutter-devtools
+
+# ── jvm / android ──
+/home/glodanif/.gradle/caches
+/home/glodanif/.gradle/daemon
+/home/glodanif/.gradle/native
+/home/glodanif/.gradle/kotlin-profile
+/home/glodanif/.gradle/wrapper
+/home/glodanif/.gradle/.tmp
+/home/glodanif/.m2/repository
+/home/glodanif/.jdks
+/home/glodanif/.javacpp
+/home/glodanif/.android/avd
+/home/glodanif/.android/cache
+
+# ── misc package caches ──
+/home/glodanif/.npm
+/home/glodanif/.nuget
+/home/glodanif/.zcompdump*
+
+# ── python ──
+/home/glodanif/Development/**/.venv
+
+# ── build output anywhere ──
+/home/glodanif/Development/**/build
+/home/glodanif/Development/**/.dart_tool
+/home/glodanif/Development/**/node_modules
+
+# ── steam / games ──
+/home/glodanif/.local/share/Steam/steamapps/common
+/home/glodanif/.local/share/Steam/steamapps/shadercache
+/home/glodanif/.local/share/Steam/steamapps/compatdata
+/home/glodanif/.local/share/PrismLauncher/instances
+/home/glodanif/.local/share/PrismLauncher/cache
+/home/glodanif/.local/share/PrismLauncher/meta
+/home/glodanif/.proton-ntfs
+
