@@ -39,6 +39,7 @@ sudo restic backup --repo "$REPO" \
   --exclude "$HOME/.local/share/PrismLauncher/instances" \
   --exclude "$HOME/.local/share/PrismLauncher/cache" \
   --exclude "$HOME/.local/share/PrismLauncher/meta" \
+  --exclude "$HOME/.proton-ntfs" \
   "$HOME" /etc
 
 section "Pruning old snapshots..."
