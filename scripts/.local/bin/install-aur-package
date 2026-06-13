@@ -4,6 +4,10 @@
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 source "$HOME/.config/bash/utils.sh"
 
+FRESH_DAYS=3
+LOW_VOTES=10
+SUSPECT_RE='(npm (i|install)|bun (i|install)|pip install|base64 -d|eval |curl[^|]*\| *(ba|z)?sh|wget[^|]*\| *(ba|z)?sh)'
+
 fzf_args=(
   --multi
   --preview 'yay -Siia {1}'
@@ -19,10 +23,62 @@ fzf_args=(
 )
 
 pkg_names=$(yay -Slqa | sort -u | fzf "${fzf_args[@]}")
-if [[ -n $pkg_names ]]; then
-  pkgs=(${(f)pkg_names})
-  yay -S "${pkgs[@]}"
-  sudo updatedb
+[[ -z $pkg_names ]] && exit 0
+pkgs=(${(f)pkg_names})
+
+# --- Pre-install vetting ---
+section "Vetting ${#pkgs} package(s)..."
+flags=0
+now=$(date +%s)
+args=$(printf 'arg[]=%s&' "${pkgs[@]}")
+info=$(curl -sf "https://aur.archlinux.org/rpc/v5/info?${args%&}" || true)
+
+for pkg in $pkgs; do
+  if [[ -n $info ]] && command -v jq &>/dev/null; then
+    read -r mod votes maintainer ood < <(echo "$info" | jq -r --arg p "$pkg" \
+      '.results[] | select(.Name==$p) |
+       "\(.LastModified) \(.NumVotes) \(.Maintainer // "ORPHAN") \(.OutOfDate // 0)"')
+    if [[ -n $mod ]]; then
+      age_d=$(( (now - mod) / 86400 ))
+      if (( now - mod < FRESH_DAYS * 86400 )); then
+        warn "$pkg: PKGBUILD pushed $(( (now - mod) / 3600 ))h ago — fresher than ${FRESH_DAYS}d"
+        flags=1
+      fi
+      if (( votes < LOW_VOTES )); then
+        warn "$pkg: only $votes vote(s) — little community review"
+        flags=1
+      fi
+      if [[ $maintainer == ORPHAN ]]; then
+        warn "$pkg: orphaned — no active maintainer"
+        flags=1
+      fi
+      if [[ $ood != 0 ]]; then
+        warn "$pkg: flagged out-of-date since $(date -d @$ood +%F)"
+        flags=1
+      fi
+    else
+      warn "$pkg: not found in AUR RPC response"
+      flags=1
+    fi
+  fi
+
+  # Scan PKGBUILD + install/hook files for fetch-and-execute patterns
+  if yay -Gpa "$pkg" 2>/dev/null | grep -qE "$SUSPECT_RE"; then
+    warn "$pkg: PKGBUILD contains fetch-and-execute pattern — read it before confirming:"
+    yay -Gpa "$pkg" 2>/dev/null | grep -nE "$SUSPECT_RE" | sed 's/^/    /'
+    flags=1
+  fi
+done
+
+if (( flags )); then
   echo ""
+  read -q "REPLY?Warnings above. Continue with install? [y/N] " || { echo ""; exit 1 }
+  echo ""
+else
+  ok "No red flags"
 fi
+
+yay -S "${pkgs[@]}"
+sudo updatedb
+echo ""
 

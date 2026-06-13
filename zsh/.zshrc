@@ -18,8 +18,8 @@ eval "$(fzf --zsh)"
 alias lg='lazygit'
 alias ffs='sudo'
 
-alias dl='yt-dlp -P "~/Downloads/Videos" --cookies-from-browser "brave+gnomekeyring"'
-alias dl-batch='yt-dlp -P "~/Downloads/Videos" --cookies-from-browser "brave+gnomekeyring" --batch-file'
+alias dl='yt-dlp -P "~/Downloads/Videos" --cookies-from-browser "brave+gnomekeyring:~/.config/BraveSoftware/Brave-Origin/Default"'
+alias dl-batch='yt-dlp -P "~/Downloads/Videos" --cookies-from-browser "brave+gnomekeyring:~/.config/BraveSoftware/Brave-Origin/Default" --batch-file'
 
 alias ..='cd ..'
 alias ...='cd ../..'
