@@ -2,7 +2,6 @@ alsa-utils
 amd-ucode
 android-udev
 artix-archlinux-support
-awww
 base
 base-devel
 bluetui
@@ -42,6 +41,7 @@ gvfs-smb
 hypridle
 hyprland
 hyprlock
+hyprpaper
 impala
 iwd-openrc
 lazygit
