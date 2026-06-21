@@ -27,3 +27,18 @@ if grep -qE "^\[extra\]" /etc/pacman.conf; then
 else
     warn "Arch [extra] not enabled" "Enable Arch repos:" "sudo pacman -S artix-archlinux-support"
 fi
+
+if grep -qE "^\[lib32\]" /etc/pacman.conf; then
+    if (( $(grep -nE "^\[lib32\]" /etc/pacman.conf | cut -d: -f1) < \
+          $(grep -nE "^\[multilib\]" /etc/pacman.conf | cut -d: -f1 || echo 99999) )); then
+        ok "Artix [lib32] enabled and ahead of [multilib]"
+    else
+        warn "Artix [lib32] is after [multilib]" \
+             "Move the [lib32] section above [multilib] so Artix takes precedence."
+    fi
+else
+    warn "Artix [lib32] not enabled" \
+         "Enable it ahead of [multilib] for soname-stable 32-bit libs:" \
+         "Add [lib32] Include = /etc/pacman.d/mirrorlist before [multilib]"
+fi
+

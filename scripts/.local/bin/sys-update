@@ -7,26 +7,56 @@ SOAK_DAYS=3
 SOAK_EXEMPT=(brave-origin-bin discord-latest-bin)
 SUSPECT_RE='^\+[^+].*(npm (i|install)|bun (i|install)|pip install|base64 -d|eval |curl[^|]*\| *(ba|z)?sh|wget[^|]*\| *(ba|z)?sh)'
 
+# Mirror freshness knob
+STALE_DAYS=4
+
 keep_screen_on
 section "System Update"
 sudo -v
 
 section "Syncing keyrings..."
-sudo pacman -Sy --noconfirm archlinux-keyring >/dev/null || true
+sudo pacman -Sy --noconfirm archlinux-keyring artix-keyring >/dev/null || true
+
+# --- Mirror freshness: a frozen mirror serves a stale db that pacman still
+#     reports as "up to date". Check when the mirror last touched each .db. ---
+section "Checking mirror freshness..."
+arch=$(uname -m)
+stale=0
+for repo in system world galaxy lib32 multilib extra; do
+  pacman-conf --repo "$repo" &>/dev/null || continue
+  url=$(pacman-conf --repo "$repo" | awk '/^Server/{print $3; exit}')
+  url=${url//\$repo/$repo}; url=${url//\$arch/$arch}
+  [[ -z $url ]] && { warn "$repo: no Server configured"; continue; }
+  lm=$(curl -sfLI "${url}/${repo}.db" | tr -d '\r' \
+        | awk -F': ' 'tolower($1)=="last-modified"{print $2; exit}')
+  if [[ -z $lm ]]; then
+    warn "$repo: no Last-Modified from mirror, can't verify ($url)"
+    continue
+  fi
+  age=$(( ( $(date +%s) - $(date -d "$lm" +%s) ) / 86400 ))
+  if (( age > STALE_DAYS )); then
+    warn "$repo: db is ${age}d old on $url"
+    stale=1
+  fi
+done
+if (( stale )); then
+  fail "Stale mirror(s) detected. Reseat the mirrorlist before upgrading."
+  exit 1
+fi
 
 log_before_official=$(wc -l < /var/log/pacman.log)
 official_failed=0
 section "Updating system packages..."
-sudo pacman -Syyu --noconfirm 2>&1 | tee /tmp/pacman-out.txt
+# Interactive on purpose: review the transaction for elogind/nvidia and other
+# soname-transition surprises before committing. Do NOT add --noconfirm here.
+sudo pacman -Syu 2>&1 | tee /tmp/pacman-out.txt
 first_exit=${pipestatus[1]}
 if grep -qE 'cannot resolve|breaks dependency' /tmp/pacman-out.txt; then
-  failing=$( {
-    grep "cannot resolve" /tmp/pacman-out.txt \
-      | grep -oP 'dependency of "\K[^"]+'
-    grep "breaks dependency" /tmp/pacman-out.txt \
-      | grep -oP 'installing \K[^ ]+'
-  } | sort -u | tr '\n' ',')
-  sudo pacman -Syyu --noconfirm --ignore "${failing%,}" || official_failed=1
+  # A dependency conflict on a rolling release is a signal, not noise.
+  # Surface it and stop; never auto-ignore your way past it.
+  fail "Dependency conflict — not auto-skipping. Resolve manually."
+  grep -E 'cannot resolve|breaks dependency' /tmp/pacman-out.txt
+  official_failed=1
 else
   (( first_exit != 0 )) && official_failed=1
 fi

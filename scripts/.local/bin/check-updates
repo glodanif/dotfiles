@@ -1,24 +1,68 @@
 #!/bin/zsh
-
 cache_file="$HOME/.cache/scripts/waybar-updates-cache"
-official_list=$(checkupdates 2>/dev/null)
-aur_list=$(yay -Qua 2>/dev/null)
+freshness_file="$HOME/.cache/scripts/mirror-freshness"
+STALE_DAYS=4
+THROTTLE=21600   # re-check mirror freshness at most every 6h
 
+# --- Throttled freshness canary --------------------------------------------
+# A frozen mirror serves a stale db that checkupdates reports as "0 updates".
+# The only honest signal is when the mirror last touched its db. Check one
+# Artix repo (system, via mirrorlist) and one Arch repo (extra, via
+# mirrorlist-arch); cache the worst age so the bar isn't hitting the net every
+# poll.
+if [[ ! -f $freshness_file ]] || \
+   (( $(date +%s) - $(stat -c %Y "$freshness_file") > THROTTLE )); then
+  arch=$(uname -m)
+  worst=0
+  for repo in system extra; do
+    url=$(pacman-conf --repo "$repo" 2>/dev/null | awk '/^Server/{print $3; exit}')
+    url=${url//\$repo/$repo}; url=${url//\$arch/$arch}
+    [[ -z $url ]] && continue
+    lm=$(curl -sfLI --max-time 5 "${url}/${repo}.db" | tr -d '\r' \
+          | awk -F': ' 'tolower($1)=="last-modified"{print $2; exit}')
+    [[ -z $lm ]] && continue
+    age=$(( ( $(date +%s) - $(date -d "$lm" +%s) ) / 86400 ))
+    (( age > worst )) && worst=$age
+  done
+  echo "$worst" > "$freshness_file"
+fi
+mirror_age=$(cat "$freshness_file" 2>/dev/null || echo 0)
+stale=0
+(( mirror_age > STALE_DAYS )) && stale=1
+
+# --- Update counts ----------------------------------------------------------
+official_list=$(checkupdates 2>/dev/null); official_rc=$?
+aur_list=$(yay -Qua 2>/dev/null)
 official=$(echo "$official_list" | grep -c .)
 aur=$(echo "$aur_list" | grep -c .)
 count=$(( official + aur ))
 
-if (( count > 0 )); then
-    tooltip=""
-    [[ -n "$official_list" ]] && tooltip="Official ($official):\n$(echo "$official_list" | tr '\n' '|' | sed 's/|$//' | sed 's/|/\\n/g')"
-    [[ -n "$aur_list" ]] && {
-        [[ -n "$tooltip" ]] && tooltip="${tooltip}\nAUR ($aur):\n$(echo "$aur_list" | tr '\n' '|' | sed 's/|$//' | sed 's/|/\\n/g')" \
-                            || tooltip="AUR ($aur):\n$(echo "$aur_list" | tr '\n' '|' | sed 's/|$//' | sed 's/|/\\n/g')"
-    }
-    printf '{"text":"󰅢 %s","tooltip":"%s"}\n' "$count" "$tooltip" > "$cache_file"
-else
-    printf '' > "$cache_file"
-fi
+# checkupdates: 0 = updates found, 2 = none, anything else = real error.
+check_failed=0
+(( official_rc != 0 && official_rc != 2 )) && check_failed=1
 
+fmt() {  # newline-joined list -> escaped \n for waybar JSON
+  echo "$1" | tr '\n' '|' | sed 's/|$//; s/|/\\n/g'
+}
+
+if (( check_failed )); then
+  printf '{"text":"󰀦","tooltip":"Update check failed — mirror unreachable or pacman error","class":"error"}\n' \
+    > "$cache_file"
+elif (( stale )); then
+  tooltip="⚠ mirror db is ${mirror_age}d old — reseat your mirrorlist"
+  [[ -n "$official_list" ]] && tooltip="${tooltip}\nOfficial ($official):\n$(fmt "$official_list")"
+  [[ -n "$aur_list" ]]      && tooltip="${tooltip}\nAUR ($aur):\n$(fmt "$aur_list")"
+  printf '{"text":"󰀦 %s","tooltip":"%s","class":"stale"}\n' "$count" "$tooltip" > "$cache_file"
+elif (( count > 0 )); then
+  tooltip=""
+  [[ -n "$official_list" ]] && tooltip="Official ($official):\n$(fmt "$official_list")"
+  [[ -n "$aur_list" ]] && {
+    [[ -n "$tooltip" ]] && tooltip="${tooltip}\nAUR ($aur):\n$(fmt "$aur_list")" \
+                        || tooltip="AUR ($aur):\n$(fmt "$aur_list")"
+  }
+  printf '{"text":"󰅢 %s","tooltip":"%s"}\n' "$count" "$tooltip" > "$cache_file"
+else
+  printf '' > "$cache_file"
+fi
 pkill -RTMIN+8 waybar 2>/dev/null
 
