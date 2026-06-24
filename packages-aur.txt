@@ -1,4 +1,3 @@
-affine-bin
 bottles
 brave-origin-bin
 bridge-utils

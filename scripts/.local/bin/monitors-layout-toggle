@@ -1,6 +1,5 @@
 #!/bin/zsh
 STATE_FILE="/tmp/hypr-display-mode"
-MONITORS_CONF="$HOME/.config/hypr/monitors.conf"
 PERSISTENT_WORKSPACES=7
 
 if [ -z "$1" ]; then
@@ -30,12 +29,12 @@ set_sink() {
 
 case $MODE in
     pc)
-        cat > "$MONITORS_CONF" <<'EOF'
-monitor = DP-2, 1920x1080@60, 0x0, 1
-monitor = DP-1, 2560x1440@59.951, 1920x0, 1
-monitor = HDMI-A-1, disable
-EOF
+        hyprctl keyword monitor "DP-2,preferred,5000x0,1"
+        hyprctl keyword monitor "DP-1,preferred,6920x0,1"
         sleep 1
+        hyprctl keyword monitor "HDMI-A-1,disable"
+        hyprctl keyword monitor "DP-2,preferred,0x0,1"
+        hyprctl keyword monitor "DP-1,preferred,1920x0,1"
 
         for ((i=1; i<=PERSISTENT_WORKSPACES; i++)); do
             hyprctl dispatch workspace $i
@@ -55,12 +54,12 @@ EOF
         notify-send -t 3000 "Display Mode" "Switched to PC"
         ;;
     tv)
-        cat > "$MONITORS_CONF" <<'EOF'
-monitor = HDMI-A-1, 4096x2160@60, 0x0, 2
-monitor = DP-1, disable
-monitor = DP-2, disable
-EOF
+        hyprctl keyword monitor "HDMI-A-1,4096x2160@60,5000x0,2"
         sleep 1
+        hyprctl keyword monitor "DP-1,disable"
+        hyprctl keyword monitor "DP-2,disable"
+        sleep 0.5
+        hyprctl keyword monitor "HDMI-A-1,4096x2160@60,0x0,2"
 
         for ((i=1; i<=PERSISTENT_WORKSPACES; i++)); do
             hyprctl dispatch workspace $i
@@ -75,4 +74,3 @@ EOF
         notify-send -t 3000 "Display Mode" "Switched to TV"
         ;;
 esac
-

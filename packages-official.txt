@@ -71,6 +71,7 @@ ntfs-3g
 nvidia-open-dkms
 nvidia-utils
 obs-studio
+obsidian
 openrc
 openresolv
 openssh-openrc
