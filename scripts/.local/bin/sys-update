@@ -6,8 +6,9 @@ source "$HOME/.config/bash/utils.sh"
 section "System Update"
 sudo -v
 
+update_failed=0
 section "Syncing and upgrading packages..."
-sudo xbps-install -Su
+sudo xbps-install -Su || update_failed=1
 
 section "Removing orphaned packages..."
 if xbps-query -O 2>/dev/null | grep -q .; then
@@ -21,7 +22,11 @@ running=$(uname -r)
 major_minor=$(echo "$running" | grep -oP '^\d+\.\d+')
 installed=$(xbps-query -p pkgver "linux${major_minor}" 2>/dev/null | sed "s/^linux${major_minor}-//")
 if [[ -n "$installed" && "$installed" != "$running" ]]; then
-    warn "Kernel updated — reboot when ready"
+    section "⚠ Kernel updated — reboot when ready!" "\e[1;33m"
 fi
 
-section "Done"
+if (( update_failed )); then
+    fail "Update failed"
+else
+    ok "Done"
+fi
