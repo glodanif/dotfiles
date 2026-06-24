@@ -8,12 +8,15 @@ chrony
 cryptsetup
 curl
 dialog
+docker
+docker-compose
 eza
 fastfetch
 fd
 ffmpeg
 fzf
 git
+gnupg
 gptfdisk
 grub-x86_64-efi
 jq
@@ -22,6 +25,7 @@ libclang
 lvm2
 mdadm
 neovim
+ntfs-3g
 openssl-devel
 restic
 ripgrep
@@ -29,9 +33,11 @@ rustup
 samba
 smartmontools
 stow
+syncthing
 tmux
 transmission
 uv
+wget
 yazi
 zellij
 zip
