@@ -10,6 +10,15 @@ update_failed=0
 section "Syncing and upgrading packages..."
 sudo xbps-install -Su || update_failed=1
 
+section "Updating cargo binaries..."
+if command -v cargo-binstall &>/dev/null; then
+    while read -r url; do
+        cargo binstall -y --git "$url" "$(basename "$url")"
+    done < ~/.local/bin/cargo-binaries.txt
+else
+    warn "cargo-binstall not installed, skipping"
+fi
+
 section "Removing orphaned packages..."
 if xbps-query -O 2>/dev/null | grep -q .; then
     warn "Orphaned packages found, removing..."

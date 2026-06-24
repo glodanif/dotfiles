@@ -1,0 +1,4 @@
+#!/bin/zsh
+name=$(basename "$1")
+cargo binstall -y --git "$1" "$name" && echo "$1" >> ~/.local/bin/cargo-binaries.txt && sort -uo ~/.local/bin/cargo-binaries.txt ~/.local/bin/cargo-binaries.txt
+

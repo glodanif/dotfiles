@@ -12,6 +12,7 @@ plugins=(git zsh-autosuggestions zsh-syntax-highlighting sudo)
 
 source $ZSH/oh-my-zsh.sh
 export GPG_TTY=$(tty)
+eval "$(fzf --zsh)"
 
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
