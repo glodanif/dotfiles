@@ -152,6 +152,12 @@
     },
     {
       "type": "command",
+      "key": "Now",
+      "keyColor": "#7FD962",
+      "text": "date '+%Y-%m-%d %H:%M'"
+    },
+    {
+      "type": "command",
       "key": "Age",
       "keyColor": "#7FD962",
       "text": "echo $(( ($(date +%s) - $(stat -c %W /)) / 86400 )) days"

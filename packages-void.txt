@@ -34,7 +34,6 @@ samba
 smartmontools
 stow
 syncthing
-tmux
 transmission
 uv
 wget
