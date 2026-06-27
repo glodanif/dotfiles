@@ -1,7 +1,11 @@
 #!/bin/zsh
 # check-updates — show pending Void Linux package updates
 
-output=$(sudo xbps-install -Sun 2>&1)
+# Sync repodata as its own step so a stale local index can't hide updates.
+sudo xbps-install -S >/dev/null 2>&1
+
+# Check pending updates against the freshly-synced index (read-only, no -S).
+output=$(xbps-install -un 2>&1)
 if [[ -n "$output" ]]; then
     echo "$output"
 else
