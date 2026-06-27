@@ -2,15 +2,17 @@
 STATE_FILE="/tmp/hypr-display-mode"
 PERSISTENT_WORKSPACES=7
 
-if [ -z "$1" ]; then
+MODE=$1
+SKIP_MONITORS=0
+[ "$2" = "--skip-monitors" ] && SKIP_MONITORS=1
+
+if [ -z "$MODE" ]; then
     CURRENT=$(cat "$STATE_FILE" 2>/dev/null || echo "pc")
     if [ "$CURRENT" = "pc" ]; then
         MODE="tv"
     else
         MODE="pc"
     fi
-else
-    MODE=$1
 fi
 
 set_sink() {
@@ -29,12 +31,14 @@ set_sink() {
 
 case $MODE in
     pc)
-        hyprctl keyword monitor "DP-2,preferred,5000x0,1"
-        hyprctl keyword monitor "DP-1,preferred,6920x0,1"
-        sleep 1
-        hyprctl keyword monitor "HDMI-A-1,disable"
-        hyprctl keyword monitor "DP-2,preferred,0x0,1"
-        hyprctl keyword monitor "DP-1,preferred,1920x0,1"
+        if [ "$SKIP_MONITORS" -eq 0 ]; then
+            hyprctl keyword monitor "DP-2,preferred,5000x0,1"
+            hyprctl keyword monitor "DP-1,preferred,6920x0,1"
+            sleep 1
+            hyprctl keyword monitor "HDMI-A-1,disable"
+            hyprctl keyword monitor "DP-2,preferred,0x0,1"
+            hyprctl keyword monitor "DP-1,preferred,1920x0,1"
+        fi
 
         for ((i=1; i<=PERSISTENT_WORKSPACES; i++)); do
             hyprctl dispatch workspace $i

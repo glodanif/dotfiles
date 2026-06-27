@@ -4,4 +4,12 @@ STATE_FILE="/tmp/hypr-display-mode"
 sleep 2
 
 SAVED_STATE=$(cat "$STATE_FILE" 2>/dev/null || echo "pc")
-monitors-layout-toggle "$SAVED_STATE"
+
+# PC is the default layout already applied by monitors.conf, so on restore we
+# skip the (flickery, redundant) monitor reconfiguration and only re-apply the
+# workspace distribution, focus, pointer and audio sink.
+if [ "$SAVED_STATE" = "pc" ]; then
+    monitors-layout-toggle pc --skip-monitors
+else
+    monitors-layout-toggle "$SAVED_STATE"
+fi
