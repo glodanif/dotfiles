@@ -27,6 +27,7 @@ mdadm
 neovim
 ntfs-3g
 openssl-devel
+parted
 restic
 ripgrep
 rustup
