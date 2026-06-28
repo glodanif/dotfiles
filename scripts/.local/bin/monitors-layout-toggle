@@ -1,5 +1,6 @@
 #!/bin/zsh
-STATE_FILE="/tmp/hypr-display-mode"
+STATE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/hypr-display-mode"
+mkdir -p "$(dirname "$STATE_FILE")"
 PERSISTENT_WORKSPACES=7
 
 MODE=$1

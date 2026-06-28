@@ -42,3 +42,28 @@ else
          "Add [lib32] Include = /etc/pacman.d/mirrorlist before [multilib]"
 fi
 
+# Unmerged .pacnew files from package upgrades. A stale /etc/pacman.conf.pacnew,
+# if merged carelessly, can drop Artix [lib32] below [multilib] and silently
+# revert 32-bit libs to Arch builds (see the [lib32] ordering check above).
+if command -v pacdiff &>/dev/null; then
+    pending=$(pacdiff -o 2>/dev/null)
+else
+    pending=$(find /etc /boot -name '*.pacnew' 2>/dev/null)
+fi
+
+if [[ -z "$pending" ]]; then
+    ok "no pending .pacnew files"
+else
+    count=$(printf '%s\n' "$pending" | grep -c .)
+    if printf '%s\n' "$pending" | grep -q '/etc/pacman.conf.pacnew'; then
+        warn "$count pending .pacnew file(s) — incl. pacman.conf" \
+             "Merge carefully; keep [lib32] above [multilib]:" \
+             "sudo pacdiff"
+    else
+        warn "$count pending .pacnew file(s) to merge" \
+             "Review and merge:" \
+             "sudo pacdiff"
+    fi
+    printf '%s\n' "$pending" | sed 's/^/        /'
+fi
+

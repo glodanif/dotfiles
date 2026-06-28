@@ -1,5 +1,5 @@
 #!/bin/zsh
-STATE_FILE="/tmp/hypr-display-mode"
+STATE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/hypr-display-mode"
 
 sleep 2
 

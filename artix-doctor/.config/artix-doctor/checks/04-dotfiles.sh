@@ -13,7 +13,7 @@ while IFS= read -r src; do
 
     # Skip repo-root metadata files
     case "$relative" in
-        LICENSE|README.md|.gitignore|.stowignore|packages-*.txt|refresh.sh) continue ;;
+        LICENSE|README.md|CLAUDE.md|.gitignore|.stowignore|packages-*.txt|refresh.sh) continue ;;
     esac
 
     if [[ -L "$target" ]]; then

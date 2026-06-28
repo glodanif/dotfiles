@@ -109,7 +109,6 @@ telegram-desktop
 thunar
 thunar-archive-plugin
 tk
-tmux
 ttf-font-awesome
 ttf-jetbrains-mono-nerd
 tumbler
