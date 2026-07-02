@@ -1,0 +1,43 @@
+#!/bin/zsh
+
+KEYBOARD="hp--inc-hyperx-alloy-origins"
+LAST_LAYOUT=""
+
+print_layout() {
+    case "$1" in
+        English*) echo '{"text":"","tooltip":""}' ;;
+        Russian*) echo '{"text":"🇷🇺","tooltip":"Russian layout"}' ;;
+        Ukrainian*) echo '{"text":"🇺🇦","tooltip":"Ukrainian layout"}' ;;
+        *) echo "{\"text\":\"${1[1,2]:u}\",\"tooltip\":\"$1\"}" ;;
+    esac
+}
+
+notify_layout() {
+    notify-send -t 2000 \
+                -h string:x-canonical-private-synchronous:kb-layout \
+                "Keyboard Layout" "$1"
+}
+
+LAST_LAYOUT=$(hyprctl devices -j | jq -r --arg kb "$KEYBOARD" '.keyboards[] | select(.name == $kb) | .active_keymap')
+print_layout "$LAST_LAYOUT"
+
+socat -u "UNIX-CONNECT:$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" - | while read -r line; do
+    case "$line" in
+        "activelayout>>"*)
+            payload="${line#activelayout>>}"
+            device="${payload%,*}"
+            layout="${payload##*,}"
+
+            case "$device" in
+                *"hyperx-alloy-origins"*|*"mini-keyboard"*) ;;
+                *) continue ;;
+            esac
+
+            if [[ "$layout" != "$LAST_LAYOUT" ]]; then
+                LAST_LAYOUT="$layout"
+                print_layout "$layout"
+                notify_layout "$layout"
+            fi
+            ;;
+    esac
+done

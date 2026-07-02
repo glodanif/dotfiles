@@ -4,7 +4,7 @@ source "$HOME/.config/bash/utils.sh"
 
 # AUR safety knobs
 SOAK_DAYS=3
-SOAK_EXEMPT=(brave-origin-bin discord-latest-bin)
+SOAK_EXEMPT=()
 SUSPECT_RE='^\+[^+].*(npm (i|install)|bun (i|install)|pip install|base64 -d|eval |curl[^|]*\| *(ba|z)?sh|wget[^|]*\| *(ba|z)?sh)'
 
 # Mirror freshness knob

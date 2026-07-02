@@ -6,7 +6,7 @@
   "spacing": 4,
   "modules-left": ["custom/artix", "hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock", "custom/weather"],
-  "modules-right": ["custom/screenshare", "tray", "custom/recording", "custom/voxtype", "custom/mic", "custom/updates", "pulseaudio", "cpu", "memory", "bluetooth", "custom/vpn", "network"],
+  "modules-right": ["custom/screenshare", "tray", "custom/layout", "custom/recording", "custom/voxtype", "custom/mic", "custom/updates", "pulseaudio", "cpu", "memory", "bluetooth", "custom/vpn", "network"],
   "clock": {
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
     "format": "{:L%A %H:%M}",
@@ -56,6 +56,10 @@
   },
   "tray": {
     "spacing": 10,
+  },
+  "custom/layout": {
+    "exec": "layout-watch",
+    "return-type": "json",
   },
   "hyprland/workspaces": {
     "format": "{id}",

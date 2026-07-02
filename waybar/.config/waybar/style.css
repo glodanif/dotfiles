@@ -319,12 +319,15 @@ label:focus {
     background-color: #51a37a;
 }
 
-#language {
-    background: #00b093;
-    color: #740864;
-    padding: 0 5px;
-    margin: 0 5px;
-    min-width: 16px;
+#custom-layout {
+    padding: 0 8px;
+    background-color: #66b2ff;
+    color: #001933;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    margin-left: 6px;
+    margin-right: 2px;
+    border-radius: 8px;
 }
 
 #keyboard-state {
