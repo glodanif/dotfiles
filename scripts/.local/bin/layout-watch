@@ -29,7 +29,7 @@ socat -u "UNIX-CONNECT:$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socke
             layout="${payload##*,}"
 
             case "$device" in
-                *"hyperx-alloy-origins"*|*"mini-keyboard"*) ;;
+                *"hyperx-alloy-origins"*|*"mini-keyboard"*|*"k400"*) ;;
                 *) continue ;;
             esac
 

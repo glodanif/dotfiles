@@ -1,0 +1,7 @@
+#!/bin/zsh
+# Switch to the next keyboard layout on ALL keyboards at once.
+# Uses the main keyboard's index as the reference, so keyboards that
+# joined out of sync (e.g. after reconnecting) snap back in line.
+
+next=$(hyprctl devices -j | jq '[.keyboards[] | select(.main)][0] | (.active_layout_index + 1) % (.layout | split(",") | length)')
+hyprctl switchxkblayout all "$next"
