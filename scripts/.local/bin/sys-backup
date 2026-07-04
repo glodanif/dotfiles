@@ -39,5 +39,5 @@ sudo restic forget --repo "$REPO" \
   --prune
 
 section "Backup complete."
-notify-send -t 2000 "Backup complete."
+notify-send -e -t 2000 "Backup complete."
 

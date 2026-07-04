@@ -3,10 +3,11 @@
     font-family: "SUSE_Mono", "JetBrainsMono Nerd Font";
     font-size: 15px;
     font-weight: 500;
+
 }
 
 window#waybar {
-    background-color: rgba(0, 0, 0, 0.65);
+    background-color: rgba(0, 0, 0, 0.5);
     color: #ffffff;
     transition-property: background-color;
     transition-duration: 0.5s;
@@ -56,6 +57,7 @@ button:hover {
 #custom-updates:hover,
 #custom-vpn:hover,
 #custom-voxtype:hover,
+#custom-notification:hover,
 #pulseaudio:hover {
     background-color: #dddddd;
 }
@@ -84,7 +86,7 @@ button:hover {
 #workspaces button.focused,
 #workspaces button.active {
     color: rgba(43, 48, 59, 0.75);
-    background-color: #66b2ff;
+    background: linear-gradient(180deg, #4dabf7 0%, #4dabf7 60%, #9775fa 100%);
 }
 
 #workspaces button.urgent {
@@ -94,8 +96,12 @@ button:hover {
 }
 
 @keyframes urgent-blink {
-    0% { opacity: 0 }
-    100% { opacity: 0.75; }
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0.75;
+    }
 }
 
 #workspaces button.empty {
@@ -134,33 +140,11 @@ button:hover {
     margin-top: 1px;
 }
 
-#battery {
-    background-color: #ffffff;
-    color: #000000;
-}
-
-#battery.charging,
-#battery.plugged {
-    color: #ffffff;
-    background-color: #26a65b;
-}
-
 @keyframes blink {
     to {
         background-color: #ffffff;
         color: #000000;
     }
-}
-
-/* Using steps() instead of linear as a timing function to limit cpu usage */
-#battery.critical:not(.charging) {
-    background-color: #f53c3c;
-    color: #ffffff;
-    animation-name: blink;
-    animation-duration: 0.5s;
-    animation-timing-function: steps(12);
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
 }
 
 #power-profiles-daemon {
@@ -186,11 +170,27 @@ label:focus {
     background-color: #000000;
 }
 
-#custom-power,
-#bluetooth,
 #cpu {
     padding: 0 8px;
-    background-color: #66b2ff;
+    background: linear-gradient(180deg, #4dabf7 0%, #4dabf7 60%, #9775fa 100%);
+    color: #001933;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    border-radius: 8px 0 0 8px;
+}
+
+#memory {
+    padding: 0 8px;
+    background: linear-gradient(180deg, #4dabf7 0%, #4dabf7 60%, #9775fa 100%);
+    color: #001933;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    border-radius: 0 8px 8px 0;
+}
+
+#bluetooth {
+    padding: 0 8px;
+    background: linear-gradient(180deg, #4dabf7 0%, #4dabf7 60%, #9775fa 100%);
     color: #001933;
     margin-top: 6px;
     margin-bottom: 6px;
@@ -199,29 +199,29 @@ label:focus {
 
 #custom-vpn {
     padding: 0 8px;
-    background-color: #66b2ff;
+    background: linear-gradient(180deg, #4dabf7 0%, #4dabf7 60%, #9775fa 100%);
     color: #001933;
     margin-top: 6px;
     margin-bottom: 6px;
     min-width: 12px;
 }
 
-#network,
-#memory {
+#network {
     padding: 0 8px;
-    background-color: #66b2ff;
+    background: linear-gradient(180deg, #4dabf7 0%, #4dabf7 60%, #9775fa 100%);
     color: #001933;
     margin-top: 6px;
     margin-bottom: 6px;
-    border-radius: 0 8px 8px 0; 
+    border-radius: 0 8px 8px 0;
 }
 
 #memory,
 #network,
 #custom-updates,
 #custom-voxtype,
-#pulseaudio {
-  margin-right: 8px;
+#pulseaudio,
+#custom-notification {
+    margin-right: 8px;
 }
 
 #disk {
@@ -238,7 +238,7 @@ label:focus {
 
 #pulseaudio {
     padding: 0 8px;
-    background-color: #66b2ff;
+    background: linear-gradient(180deg, #4dabf7 0%, #4dabf7 60%, #9775fa 100%);
     color: #001933;
     margin-top: 6px;
     margin-bottom: 6px;
@@ -247,7 +247,7 @@ label:focus {
 }
 
 #pulseaudio.muted {
-  color: #ff5b61;
+    color: #ff5b61;
 }
 
 #wireplumber {
@@ -257,28 +257,6 @@ label:focus {
 
 #wireplumber.muted {
     background-color: #f53c3c;
-}
-
-#custom-media {
-    background-color: #66cc99;
-    color: #2a5c45;
-    min-width: 100px;
-}
-
-#custom-media.custom-spotify {
-    background-color: #66cc99;
-}
-
-#custom-media.custom-vlc {
-    background-color: #ffa000;
-}
-
-#temperature {
-    background-color: #f0932b;
-}
-
-#temperature.critical {
-    background-color: #eb4d4b;
 }
 
 #tray {
@@ -321,7 +299,7 @@ label:focus {
 
 #custom-layout {
     padding: 0 8px;
-    background-color: #66b2ff;
+    background: linear-gradient(180deg, #4dabf7 0%, #4dabf7 60%, #9775fa 100%);
     color: #001933;
     margin-top: 6px;
     margin-bottom: 6px;
@@ -380,9 +358,13 @@ label:focus {
     background-repeat: no-repeat;
     background-position: center;
     background-size: 16px 16px;
-    min-width: 24px;
+    background-color: rgba(102, 178, 255, 0.25);
+    min-width: 30px;
     min-height: 24px;
-    margin-left: 16px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    margin-left: 8px;
+    border-radius: 8px;
 }
 
 #custom-weather {
@@ -393,6 +375,7 @@ label:focus {
 #custom-voxtype,
 #custom-updates,
 #custom-screenshare,
+#custom-notification,
 #custom-mic {
     padding: 0 8px;
     margin-top: 6px;
@@ -414,7 +397,9 @@ label:focus {
 }
 
 @keyframes recording-blink {
-    50% { opacity: 0.5; }
+    50% {
+        opacity: 0.5;
+    }
 }
 
 #custom-recording {
@@ -431,7 +416,7 @@ label:focus {
 }
 
 #custom-screenshare {
-    background-color: #FF8C00;
+    background-color: #ff8c00;
     padding: 0 8px;
     margin: 6px;
     border-radius: 16px;
@@ -439,6 +424,12 @@ label:focus {
 }
 
 #custom-updates {
-    background-color: #66b2ff;
+    background: linear-gradient(180deg, #4dabf7 0%, #4dabf7 60%, #9775fa 100%);
 }
 
+#custom-notification {
+    margin-left: 0;
+    margin-right: 8px;
+    padding: 0 10px 0 8px;
+    background: linear-gradient(180deg, #4dabf7 0%, #4dabf7 60%, #9775fa 100%);
+}

@@ -55,7 +55,6 @@ linux
 linux-firmware
 linux-headers
 lvm2
-mako
 mesa-utils
 mpv
 musl
@@ -102,6 +101,7 @@ sound-theme-freedesktop
 steam
 stow
 swayimg
+swaync
 swtpm
 syncthing
 tcpdump

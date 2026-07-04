@@ -56,7 +56,7 @@ case $MODE in
 
         set_sink "alsa_output.usb-Focusrite_Scarlett_2i2_USB-00"
         echo "pc" > "$STATE_FILE"
-        notify-send -t 3000 "Display Mode" "Switched to PC"
+        notify-send -e -t 3000 "Display Mode" "Switched to PC"
         ;;
     tv)
         hyprctl keyword monitor "HDMI-A-1,4096x2160@60,5000x0,2"
@@ -76,6 +76,6 @@ case $MODE in
 
         set_sink "alsa_output.pci-0000_01_00.1.hdmi"
         echo "tv" > "$STATE_FILE"
-        notify-send -t 3000 "Display Mode" "Switched to TV"
+        notify-send -e -t 3000 "Display Mode" "Switched to TV"
         ;;
 esac

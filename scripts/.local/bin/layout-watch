@@ -13,7 +13,7 @@ print_layout() {
 }
 
 notify_layout() {
-    notify-send -t 2000 \
+    notify-send -e -t 2000 \
                 -h string:x-canonical-private-synchronous:kb-layout \
                 "Keyboard Layout" "$1"
 }

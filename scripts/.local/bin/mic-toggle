@@ -5,8 +5,8 @@ pactl set-source-mute "$SOURCE" toggle
 MUTED=$(pactl get-source-mute "$SOURCE" | awk '{print $2}')
 
 if [[ "$MUTED" == "yes" ]]; then
-    notify-send -t 1000 "Mic muted"
+    notify-send -e -t 1000 "Mic muted"
 else
-    notify-send -t 1000 "Mic active"
+    notify-send -e -t 1000 "Mic active"
 fi
 

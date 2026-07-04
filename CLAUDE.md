@@ -30,6 +30,7 @@ This is a **GNU Stow** repo. Each top-level directory is a stow package whose co
 | `scripts/` | User scripts in `.local/bin/` |
 | `stainer/` | Stainer tool config |
 | `fastfetch/` | System info display |
+| `fontconfig/` | Font rendering overrides (Montserrat unhinted) |
 | `elephant/` | Elephant menus (toml) |
 | `applications/` | .desktop files |
 | `assets/` | Wallpapers and other assets |

@@ -166,8 +166,8 @@ if (( ${#skip} )); then
   warn "AUR:      ${#skip} package(s) held back: ${(j:, :)skip}"
 fi
 if (( official_failed )); then
-  notify-send -u critical "Update failed."
+  notify-send -e -u critical "Update failed."
 elif (( official_count > 0 || aur_count > 0 )); then
-  notify-send -t 2000 "Update complete."
+  notify-send -e -t 2000 "Update complete."
 fi
 

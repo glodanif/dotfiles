@@ -21,16 +21,16 @@ value = "run-and-wait fastfetch"
 icon = "/home/glodanif/.local/share/assets/artix-logo.png"
 
 [[entries]]
-text = "04. System Backup"
-subtext = "sys-backup"
-value = "run-and-wait sys-backup"
-icon = "/home/glodanif/.local/share/assets/backup.png"
-
-[[entries]]
-text = "05. System Upgrade"
+text = "04. System Upgrade"
 subtext = "sys-update"
 value = "run-and-wait sys-update"
 icon = "/home/glodanif/.local/share/assets/update.png"
+
+[[entries]]
+text = "05. System Backup"
+subtext = "sys-backup"
+value = "run-and-wait sys-backup"
+icon = "/home/glodanif/.local/share/assets/backup.png"
 
 [[entries]]
 text = "06. Install official package"
