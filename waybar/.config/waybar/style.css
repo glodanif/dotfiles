@@ -1,6 +1,6 @@
 * {
     /* `otf-font-awesome` is required to be installed for icons */
-    font-family: "SUSE_Mono", "JetBrainsMono Nerd Font";
+    font-family: "SUSE Mono", "JetBrainsMono Nerd Font";
     font-size: 15px;
     font-weight: 500;
 
@@ -59,7 +59,7 @@ button:hover {
 #custom-voxtype:hover,
 #custom-notification:hover,
 #pulseaudio:hover {
-    background-color: #dddddd;
+    background: #dddddd;
 }
 
 #workspaces {

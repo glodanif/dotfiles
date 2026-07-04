@@ -7,7 +7,7 @@
     --noti-border-color: #66b2ff;
     --noti-bg: 0, 53, 99;
     --border: 2px solid var(--noti-border-color);
-    --border-radius: 6px;
+    --border-radius: 12px;
     --noti-bg-alpha: 1;
     /* hover/focus/close tints derived from the blue bg, not stock grays */
     --noti-bg-darker: rgb(0, 38, 71);

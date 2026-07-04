@@ -1,2 +1,25 @@
 #!/usr/bin/env bash
-pkill waybar; nohup waybar > /dev/null 2>&1 &
+source ~/.config/bash/utils.sh
+
+LOG=/tmp/waybar.log
+
+launch() {
+	pkill -x waybar
+	sleep 0.3
+	rm -f "$LOG"
+	hyprctl dispatch exec "waybar > $LOG 2>&1" >/dev/null
+	sleep 1
+}
+
+launch
+
+if ! pgrep -x waybar >/dev/null && grep -q "Failed to create secure directory.*pulse" "$LOG" 2>/dev/null; then
+	warn "Waybar crashed due to a wedged pipewire-pulse socket, restarting it"
+	pkill -x pipewire-pulse
+	sleep 1
+	hyprctl dispatch exec pipewire-pulse >/dev/null
+	sleep 1
+	launch
+fi
+
+pgrep -x waybar >/dev/null && ok "Waybar running" || fail "Waybar still not running, check $LOG"
