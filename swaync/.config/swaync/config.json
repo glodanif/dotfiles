@@ -46,10 +46,9 @@
     }
   },
   "notification-visibility": {
-    "example-name": {
-      "state": "muted",
-      "urgency": "Normal",
-      "app-name": "example.app.id"
+    "ghostty-transient": {
+      "state": "transient",
+      "desktop-entry": "com.mitchellh.ghostty"
     }
   },
   "widgets": [

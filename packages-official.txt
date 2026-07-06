@@ -4,7 +4,7 @@ android-udev
 artix-archlinux-support
 base
 base-devel
-bluetui
+blueman
 bluez-openrc
 bluez-utils
 btop
@@ -74,6 +74,7 @@ obsidian
 openrc
 openresolv
 openssh-openrc
+oxipng
 pacman-contrib
 papirus-icon-theme
 pipewire

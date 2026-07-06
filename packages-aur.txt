@@ -1,6 +1,5 @@
 bottles
 brave-origin-bin
-bridge-utils
 bruno-bin
 discord-latest-bin
 elephant-all
@@ -13,5 +12,4 @@ slack-desktop
 viber
 voxtype
 walker
-witr
 yay-bin
