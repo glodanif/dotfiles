@@ -10,6 +10,7 @@ curl
 dialog
 docker
 docker-compose
+dua-cli
 eza
 fastfetch
 fd
@@ -28,11 +29,14 @@ neovim
 ntfs-3g
 openssl-devel
 parted
+rclone
 restic
 ripgrep
+rsync
 rustup
 samba
 smartmontools
+snooze
 stow
 syncthing
 transmission
