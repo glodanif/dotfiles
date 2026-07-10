@@ -23,10 +23,16 @@ FORGEJO_STAGING="/mnt/nvme-3/staging/forgejo"   # dump lands here, then restic b
 
 # Backblaze B2 off-site mirror — set once rclone is configured (see setup notes).
 # Leave B2_REMOTE empty to skip the B2 step entirely.
-B2_REMOTE=""                            # e.g. "b2:my-bucket/void-backup"
+B2_REMOTE="b2:void-nas-backup/void-backup"   # rclone "b2" remote (creds in /root/.config/rclone)
 
 # ── Preflight ─────────────────────────────────────────────
 section "System Backup"
+
+# The Forgejo dump is an unencrypted archive of repos + DB + app.ini (which holds
+# SECRET_KEY / INTERNAL_TOKEN). Once restic has captured it into the encrypted
+# repo, don't leave that plaintext copy on disk — wipe staging on any exit.
+cleanup() { [[ -n "${FORGEJO_STAGING:-}" ]] && rm -rf "$FORGEJO_STAGING"; }
+trap cleanup EXIT
 
 # The repo lives on $BACKUP_DRIVE — if that drive isn't mounted, restic would
 # happily write into the bare mountpoint on the root filesystem. Bail instead.
