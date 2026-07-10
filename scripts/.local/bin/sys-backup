@@ -1,41 +1,80 @@
 #!/bin/zsh
-# sys-backup — run restic backup to external storage, prune old snapshots
-# TODO: update MOUNT_POINT and REPO before first use
-
+# sys-backup — restic backup of the void NAS to a local repo, pruned, then
+#              (optionally) mirrored off-site to Backblaze B2.
+#
+# Runs as root — from the `void-backup` snooze service, or manually via
+# `sudo sys-backup`. Reads the repo password from /root/.restic-password.
 set -euo pipefail
-source "$HOME/.config/bash/utils.sh"
 
-MOUNT_POINT="/mnt/backup"     # TODO: set to your backup destination mount point
-REPO="/mnt/backup/restic"     # TODO: or use a cloud repo URL (s3:, b2:, etc.)
+# utils.sh is stowed into the primary user's home. Source it by absolute path so
+# this works under root (where $HOME is /root, not the dotfiles home).
+source "/home/glodanif/.config/bash/utils.sh"
+
+# ── Config ────────────────────────────────────────────────
+REPO="/mnt/nvme-3/void-backup"          # local restic repo (same drive as data)
+BACKUP_DRIVE="/mnt/nvme-3"              # must be mounted before we touch $REPO
 PASSWORD_FILE="/root/.restic-password"
 HOSTNAME_TAG=$(hostname)
 
-section "System Backup"
-sudo -v
+# Forgejo — CONFIRM these against /etc/forgejo/app.ini (RUN_USER, WORK_PATH):
+FORGEJO_USER="git"                      # app.ini RUN_USER
+FORGEJO_CONF="/etc/forgejo/app.ini"
+FORGEJO_STAGING="/mnt/nvme-3/staging/forgejo"   # dump lands here, then restic backs it up
 
-if ! mountpoint -q "$MOUNT_POINT"; then
-    section "Mounting backup storage..."
-    sudo mount "$MOUNT_POINT" || {
-        warn "Failed to mount backup storage. Skipping."
-        exit 0
-    }
+# Backblaze B2 off-site mirror — set once rclone is configured (see setup notes).
+# Leave B2_REMOTE empty to skip the B2 step entirely.
+B2_REMOTE=""                            # e.g. "b2:my-bucket/void-backup"
+
+# ── Preflight ─────────────────────────────────────────────
+section "System Backup"
+
+# The repo lives on $BACKUP_DRIVE — if that drive isn't mounted, restic would
+# happily write into the bare mountpoint on the root filesystem. Bail instead.
+if ! mountpoint -q "$BACKUP_DRIVE"; then
+    fail "$BACKUP_DRIVE not mounted — aborting"
+    exit 1
 fi
 
+# ── Forgejo dump (repos + DB + config, consistent) ────────
+# `forgejo dump` is DB-agnostic and captures a coherent snapshot even while the
+# service runs, which a raw restic pass over the live data dir cannot guarantee.
+if command -v forgejo &>/dev/null; then
+    section "Dumping Forgejo (repos + DB + config)..."
+    mkdir -p "$FORGEJO_STAGING"
+    chown "$FORGEJO_USER" "$FORGEJO_STAGING"
+    su -s /bin/sh "$FORGEJO_USER" -c \
+        "cd '$FORGEJO_STAGING' && forgejo dump --quiet --config '$FORGEJO_CONF' --type tar.zst --file forgejo-dump.tar.zst"
+    ok "Forgejo dump written to $FORGEJO_STAGING/forgejo-dump.tar.zst"
+else
+    warn "forgejo not found — skipping Forgejo dump"
+fi
+
+# ── restic backup ─────────────────────────────────────────
 section "Running backup..."
-sudo restic backup --repo "$REPO" \
+restic backup --repo "$REPO" \
     --password-file "$PASSWORD_FILE" \
     --tag "$HOSTNAME_TAG" \
-    --exclude "$HOME/.cache" \
-    --exclude "/tmp" \
-    --exclude "/var/tmp" \
-    --exclude "/proc" \
-    --exclude "/sys" \
-    --exclude "/dev" \
-    --exclude "/run" \
-    "$HOME" /etc /var/lib/samba
+    --exclude-caches \
+    --exclude ".venv" \
+    --exclude "node_modules" \
+    --exclude "__pycache__" \
+    --exclude "/etc/sv/*/supervise" \
+    --exclude "/etc/sv/*/log/supervise" \
+    --exclude "/home/*/storage" \
+    --exclude "/home/*/torrent" \
+    --exclude "/home/*/.cache" \
+    --exclude "/home/*/.cargo" \
+    --exclude "/home/*/.rustup" \
+    --exclude "/home/*/.oh-my-zsh" \
+    --exclude "/home/*/.local/share/Trash" \
+    /etc \
+    /var/lib/samba \
+    /home \
+    "$FORGEJO_STAGING"
 
+# ── Prune old snapshots ───────────────────────────────────
 section "Pruning old snapshots..."
-sudo restic forget --repo "$REPO" \
+restic forget --repo "$REPO" \
     --password-file "$PASSWORD_FILE" \
     --host "$HOSTNAME_TAG" \
     --keep-last 5 \
@@ -43,5 +82,17 @@ sudo restic forget --repo "$REPO" \
     --keep-weekly 4 \
     --keep-monthly 6 \
     --prune
+
+# ── Off-site mirror to Backblaze B2 (optional, last step) ─
+# rclone sync mirrors the repo files as-is. restic repo files are immutable /
+# append-mostly, so this is safe and cheap. No second password: the repo is
+# already encrypted, B2 just holds the encrypted files.
+if [[ -n "$B2_REMOTE" ]] && command -v rclone &>/dev/null; then
+    section "Mirroring repo to Backblaze B2..."
+    rclone sync "$REPO" "$B2_REMOTE" --fast-list --transfers 8
+    ok "B2 mirror complete"
+else
+    warn "B2 mirror skipped (set B2_REMOTE and configure rclone to enable)"
+fi
 
 section "Backup complete."
