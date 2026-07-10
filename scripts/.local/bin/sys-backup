@@ -48,9 +48,12 @@ if command -v forgejo &>/dev/null; then
     section "Dumping Forgejo (repos + DB + config)..."
     mkdir -p "$FORGEJO_STAGING"
     chown "$FORGEJO_USER" "$FORGEJO_STAGING"
+    # Uncompressed tar on purpose: restic compresses + dedups it far better than a
+    # pre-compressed blob (which changes entirely each run), and restore needs only
+    # `tar` — no zstd/gzip dependency on the recovery host.
     su -s /bin/sh "$FORGEJO_USER" -c \
-        "cd '$FORGEJO_STAGING' && forgejo dump --quiet --config '$FORGEJO_CONF' --type tar.zst --file forgejo-dump.tar.zst"
-    ok "Forgejo dump written to $FORGEJO_STAGING/forgejo-dump.tar.zst"
+        "cd '$FORGEJO_STAGING' && forgejo dump --quiet --config '$FORGEJO_CONF' --type tar --file forgejo-dump.tar"
+    ok "Forgejo dump written to $FORGEJO_STAGING/forgejo-dump.tar"
 else
     warn "forgejo not found — skipping Forgejo dump"
 fi
