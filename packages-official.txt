@@ -105,6 +105,8 @@ swayimg
 swaync
 swtpm
 syncthing
+syslog-ng
+syslog-ng-openrc
 tcpdump
 telegram-desktop
 thunar

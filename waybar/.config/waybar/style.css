@@ -385,10 +385,10 @@ label:focus {
     color: #001933;
 }
 #custom-mic.active {
-    background-color: #99ff99;
+    background: linear-gradient(45deg, #99ff99 0%, #66e6b3 100%);
 }
 #custom-mic.muted {
-    background-color: #ff9999;
+    background: linear-gradient(45deg, #ff9999 0%, #e6739e 100%);
 }
 #custom-voxtype {
     background-color: #99ff99;

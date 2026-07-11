@@ -59,12 +59,12 @@ case $MODE in
         notify-send -e -t 3000 "Display Mode" "Switched to PC"
         ;;
     tv)
-        hyprctl keyword monitor "HDMI-A-1,4096x2160@60,5000x0,2"
+        hyprctl keyword monitor "HDMI-A-1,3840x2160@120,5000x0,2"
         sleep 1
         hyprctl keyword monitor "DP-1,disable"
         hyprctl keyword monitor "DP-2,disable"
         sleep 0.5
-        hyprctl keyword monitor "HDMI-A-1,4096x2160@60,0x0,2"
+        hyprctl keyword monitor "HDMI-A-1,3840x2160@120,0x0,2"
 
         for ((i=1; i<=PERSISTENT_WORKSPACES; i++)); do
             hyprctl dispatch workspace $i

@@ -46,3 +46,7 @@ button:focus:hover {
 #reboot {
     background-image: image(url("/home/glodanif/.local/share/assets/reboot.png"), url("/home/glodanif/.local/share/assets/reboot.png"));
 }
+
+#suspend {
+    background-image: image(url("/home/glodanif/.local/share/assets/suspend.png"), url("/home/glodanif/.local/share/assets/suspend.png"));
+}

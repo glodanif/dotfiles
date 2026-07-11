@@ -1,18 +1,109 @@
 #!/bin/zsh
 
-SOURCE="alsa_input.usb-0c76_USB_PnP_Audio_Device-00.mono-fallback"
+# Waybar mic module: reports whether ANY real microphone is currently in use,
+# supports multiple simultaneous mics, and shows a short mic name in the bar.
+#
+# "In use" = a non-corked recording stream (source-output) attached to a real
+# input source (monitor/loopback sources are excluded).
+
+ICON=$''   # nerd-font mic glyph (same as before; class sets the color)
+
+# Optional hand-tuned labels, keyed by full source name. Loaded once at startup
+# from a JSON map { "<source name>": "<label>" }; edit that file to rename mics
+# as they appear in the bar. Missing file / missing jq / bad JSON -> no overrides
+# (labels are auto-derived from the device description). Restart the module
+# (rewaybar) to pick up edits.
+NAMES_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/mic/names.json"
+typeset -A NAME_OVERRIDES
+if [[ -r $NAMES_FILE ]] && command -v jq &>/dev/null; then
+    while IFS=$'\t' read -r _k _v; do
+        [[ -n $_k ]] && NAME_OVERRIDES[$_k]=$_v
+    done < <(jq -r 'to_entries[] | "\(.key)\t\(.value)"' "$NAMES_FILE" 2>/dev/null)
+fi
+
+json_escape() {
+    local s=$1
+    s=${s//\\/\\\\}
+    s=${s//\"/\\\"}
+    s=${s//$'\n'/\\n}
+    print -r -- "$s"
+}
+
+# Derive a compact label from a device description by stripping trailing
+# profile words (Analog Stereo, Mono, ...).
+short_name() {
+    local name=$1 desc=$2
+    if [[ -n ${NAME_OVERRIDES[$name]} ]]; then
+        print -r -- "${NAME_OVERRIDES[$name]}"
+        return
+    fi
+    local s=$desc
+    s=$(print -r -- "$s" | sed -E 's/([[:space:]]+(Analog|Digital|Stereo|Mono|Duplex|Surround|Multichannel|Fallback|Output|Input))+[[:space:]]*$//gI')
+    [[ -z $s ]] && s=$desc
+    print -r -- "$s"
+}
+
+# Emit "idx<US>name<US>description<US>mute<US>ismonitor" per source.
+scan_sources() {
+    pactl list sources | awk '
+        /^Source #/                    { idx=substr($2,2); order[++n]=idx }
+        /^[ \t]+Name: /                { sub(/^[ \t]+Name: /,""); name[idx]=$0 }
+        /^[ \t]+Description: /          { sub(/^[ \t]+Description: /,""); desc[idx]=$0 }
+        /^[ \t]+Mute: /                 { mute[idx]=$2 }
+        /^[ \t]+Monitor of Sink: /      { mon[idx]=($0 ~ /n\/a/)?"no":"yes" }
+        END { for (i=1;i<=n;i++){ x=order[i];
+              printf "%s\x1f%s\x1f%s\x1f%s\x1f%s\n", x, name[x], desc[x], mute[x], mon[x] } }
+    '
+}
+
+# Emit "sourceIdx<US>corked" per recording stream.
+scan_outputs() {
+    pactl list source-outputs | awk '
+        /^[ \t]+Source: /   { src=$2 }
+        /^[ \t]+Corked: /   { print src "\x1f" $2 }
+    '
+}
 
 print_status() {
-    MUTED=$(pactl get-source-mute "$SOURCE" | grep -c "yes")
-    ACTIVE=$(pactl list source-outputs | grep -c "Source Output #")
+    local -A s_name s_desc s_mute s_mon
+    local idx nm desc mute mon src cork
 
-    if [ "$ACTIVE" -gt 0 ]; then
-        [ "$MUTED" -eq 1 ] &&
-            echo '{"text":"","class":"muted","tooltip":"Mic in use (muted)"}' ||
-            echo '{"text":"","class":"active","tooltip":"Mic in use"}'
-    else
+    while IFS=$'\x1f' read -r idx nm desc mute mon; do
+        [[ -z $idx ]] && continue
+        s_name[$idx]=$nm; s_desc[$idx]=$desc; s_mute[$idx]=$mute; s_mon[$idx]=$mon
+    done < <(scan_sources)
+
+    local -A inuse
+    while IFS=$'\x1f' read -r src cork; do
+        [[ -z $src ]] && continue
+        [[ $cork == yes ]] && continue          # skip paused streams
+        [[ ${s_mon[$src]} == no ]] || continue  # real mic only (known, non-monitor)
+        inuse[$src]=1
+    done < <(scan_outputs)
+
+    if (( ${#inuse} == 0 )); then
         echo '{"text":"","class":"idle","tooltip":""}'
+        return
     fi
+
+    local -a names tips
+    local all_muted=1
+    for idx in ${(k)inuse}; do
+        names+=("$(short_name "${s_name[$idx]}" "${s_desc[$idx]}")")
+        if [[ ${s_mute[$idx]} == yes ]]; then
+            tips+=("${s_desc[$idx]} (muted)")
+        else
+            tips+=("${s_desc[$idx]} (live)")
+            all_muted=0
+        fi
+    done
+
+    local cls text tooltip
+    (( all_muted )) && cls=muted || cls=active
+    text="$ICON ${(j:, :)names}"
+    tooltip=${(F)tips}
+    printf '{"text":"%s","class":"%s","tooltip":"%s"}\n' \
+        "$(json_escape "$text")" "$cls" "$(json_escape "$tooltip")"
 }
 
 print_status

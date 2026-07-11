@@ -5,6 +5,12 @@
     "keybind" : "l"
 }
 {
+    "label" : "suspend",
+    "action" : "loginctl suspend",
+    "text" : "Suspend",
+    "keybind" : "u"
+}
+{
     "label" : "reboot",
     "action" : "hyprland-power reboot",
     "text" : "Reboot",

@@ -4,7 +4,7 @@ set -euo pipefail
 source "$HOME/.config/bash/utils.sh"
 
 MOUNT_POINT="/mnt/backup"
-REPO="/mnt/backup/restic"
+REPO="/mnt/backup/artix-backup"
 PASSWORD_FILE="/root/.restic-password"
 HOSTNAME_TAG=$(hostname)
 
