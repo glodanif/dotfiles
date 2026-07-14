@@ -38,6 +38,8 @@ alias la='eza -la --icons'
 v() { if [ "$#" -eq 0 ]; then command nvim . ; else command nvim "$@"; fi; }
 sv() { if [ "$#" -eq 0 ]; then sudo nvim . ; else sudo nvim "$@"; fi; }
 
+[[ ! -f ~/.rtk-gain.zsh ]] || source ~/.rtk-gain.zsh
+
 autoload -Uz compinit && compinit
 zstyle ':completion:*' menu select
 
