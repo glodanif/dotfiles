@@ -18,10 +18,6 @@ is_ignored_sink() {
     return 1
 }
 
-until pactl info &>/dev/null; do
-    sleep 1
-done
-
 sink_name() {
     pactl -f json list sinks | jq -r --argjson idx "$1" '.[] | select(.index == $idx) | .name // empty'
 }
@@ -65,37 +61,49 @@ notify_new_sink() {
     [[ "$action" == "move" ]] && move_all_to_sink "$name"
 }
 
-pactl subscribe | while read -r line; do
-    if echo "$line" | grep -q "Event 'new' on sink"; then
-        index=$(echo "$line" | grep -oP '#\K[0-9]+')
-        id_file="$STATE_DIR/$index.id"
+# pactl subscribe exits if pipewire-pulse isn't accepting clients yet (autostart
+# launches it and this script at the same moment) or if it restarts later —
+# without the outer loop the script would just exit and stop noticing new sinks
+# until the next login. Wait for pulse, subscribe, start over if it drops.
+while :; do
+    until pactl info &>/dev/null; do
+        sleep 1
+    done
 
-        [[ -e "$id_file" ]] && continue
+    pactl subscribe | while read -r line; do
+        if echo "$line" | grep -q "Event 'new' on sink"; then
+            index=$(echo "$line" | grep -oP '#\K[0-9]+')
+            id_file="$STATE_DIR/$index.id"
 
-        name=$(sink_name "$index")
-        [[ -z "$name" ]] && continue
-        is_ignored_sink "$name" && continue
+            [[ -e "$id_file" ]] && continue
 
-        touch "$id_file"
-        description=$(sink_description "$index")
-        notify_new_sink "$index" "$name" "$description" &
+            name=$(sink_name "$index")
+            [[ -z "$name" ]] && continue
+            is_ignored_sink "$name" && continue
 
-    elif echo "$line" | grep -q "Event 'remove' on sink"; then
-        index=$(echo "$line" | grep -oP '#\K[0-9]+')
-        id_file="$STATE_DIR/$index.id"
-        id=""
+            touch "$id_file"
+            description=$(sink_description "$index")
+            notify_new_sink "$index" "$name" "$description" &
 
-        for _ in {1..20}; do
-            [[ -s "$id_file" ]] && { id=$(<"$id_file"); break; }
-            [[ -e "$id_file" ]] || break
-            sleep 0.1
-        done
+        elif echo "$line" | grep -q "Event 'remove' on sink"; then
+            index=$(echo "$line" | grep -oP '#\K[0-9]+')
+            id_file="$STATE_DIR/$index.id"
+            id=""
 
-        [[ -n "$id" ]] && gdbus call --session \
-            --dest org.freedesktop.Notifications \
-            --object-path /org/freedesktop/Notifications \
-            --method org.freedesktop.Notifications.CloseNotification "$id" &>/dev/null
+            for _ in {1..20}; do
+                [[ -s "$id_file" ]] && { id=$(<"$id_file"); break; }
+                [[ -e "$id_file" ]] || break
+                sleep 0.1
+            done
 
-        rm -f "$id_file"
-    fi
+            [[ -n "$id" ]] && gdbus call --session \
+                --dest org.freedesktop.Notifications \
+                --object-path /org/freedesktop/Notifications \
+                --method org.freedesktop.Notifications.CloseNotification "$id" &>/dev/null
+
+            rm -f "$id_file"
+        fi
+    done
+
+    sleep 1
 done

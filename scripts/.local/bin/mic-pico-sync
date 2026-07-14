@@ -76,17 +76,44 @@ push() {
     printf "\x00\x0$state" > "$dev" 2>/dev/null     # byte0 = report-id 0, byte1 = state
 }
 
+# --- event feeds ------------------------------------------------------------
+# pactl subscribe exits if pipewire-pulse isn't accepting clients yet (autostart
+# launches it and this script at the same moment) or if it restarts later. A
+# dead feed is silent: udev events keep the pipe alive, so the loop limps on and
+# only mute changes stop reaching the LEDs. Resubscribe forever, and emit a
+# marker once the connection is live to push whatever was missed while it wasn't.
+pactl_feed() {
+    local pid
+    while :; do
+        pactl info &>/dev/null || { sleep 1; continue; }
+        pactl subscribe &
+        pid=$!
+        sleep 0.5
+        print -r -- '__resync__'
+        wait $pid
+        sleep 1
+    done
+}
+
+udev_feed() {
+    while :; do
+        stdbuf -oL udevadm monitor --udev --subsystem-match=hidraw
+        sleep 1
+    done
+}
+
 # --- main loop --------------------------------------------------------------
 push   # initial sync
 
 {
-    pactl subscribe &
-    stdbuf -oL udevadm monitor --udev --subsystem-match=hidraw &
+    pactl_feed &
+    udev_feed &
     wait
 } | while read -r line; do
     case "$line" in
         *"on source #"*|*"on source-output #"*) push ;;
         *" add "*hidraw*) sleep 0.3; push ;;   # a hidraw appeared — re-resolve & push
+        __resync__) push ;;                    # (re)connected to pipewire-pulse
     esac
 done
 
