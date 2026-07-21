@@ -1,6 +1,17 @@
 [terminal]
 vt = 1
 
-[default_session]
+# Autologin: run the desktop once at boot as a proper *user* session (not a
+# greeter-class session). This is the same command that used to live in
+# [default_session]; moving it here is what fixes the "logout/crash silently
+# auto-relaunches into a broken half-restored desktop" loop.
+[initial_session]
 command = "zsh --login"
 user = "glodanif"
+
+# After the session exits (logout, or an unexpected exit), fall back to a real
+# login greeter instead of instantly relaunching the desktop. agreety then runs
+# `zsh --login` as the authenticated user, which execs Hyprland via ~/.zprofile.
+[default_session]
+command = "agreety --cmd 'zsh --login'"
+user = "greeter"

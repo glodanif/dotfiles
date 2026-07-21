@@ -46,6 +46,44 @@ if (( stale )); then
   exit 1
 fi
 
+# --- Auto-recovery for Artix's cross-repo soname lag ------------------------
+# When a soname bump (e.g. hyprutils 12→13) lands in the priority repo (world)
+# before the rebuilt consumer does, `pacman -Syu` aborts with
+#   installing X breaks dependency 'libX.so=N-M' required by PKG
+# because world still ships the old PKG. Arch's lower-priority `extra` repo
+# usually already carries the rebuilt PKG. This parses the blocker package
+# names and, if EVERY blocker has a newer version available in some repo,
+# stages pinned `repo/pkg` atoms in $pins for a single retry. Returns 1 (with
+# $pins emptied) on any 'cannot resolve' error, or if any blocker lacks an
+# upgrade candidate — those cases stay manual.
+typeset -ga pins
+recover_soname_lag() {
+  pins=()
+  grep -q 'cannot resolve' "$pacman_out" && return 1
+  local -a blockers
+  blockers=("${(@f)$(grep -oE "breaks dependency '[^']+' required by [^[:space:]]+" "$pacman_out" \
+      | sed 's/.*required by //' | sort -u)}")
+  [[ -z ${blockers[1]} ]] && return 1
+  local pkg installed best_repo best_ver repo ver
+  for pkg in $blockers; do
+    installed=$(pacman -Q "$pkg" 2>/dev/null | awk '{print $2}')
+    [[ -z $installed ]] && { pins=(); return 1; }
+    best_repo="" best_ver=""
+    while read -r repo ver; do
+      [[ -z $repo ]] && continue
+      if [[ -z $best_ver ]] || (( $(vercmp "$ver" "$best_ver") > 0 )); then
+        best_ver=$ver best_repo=$repo
+      fi
+    done < <(pacman -Si "$pkg" 2>/dev/null | awk '/^Repository/{r=$3} /^Version/{print r, $3}')
+    if [[ -n $best_ver ]] && (( $(vercmp "$best_ver" "$installed") > 0 )); then
+      pins+=("$best_repo/$pkg")
+    else
+      pins=(); return 1
+    fi
+  done
+  (( ${#pins} ))
+}
+
 log_before_official=$(wc -l < /var/log/pacman.log)
 official_failed=0
 section "Updating system packages..."
@@ -55,10 +93,25 @@ sudo pacman -Syu 2>&1 | tee "$pacman_out"
 first_exit=${pipestatus[1]}
 if grep -qE 'cannot resolve|breaks dependency' "$pacman_out"; then
   # A dependency conflict on a rolling release is a signal, not noise.
-  # Surface it and stop; never auto-ignore your way past it.
-  fail "Dependency conflict — not auto-skipping. Resolve manually."
-  grep -E 'cannot resolve|breaks dependency' "$pacman_out"
-  official_failed=1
+  # One case is safely automatable: Artix's `world` shipping a soname bump
+  # before the rebuilt consumer, while Arch's `extra` already has the fix.
+  # recover_soname_lag detects exactly that and stages pinned repo/pkg atoms;
+  # anything it can't fully resolve stays manual. The retry stays interactive
+  # on purpose — the transaction now pulls from a different repo, review it.
+  if recover_soname_lag; then
+    warn "Cross-repo soname lag — pinning fixed builds and retrying: ${pins}"
+    sudo pacman -Su "${pins[@]}" 2>&1 | tee "$pacman_out"
+    retry_exit=${pipestatus[1]}
+    if grep -qE 'cannot resolve|breaks dependency' "$pacman_out" || (( retry_exit != 0 )); then
+      fail "Conflict persists after cross-repo retry — resolve manually."
+      grep -E 'cannot resolve|breaks dependency' "$pacman_out"
+      official_failed=1
+    fi
+  else
+    fail "Dependency conflict — not auto-skipping. Resolve manually."
+    grep -E 'cannot resolve|breaks dependency' "$pacman_out"
+    official_failed=1
+  fi
 else
   (( first_exit != 0 )) && official_failed=1
 fi

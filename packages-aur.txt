@@ -6,6 +6,7 @@ elephant-all
 jetbrains-toolbox
 localsend-bin
 ookla-speedtest-bin
+opencode-bin
 openshot-bin
 pinta
 slack-desktop

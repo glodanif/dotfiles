@@ -2,6 +2,7 @@
 STATE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/hypr-display-mode"
 mkdir -p "$(dirname "$STATE_FILE")"
 PERSISTENT_WORKSPACES=7
+TV_MODE="3840x2160@120"
 
 MODE=$1
 SKIP_MONITORS=0
@@ -28,6 +29,29 @@ set_sink() {
         sleep 0.5
     done
     return 1
+}
+
+# The TV wakes up advertising only @60; forcing @120 while it is still waking makes
+# Hyprland flap @60<->@120, and that output reconfigure kills GPU clients that lack
+# crash-recovery (hyprpaper/Slack/Telegram). So the tv branch brings the TV up at its
+# preferred mode and this upgrades to @120 exactly once, only after the panel actually
+# advertises @120 (listed as "3840x2160@119.88Hz"). hyprpaper is respawned afterwards
+# as a safety net for that single mode change.
+heal_tv_link() {
+    local i
+    for ((i=1; i<=20; i++)); do
+        sleep 1
+        if hyprctl monitors all -j 2>/dev/null \
+            | jq -e '.[] | select(.name=="HDMI-A-1")
+                     | .availableModes[]? | select(startswith("3840x2160@119"))' \
+            >/dev/null 2>&1; then
+            hyprctl keyword monitor "HDMI-A-1,${TV_MODE},0x0,2"
+            break
+        fi
+    done
+
+    sleep 3
+    pgrep -x hyprpaper >/dev/null || hyprctl dispatch exec hyprpaper
 }
 
 case $MODE in
@@ -59,12 +83,15 @@ case $MODE in
         notify-send -e -t 3000 "Display Mode" "Switched to PC"
         ;;
     tv)
-        hyprctl keyword monitor "HDMI-A-1,3840x2160@120,5000x0,2"
+        # Bring the TV up at its preferred mode (it advertises @60 while waking); the
+        # background heal_tv_link upgrades to @120 once the panel actually advertises it.
+        # Forcing @120 now makes Hyprland flap @60<->@120 mid-wake, which kills GPU clients.
+        hyprctl keyword monitor "HDMI-A-1,preferred,5000x0,2"
         sleep 1
         hyprctl keyword monitor "DP-1,disable"
         hyprctl keyword monitor "DP-2,disable"
         sleep 0.5
-        hyprctl keyword monitor "HDMI-A-1,3840x2160@120,0x0,2"
+        hyprctl keyword monitor "HDMI-A-1,preferred,0x0,2"
 
         for ((i=1; i<=PERSISTENT_WORKSPACES; i++)); do
             hyprctl dispatch workspace $i
@@ -77,5 +104,8 @@ case $MODE in
         set_sink "alsa_output.pci-0000_01_00.1.hdmi"
         echo "tv" > "$STATE_FILE"
         notify-send -e -t 3000 "Display Mode" "Switched to TV"
+
+        # Upgrade to @120 once the TV is fully awake, then respawn hyprpaper.
+        heal_tv_link &!
         ;;
 esac
