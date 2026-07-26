@@ -19,6 +19,11 @@ eval "$(fzf --zsh)"
 alias lg='lazygit'
 alias ffs='sudo'
 
+# Cookies are pushed here by `cookie-sync` on the Artix box — this host has no
+# browser to extract them from.
+alias dl='yt-dlp -P "$HOME/downloads" --cookies "$HOME/.local/share/cookies/cookies.txt"'
+alias dl-batch='yt-dlp -P "$HOME/downloads" --cookies "$HOME/.local/share/cookies/cookies.txt" --batch-file'
+
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'

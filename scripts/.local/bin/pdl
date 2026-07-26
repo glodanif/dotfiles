@@ -1,0 +1,36 @@
+#!/bin/zsh
+# pdl — patreon-dl driven by the cookie header synced from the desktop.
+#
+# The cookie is written by `cookie-sync` on the Artix box (it decrypts Brave's
+# keyring-encrypted jar there and rsyncs the result here). Nothing on this host
+# can regenerate it.
+set -uo pipefail
+source "$HOME/.config/bash/utils.sh"
+
+COOKIE_FILE="$HOME/.local/share/cookies/patreon-cookie.txt"
+OUT_DIR="$HOME/downloads/patreon"
+STALE_HOURS=48
+
+if ! command -v patreon-dl &>/dev/null; then
+    fail "patreon-dl not installed"
+    echo "      Install it: sudo xbps-install -S nodejs && sudo npm i -g patreon-dl"
+    exit 1
+fi
+
+if [[ ! -s "$COOKIE_FILE" ]]; then
+    fail "no Patreon cookie at $COOKIE_FILE"
+    echo "      Run 'cookie-sync' on the Artix box (it pushes here over ssh)."
+    exit 1
+fi
+
+# An expired session doesn't error — patreon-dl just quietly falls back to the
+# public view and downloads nothing patron-only. Surface the age instead.
+age_h=$(( ( $(date +%s) - $(stat -c %Y "$COOKIE_FILE") ) / 3600 ))
+if (( age_h > STALE_HOURS )); then
+    warn "cookie is ${age_h}h old — patron-only posts may come back empty"
+    echo "      Refresh it: ssh into the Artix box and run 'cookie-sync'"
+fi
+
+mkdir -p "$OUT_DIR"
+
+exec patreon-dl -c "$(<"$COOKIE_FILE")" -o "$OUT_DIR" "$@"
