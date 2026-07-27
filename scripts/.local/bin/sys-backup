@@ -71,6 +71,7 @@ restic backup --repo "$REPO" \
     --exclude "/etc/sv/*/log/supervise" \
     --exclude "/home/*/storage" \
     --exclude "/home/*/torrent" \
+    --iexclude "/home/*/downloads" \
     --exclude "/home/*/.cache" \
     --exclude "/home/*/.cargo" \
     --exclude "/home/*/.rustup" \
