@@ -47,3 +47,10 @@ HISTFILE="$HOME/.zsh_history"
 HISTSIZE=32768
 SAVEHIST=32768
 
+
+# fnm
+FNM_PATH="/home/glodanif/.local/share/fnm"
+if [ -d "$FNM_PATH" ]; then
+  export PATH="$FNM_PATH:$PATH"
+  eval "$(fnm env --shell zsh)"
+fi

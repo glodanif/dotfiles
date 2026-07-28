@@ -25,6 +25,7 @@ This is a **GNU Stow** repo. Each top-level directory is a stow package whose co
 | `greetd/` | Login manager (config.toml) |
 | `pipewire/` | Audio (PipeWire conf.d snippets) |
 | `gnupg/` | GPG agent config |
+| `go/` | Go env file — relocates GOPATH out of `~/go` to `~/.local/share/go` |
 | `ssh/` | SSH client config |
 | `restic/` | Backup config |
 | `scripts/` | User scripts in `.local/bin/` |
@@ -59,13 +60,13 @@ command -v foo &>/dev/null && ok "foo installed" || err "foo not installed" "Ins
 
 The `fix()` helper prints: `hint_text command_text` (hint in dim, command in bold cyan).
 
-### Existing checks (00–14)
+### Existing checks (00–16)
 
-00-bootloader (limine, mkinitcpio hooks, plymouth), 01-services (OpenRC: required & optional), 02-shell (zsh, oh-my-zsh, p10k), 03-power (elogind/loginctl), 04-dotfiles (stow symlink integrity), 05-ssh (keys, agent, git config), 06-vpn (wireguard), 07-toolchains (rust, flutter, dart, java, esp32), 08-packages (yay, pacman repos, parallel downloads), 09-hardware (nvidia, android-udev, ESP32 serial), 10-backup (restic, NAS mount, samba creds), 11-own-tools (terminal-weather, pioctl, stainer), 12-apps (voxtype, hyprpm, hy3), 13-fonts (nerd fonts, noto, lato, montserrat, SUSE Mono), 14-dns (dnscrypt-proxy, resolv.conf, NM override, setcap).
+00-bootloader (limine, mkinitcpio hooks, plymouth), 01-services (OpenRC: required & optional), 02-shell (zsh, oh-my-zsh, p10k), 03-power (elogind/loginctl), 04-dotfiles (stow symlink integrity), 05-ssh (keys, agent, git config), 06-vpn (wireguard), 07-toolchains (rust, flutter, dart, java, esp32), 08-packages (yay, pacman repos, parallel downloads), 09-hardware (nvidia, android-udev, ESP32 serial), 10-backup (restic, NAS mount, samba creds), 11-own-tools (terminal-weather, pioctl, stainer), 12-apps (voxtype), 13-fonts (nerd fonts, noto, lato, montserrat, SUSE Mono), 14-dns (dnscrypt-proxy, resolv.conf, NM override, setcap), 15-suspend (hypridle running, elogind NVIDIA sleep hook), 16-cookies (Brave cookie export, keyring key, cron entry, jar freshness on both hosts).
 
 ### Adding a new check
 
-1. Create `NN-name.sh` in `artix-doctor/.config/artix-doctor/checks/` (next number in sequence, currently 15).
+1. Create `NN-name.sh` in `artix-doctor/.config/artix-doctor/checks/` (next number in sequence, currently 17).
 2. Start with `section "Name"`.
 3. Use `ok`, `warn`, `err` for assertions; provide fix hints.
 4. No shebang needed — files are sourced.
@@ -79,7 +80,7 @@ The `fix()` helper prints: `hint_text command_text` (hint in dim, command in bol
 
 - **Distro**: Artix Linux (OpenRC init, not systemd — use `rc-service`/`rc-update`, not `systemctl`)
 - **Bootloader**: Limine
-- **WM**: Hyprland (Wayland) with hy3 plugin
+- **WM**: Hyprland (Wayland) with native dwindle layout
 - **Login**: greetd
 - **Audio**: PipeWire
 - **GPU**: NVIDIA (nvidia-dkms)
