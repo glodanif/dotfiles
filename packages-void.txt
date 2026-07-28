@@ -26,6 +26,7 @@ libclang
 lvm2
 mdadm
 neovim
+nodejs
 ntfs-3g
 openssl-devel
 parted
@@ -43,6 +44,7 @@ transmission
 uv
 wget
 yazi
+yt-dlp
 zellij
 zip
 zoxide

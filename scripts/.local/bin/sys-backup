@@ -99,7 +99,7 @@ restic forget --repo "$REPO" \
 # already encrypted, B2 just holds the encrypted files.
 if [[ -n "$B2_REMOTE" ]] && command -v rclone &>/dev/null; then
     section "Mirroring repo to Backblaze B2..."
-    rclone sync "$REPO" "$B2_REMOTE" --fast-list --transfers 8
+    rclone sync "$REPO" "$B2_REMOTE" --fast-list --transfers 8 --b2-hard-delete
     ok "B2 mirror complete"
 else
     warn "B2 mirror skipped (set B2_REMOTE and configure rclone to enable)"
