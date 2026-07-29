@@ -32,8 +32,15 @@ press_any_key() {
 }
 
 # ── Idle prevention ───────────────────────────────────────
+# Hyprland's Lua config parses `hyprctl dispatch` arguments as Lua source, so
+# dispatchers are hl.dsp.* calls — the legacy `dispatch <name> <args>` form errors
+# with exit 7. allow_idle is a function so traps don't need nested quoting.
+allow_idle() {
+  hyprctl dispatch 'hl.dsp.window.tag({ tag = "-noidle" })' &>/dev/null || true
+}
+
 keep_screen_on() {
-  hyprctl dispatch tagwindow +noidle &>/dev/null || true
-  trap 'hyprctl dispatch tagwindow -- -noidle &>/dev/null || true' EXIT
+  hyprctl dispatch 'hl.dsp.window.tag({ tag = "+noidle" })' &>/dev/null || true
+  trap allow_idle EXIT
 }
 

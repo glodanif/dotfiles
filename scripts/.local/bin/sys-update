@@ -12,7 +12,7 @@ STALE_DAYS=4
 
 pacman_out=$(mktemp /tmp/pacman-out.XXXXXX)
 keep_screen_on
-trap 'rm -f "$pacman_out"; hyprctl dispatch tagwindow -- -noidle &>/dev/null || true' EXIT
+trap 'rm -f "$pacman_out"; allow_idle' EXIT
 section "System Update"
 sudo -v
 

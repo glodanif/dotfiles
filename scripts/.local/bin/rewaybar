@@ -7,7 +7,7 @@ launch() {
 	pkill -x waybar
 	sleep 0.3
 	rm -f "$LOG"
-	hyprctl dispatch exec "waybar > $LOG 2>&1" >/dev/null
+	hyprctl dispatch "hl.dsp.exec_cmd('waybar > $LOG 2>&1')" >/dev/null
 	sleep 1
 }
 
@@ -17,7 +17,7 @@ if ! pgrep -x waybar >/dev/null && grep -q "Failed to create secure directory.*p
 	warn "Waybar crashed due to a wedged pipewire-pulse socket, restarting it"
 	pkill -x pipewire-pulse
 	sleep 1
-	hyprctl dispatch exec pipewire-pulse >/dev/null
+	hyprctl dispatch 'hl.dsp.exec_cmd("pipewire-pulse")' >/dev/null
 	sleep 1
 	launch
 fi

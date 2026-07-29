@@ -17,6 +17,37 @@ if [ -z "$MODE" ]; then
     fi
 fi
 
+# Monitors are reconfigured with `hyprctl eval` — the config is Lua, and
+# `hyprctl keyword` only works with the legacy hyprlang parser ("keyword can't work
+# with non-legacy parsers. Use eval."). Note eval exits 0 even when it fails, so a
+# malformed call here is silent; check `hyprctl monitors` rather than the exit status.
+set_monitor() {
+    local output=$1 mode=$2 position=$3 scale=$4
+    # hl.monitor MERGES into the output's existing rule instead of replacing it, so
+    # `disabled = false` is required: without it, an output that is currently disabled
+    # (HDMI-A-1 per monitors.lua, or DP-1/DP-2 after a previous toggle) stays off, and
+    # if it was the last one Hyprland drops to a headless FALLBACK — black screens.
+    hyprctl eval "hl.monitor({ output = \"${output}\", mode = \"${mode}\", position = \"${position}\", scale = \"${scale}\", disabled = false })"
+}
+
+disable_monitor() {
+    local output=$1
+    hyprctl eval "hl.monitor({ output = \"${output}\", disabled = true })"
+}
+
+# Workspace/monitor dispatchers, in the Lua form the config manager expects.
+go_to_workspace() {
+    hyprctl dispatch "hl.dsp.focus({ workspace = $1 })"
+}
+
+move_workspace_to() {
+    hyprctl dispatch "hl.dsp.workspace.move({ workspace = $1, monitor = '$2' })"
+}
+
+focus_monitor() {
+    hyprctl dispatch "hl.dsp.focus({ monitor = '$1' })"
+}
+
 set_sink() {
     local prefix=$1
     local attempts=10
@@ -31,15 +62,29 @@ set_sink() {
     return 1
 }
 
-# Re-assert ws1 across a short settle window. Any single dispatch can be undone a
-# beat later by an async monitor/workspace reshuffle, so hammer it a few times.
+tv_active_workspace() {
+    hyprctl monitors -j 2>/dev/null \
+        | jq -r '.[] | select(.name=="HDMI-A-1") | .activeWorkspace.id'
+}
+
+# The TV disconnects and reconnects several times while it wakes, and on every re-add
+# Hyprland claims the next FREE workspace id rather than honouring the `default = true`
+# workspace rule — that is how a switch lands on ws2, or on ws8 once other workspaces
+# exist. A fixed hammer window is unreliable because the last re-add can land after it
+# closes, so assert ws1 and then confirm it actually held. Returns as soon as it sticks
+# so we don't keep yanking focus if the user switches workspace themselves.
 pin_ws1() {
     local i
-    for ((i=1; i<=8; i++)); do
-        hyprctl dispatch focusmonitor HDMI-A-1
-        hyprctl dispatch workspace 1
-        sleep 0.3
+    for ((i=1; i<=30; i++)); do
+        focus_monitor HDMI-A-1
+        go_to_workspace 1
+        sleep 0.5
+        if [ "$(tv_active_workspace)" = "1" ]; then
+            sleep 1
+            [ "$(tv_active_workspace)" = "1" ] && return 0
+        fi
     done
+    return 1
 }
 
 hdmi_connected() {
@@ -62,10 +107,10 @@ settle_tv() {
         sleep 1
     done
 
-    for ((i=1; i<=PERSISTENT_WORKSPACES; i++)); do
-        hyprctl dispatch workspace $i
-        hyprctl dispatch moveworkspacetomonitor $i HDMI-A-1
-    done
+    # No workspace loop here: windows.lua already declares ws1-7 on HDMI-A-1 for TV
+    # mode, and in TV mode it is the only enabled output so workspaces migrate to it
+    # anyway. Walking ws1-7 was actively harmful — it created all seven, which is what
+    # pushed the next-free id a monitor re-add grabs from ws2 up to ws8.
 
     set_sink "alsa_output.pci-0000_01_00.1.hdmi"
 
@@ -76,7 +121,7 @@ settle_tv() {
             | jq -e '.[] | select(.name=="HDMI-A-1")
                      | .availableModes[]? | select(startswith("3840x2160@119"))' \
             >/dev/null 2>&1; then
-            hyprctl keyword monitor "HDMI-A-1,${TV_MODE},0x0,2"
+            set_monitor HDMI-A-1 "$TV_MODE" 0x0 2
             break
         fi
         sleep 1
@@ -85,45 +130,47 @@ settle_tv() {
     # Now that the TV is fully up, land on the first workspace and hold it.
     pin_ws1
 
-    pgrep -x hyprpaper >/dev/null || hyprctl dispatch exec hyprpaper
+    pgrep -x hyprpaper >/dev/null || hyprctl dispatch 'hl.dsp.exec_cmd("hyprpaper")'
 }
 
 case $MODE in
     pc)
         if [ "$SKIP_MONITORS" -eq 0 ]; then
-            hyprctl keyword monitor "DP-2,preferred,5000x0,1"
-            hyprctl keyword monitor "DP-1,preferred,6920x0,1"
+            set_monitor DP-2 preferred 5000x0 1
+            set_monitor DP-1 preferred 6920x0 1
             sleep 1
-            hyprctl keyword monitor "HDMI-A-1,disable"
-            hyprctl keyword monitor "DP-2,preferred,0x0,1"
-            hyprctl keyword monitor "DP-1,preferred,1920x0,1"
+            disable_monitor HDMI-A-1
+            set_monitor DP-2 preferred 0x0 1
+            set_monitor DP-1 preferred 1920x0 1
         fi
 
         for ((i=1; i<=PERSISTENT_WORKSPACES; i++)); do
-            hyprctl dispatch workspace $i
+            go_to_workspace $i
             if [ "$i" = 1 ]; then
-                hyprctl dispatch moveworkspacetomonitor $i DP-2
+                move_workspace_to $i DP-2
             else
-                hyprctl dispatch moveworkspacetomonitor $i DP-1
+                move_workspace_to $i DP-1
             fi
         done
 
-        hyprctl dispatch focusmonitor DP-1
-        hyprctl dispatch workspace 2
-        hyprctl dispatch movecursor 3200 720
+        focus_monitor DP-1
+        go_to_workspace 2
+        hyprctl dispatch 'hl.dsp.cursor.move({ x = 3200, y = 720 })'
 
         set_sink "alsa_output.usb-Focusrite_Scarlett_2i2_USB-00"
         echo "pc" > "$STATE_FILE"
         notify-send -e -t 3000 "Display Mode" "Switched to PC"
         ;;
     tv)
-        # Bring the TV up at its preferred mode (it advertises @60 while waking).
-        hyprctl keyword monitor "HDMI-A-1,preferred,5000x0,2"
-        sleep 1
-        hyprctl keyword monitor "DP-1,disable"
-        hyprctl keyword monitor "DP-2,disable"
-        sleep 0.5
-        hyprctl keyword monitor "HDMI-A-1,preferred,0x0,2"
+        if [ "$SKIP_MONITORS" -eq 0 ]; then
+            # Bring the TV up at its preferred mode (it advertises @60 while waking).
+            set_monitor HDMI-A-1 preferred 5000x0 2
+            sleep 1
+            disable_monitor DP-1
+            disable_monitor DP-2
+            sleep 0.5
+            set_monitor HDMI-A-1 preferred 0x0 2
+        fi
 
         echo "tv" > "$STATE_FILE"
         notify-send -e -t 3000 "Display Mode" "Switched to TV"

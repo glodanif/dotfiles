@@ -5,11 +5,10 @@ sleep 2
 
 SAVED_STATE=$(cat "$STATE_FILE" 2>/dev/null || echo "pc")
 
-# PC is the default layout already applied by monitors.conf, so on restore we
-# skip the (flickery, redundant) monitor reconfiguration and only re-apply the
-# workspace distribution, focus, pointer and audio sink.
-if [ "$SAVED_STATE" = "pc" ]; then
-    monitors-layout-toggle pc --skip-monitors
-else
-    monitors-layout-toggle "$SAVED_STATE"
-fi
+# monitors.lua and windows.lua read the same state file and already declare the saved
+# mode's monitor + workspace layout at config load, so restore skips monitor
+# reconfiguration in both modes — redoing it here would only add modesets, and on the
+# TV each extra modeset is a chance to trip the FRL link-training failure.
+# What still has to happen at runtime: the audio sink, the @120 upgrade once the panel
+# advertises it, focus/pointer placement, and hyprpaper.
+monitors-layout-toggle "$SAVED_STATE" --skip-monitors

@@ -23,11 +23,11 @@ fi
 # SSH agent (gcr-ssh-agent + gnome-keyring)
 pgrep -f gcr-ssh-agent &>/dev/null \
     && ok "gcr-ssh-agent running" \
-    || err "gcr-ssh-agent not running" "Add gcr-ssh-agent to ~/.config/hypr/autostart.conf and re-login."
+    || err "gcr-ssh-agent not running" "Add gcr-ssh-agent to ~/.config/hypr/autostart.lua and re-login."
 
 [[ "$SSH_AUTH_SOCK" == */gcr/ssh ]] \
     && ok "SSH_AUTH_SOCK points to gcr socket" \
-    || err "SSH_AUTH_SOCK not pointing to gcr socket" "Set in ~/.config/hypr/environment.conf:" "env = SSH_AUTH_SOCK,\$XDG_RUNTIME_DIR/gcr/ssh"
+    || err "SSH_AUTH_SOCK not pointing to gcr socket" "Set in ~/.config/hypr/environment.lua:" "hl.env(\"SSH_AUTH_SOCK\", os.getenv(\"XDG_RUNTIME_DIR\") .. \"/gcr/ssh\")"
 
 grep -q "AddKeysToAgent yes" ~/.ssh/config 2>/dev/null \
     && ok "AddKeysToAgent enabled in ~/.ssh/config" \

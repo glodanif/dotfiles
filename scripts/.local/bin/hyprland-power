@@ -1,6 +1,6 @@
 #!/bin/zsh
 case "$1" in
-  logout)         CMD="hyprctl dispatch exit" ; MSG="Logging out..." ;;
+  logout)         CMD="hyprctl dispatch 'hl.dsp.exit()'" ; MSG="Logging out..." ;;
   reboot)         CMD="loginctl reboot"       ; MSG="Rebooting..." ;;
   shutdown)       CMD="loginctl poweroff"     ; MSG="Shutting down..." ;;
   *)
@@ -11,6 +11,6 @@ esac
 
 python "$HOME/.config/wlogout/overlay.py" "$MSG" &
 nohup zsh -c "sleep 2 && $CMD" >/dev/null 2>&1 &
-hypr-close-all-windows
+hyprland-close-all-windows
 sleep 1
 

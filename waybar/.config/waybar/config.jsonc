@@ -98,7 +98,7 @@
       "^(.{1,40})$": "[ $1 ]",
       "^$": "",
     },
-    "on-click-middle": "hyprctl dispatch killactive",
+    "on-click-middle": "hyprctl dispatch 'hl.dsp.window.close()'",
   },
   "custom/weather": {
     "exec": "terminal-weather -w",
