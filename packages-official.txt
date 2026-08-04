@@ -18,6 +18,7 @@ cpio
 cronie-openrc
 cryptsetup
 dhcpcd
+discord
 dnscrypt-proxy
 dnscrypt-proxy-openrc
 dnsmasq
@@ -42,7 +43,6 @@ hypridle
 hyprland
 hyprlock
 hyprpaper
-impala
 iwd-openrc
 lazygit
 lib32-nvidia-utils
@@ -73,6 +73,7 @@ obs-studio
 obsidian
 openrc
 openresolv
+openshot
 openssh-openrc
 oxipng
 pacman-contrib
@@ -100,6 +101,7 @@ socat
 sof-firmware
 solaar
 sound-theme-freedesktop
+speedtest-cli
 steam
 stow
 swayimg

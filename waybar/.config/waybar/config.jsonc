@@ -11,7 +11,6 @@
     "tray",
     "custom/layout",
     "custom/recording",
-    "custom/voxtype",
     "custom/mic",
     "custom/updates",
     "pulseaudio",
@@ -47,7 +46,8 @@
     "interval": 3,
     "spacing": 1,
     "interface": "eth*",
-    "on-click": "run-and-wait speedtest",
+    "on-click": "run-and-wait nmtui",
+    "on-click-right": "run-and-wait speedtest-cli",
   },
   "pulseaudio": {
     "format": "{icon} {volume}%",
@@ -144,17 +144,6 @@
     "signal": 8,
     "return-type": "json",
     "on-click": "run-and-wait vpn-run off",
-  },
-  "custom/voxtype": {
-    "exec": "voxtype status --follow --format json",
-    "return-type": "json",
-    "format": "{icon}",
-    "format-icons": {
-      "idle": "",
-      "recording": "",
-      "transcribing": "󰔟",
-    },
-    "tooltip": true,
   },
   "custom/notification": {
     "tooltip": true,

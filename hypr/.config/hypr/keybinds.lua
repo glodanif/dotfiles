@@ -175,9 +175,6 @@ hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = tr
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
 
-hl.bind("SCROLL_LOCK", hl.dsp.exec_cmd("voxtype record start"))
-hl.bind("SCROLL_LOCK", hl.dsp.exec_cmd("voxtype record stop"), { release = true })
-
 -- Alt+Shift switches keyboard layout on ALL keyboards, kept in sync by layout-switch
 -- (replaces xkb grp:alt_shift_toggle, which only switched the keyboard being pressed)
 hl.bind("ALT + SHIFT_L", hl.dsp.exec_cmd("layout-switch"))

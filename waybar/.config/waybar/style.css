@@ -56,7 +56,6 @@ button:hover {
 #custom-power:hover,
 #custom-updates:hover,
 #custom-vpn:hover,
-#custom-voxtype:hover,
 #custom-notification:hover,
 #pulseaudio:hover {
     background: #dddddd;
@@ -218,7 +217,6 @@ label:focus {
 #memory,
 #network,
 #custom-updates,
-#custom-voxtype,
 #pulseaudio,
 #custom-notification {
     margin-right: 8px;
@@ -371,7 +369,6 @@ label:focus {
     margin-left: 18px;
 }
 
-#custom-voxtype,
 #custom-updates,
 #custom-screenshare,
 #custom-notification,
@@ -390,11 +387,6 @@ label:focus {
 #custom-mic.muted {
     background: linear-gradient(45deg, #ff9999 0%, #e6739e 100%);
 }
-#custom-voxtype {
-    background-color: #99ff99;
-    animation: recording-blink 2s linear infinite;
-}
-
 @keyframes recording-blink {
     50% {
         opacity: 0.5;

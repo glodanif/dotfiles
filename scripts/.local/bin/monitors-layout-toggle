@@ -35,6 +35,36 @@ disable_monitor() {
     hyprctl eval "hl.monitor({ output = \"${output}\", disabled = true })"
 }
 
+set_workspace_rule() {
+    local workspace=$1 monitor=$2 default=$3
+    hyprctl eval "hl.workspace_rule({ workspace = \"${workspace}\", monitor = \"${monitor}\", default = ${default} })"
+}
+
+# windows.lua declares the workspace->monitor rules from display-mode.lua, but that is
+# only read when the config is (re)loaded. A runtime toggle just rewrites the state file,
+# so Hyprland keeps the OTHER mode's rules until the next reload — same reason this script
+# has to re-declare monitors by hand. That stale state is what puts a TV switch on ws8:
+# with no rule matching HDMI-A-1, CMonitor::onConnect falls back to `workspaces.size() + 1`,
+# and PC mode leaves exactly 7 workspaces behind. With ws1 declared default for HDMI-A-1,
+# onConnect finds the existing ws1 and moves it to the TV instead of inventing ws8.
+# Keep this in sync with windows.lua. Rules are keyed by workspace, so these replace
+# rather than accumulate, and `default = false` genuinely clears the flag.
+apply_workspace_rules() {
+    local i
+    if [ "$1" = "tv" ]; then
+        set_workspace_rule 1 HDMI-A-1 true
+        for ((i=2; i<=PERSISTENT_WORKSPACES; i++)); do
+            set_workspace_rule $i HDMI-A-1 false
+        done
+    else
+        set_workspace_rule 1 DP-2 true
+        set_workspace_rule 2 DP-1 true
+        for ((i=3; i<=PERSISTENT_WORKSPACES; i++)); do
+            set_workspace_rule $i DP-1 false
+        done
+    fi
+}
+
 # Workspace/monitor dispatchers, in the Lua form the config manager expects.
 go_to_workspace() {
     hyprctl dispatch "hl.dsp.focus({ workspace = $1 })"
@@ -67,12 +97,12 @@ tv_active_workspace() {
         | jq -r '.[] | select(.name=="HDMI-A-1") | .activeWorkspace.id'
 }
 
-# The TV disconnects and reconnects several times while it wakes, and on every re-add
-# Hyprland claims the next FREE workspace id rather than honouring the `default = true`
-# workspace rule — that is how a switch lands on ws2, or on ws8 once other workspaces
-# exist. A fixed hammer window is unreliable because the last re-add can land after it
-# closes, so assert ws1 and then confirm it actually held. Returns as soon as it sticks
-# so we don't keep yanking focus if the user switches workspace themselves.
+# Safety net on top of apply_workspace_rules: the TV disconnects and reconnects several
+# times while it wakes, and a re-add that races the rule (or any output Hyprland decides
+# to seed itself) can still park us on the wrong workspace. A fixed hammer window is
+# unreliable because the last re-add can land after it closes, so assert ws1 and then
+# confirm it actually held. Returns as soon as it sticks so we don't keep yanking focus
+# if the user switches workspace themselves.
 pin_ws1() {
     local i
     for ((i=1; i<=30; i++)); do
@@ -135,6 +165,8 @@ settle_tv() {
 
 case $MODE in
     pc)
+        apply_workspace_rules pc
+
         if [ "$SKIP_MONITORS" -eq 0 ]; then
             set_monitor DP-2 preferred 5000x0 1
             set_monitor DP-1 preferred 6920x0 1
@@ -162,6 +194,9 @@ case $MODE in
         notify-send -e -t 3000 "Display Mode" "Switched to PC"
         ;;
     tv)
+        # Must land before the TV can connect, otherwise onConnect grabs ws8.
+        apply_workspace_rules tv
+
         if [ "$SKIP_MONITORS" -eq 0 ]; then
             # Bring the TV up at its preferred mode (it advertises @60 while waking).
             set_monitor HDMI-A-1 preferred 5000x0 2

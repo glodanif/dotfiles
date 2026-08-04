@@ -3,14 +3,39 @@
 source "$HOME/.config/bash/utils.sh"
 
 # AUR safety knobs
-SOAK_DAYS=3
+# SOAK_DAYS is the only control that works without you reading anything: it
+# outsources detection to everyone else on the AUR. Size it to exceed current
+# detection lag, not to feel comfortable. The Jun 2026 campaign took ~3 weeks
+# for the affected-package list to stop growing. Drop back to 3-5 once
+# adoptions are re-enabled and aur-general has been quiet for a week.
+SOAK_DAYS=14
 SOAK_EXEMPT=()
-SUSPECT_RE='^\+[^+].*(npm (i|install)|bun (i|install)|pip install|base64 -d|eval |curl[^|]*\| *(ba|z)?sh|wget[^|]*\| *(ba|z)?sh)'
+
+# Packages whose maintainer change you've reviewed and accepted. Comma list,
+# or set inline: AUR_ACCEPT_MAINT=walker,duhh sys-update
+AUR_ACCEPT_MAINT=${AUR_ACCEPT_MAINT:-}
+
+# Set SKIP_AUR=1 to update official repos only. Official repos are signed and
+# were unaffected by the AUR campaigns; there is never a reason to skip them.
+SKIP_AUR=${SKIP_AUR:-0}
+
+# Snapshot of AUR maintainer per package. The Jun/Jul 2026 attacks worked by
+# adopting orphaned packages: the name, history and user trust are unchanged,
+# only the account holding commit rights changes. That handover is the single
+# highest-signal event available, it is a boolean, and it needs no judgement.
+MAINT_DB="$HOME/.cache/scripts/aur-maintainers.json"
 
 # Mirror freshness knob
 STALE_DAYS=4
 
-pacman_out=$(mktemp /tmp/pacman-out.XXXXXX)
+# Deliberately not /tmp: fs.protected_regular=1 stops root opening a file it
+# does not own for writing inside a world-writable sticky directory, and
+# run_pacman writes this one as root via sudo. $XDG_RUNTIME_DIR is user-owned
+# and 0700 so the rule does not apply; $HOME/.cache covers a session without
+# a runtime dir.
+pacman_tmpdir="${XDG_RUNTIME_DIR:-$HOME/.cache}"
+mkdir -p "$pacman_tmpdir"
+pacman_out=$(mktemp "$pacman_tmpdir/pacman-out.XXXXXX")
 keep_screen_on
 trap 'rm -f "$pacman_out"; allow_idle' EXIT
 section "System Update"
@@ -45,6 +70,29 @@ if (( stale )); then
   fail "Stale mirror(s) detected. Reseat the mirrorlist before upgrading."
   exit 1
 fi
+
+# --- Run pacman on a pty ----------------------------------------------------
+# pacman draws download/install progress only when stdout is a tty, so piping
+# it into `tee` to capture the transaction made the terminal sit silent for the
+# whole download. `script` gives it a pty (live progress stays on screen) while
+# writing the same output to $pacman_out for the conflict parser below. `-e`
+# propagates pacman's exit code. The capture is then flattened: the pty leaves
+# CR redraws, ANSI colour and script's own header/footer lines behind, none of
+# which grep/sed downstream should have to care about.
+#
+# sudo wraps script, not the other way round: sudo's tty_tickets default keys
+# the cached credential to the terminal, and script hands its child a brand new
+# pts, so a `sudo` inside it is on an unticketed tty and prompts again despite
+# the `sudo -v` above. Outside, sudo runs on the real tty and stays silent.
+# $pacman_out already exists (mktemp'd as us), so root writing to it through
+# script leaves it ours to sed and to rm in the trap.
+run_pacman() {
+  sudo script -qec "pacman ${(j: :)${(q)@}}" "$pacman_out"
+  local rc=$?
+  sed -i -e 's/\r/\n/g' -e 's/\x1b\[[0-9;?]*[a-zA-Z]//g' \
+         -e '/^Script \(started\|done\) on /d' "$pacman_out"
+  return $rc
+}
 
 # --- Auto-recovery for Artix's cross-repo soname lag ------------------------
 # When a soname bump (e.g. hyprutils 12→13) lands in the priority repo (world)
@@ -84,13 +132,122 @@ recover_soname_lag() {
   (( ${#pins} ))
 }
 
+# --- Field reader for pacman -Qi/-Si ----------------------------------------
+# Long value lists wrap onto continuation lines, and -Si prints one record per
+# repo carrying the package (world *and* extra here), so a naive grep gets
+# half a value or two repos' worth. Fold continuations into the value, stop at
+# the first record, and normalise pacman's "None" to empty.
+pkg_field() {  # pkg field -Qi|-Si
+  pacman "$3" -- "$1" 2>/dev/null | awk -v f="$2" '
+    done { next }
+    /^[A-Z][A-Za-z ]*:/ {
+      name=$0; sub(/ *:.*/, "", name)
+      if (grab) { done=1; next }
+      val=$0; sub(/^[^:]*: */, "", val)
+      if (name == f) { grab=1; out=val }
+      next
+    }
+    grab { line=$0; sub(/^ +/, "", line); out = out " " line }
+    END { if (out != "None") print out }'
+}
+
+# --- Auto-recovery for a package rename without Replaces --------------------
+# Arch occasionally splits or renames a package (mbedtls → mbedtls3, Aug 2026)
+# and ships the successor with no `Replaces=`, so pacman aborts with
+#   error: failed to commit transaction (conflicting files)
+#   NEW: /usr/lib/libfoo.so.1 exists in filesystem (owned by OLD)
+# There is no flag for this: --overwrite would leave both packages owning the
+# same paths, so the old one has to go first. `-Rdd` is the sharp edge here —
+# it drops the package while its dependents are still installed — so this only
+# fires when removal is provably a no-op for everything else on the system:
+#
+#   * every conflicting file for NEW is owned by one and the same OLD, and
+#     nothing conflicts with an *unowned* file (that means stray files on disk,
+#     which is a different problem and never a rename)
+#   * NEW carries every soname OLD provides, at the same version — an soname
+#     that changed is an ABI break, not a rename
+#   * every package that depends on OLD either stops needing it in the version
+#     the retry will install, or only ever needed a soname NEW also provides
+#
+# Anything short of that stays manual. Sets $rm_conflicts to the packages to
+# remove; $conflict_explicit lists those that were explicitly installed, whose
+# install reason has to carry over or the orphan sweep below eats the successor.
+typeset -ga rm_conflicts conflict_explicit
+recover_file_conflict() {
+  rm_conflicts=() conflict_explicit=()
+  grep -qE 'exists in filesystem[[:space:]]*$' "$pacman_out" && return 1
+  local -a pairs
+  pairs=("${(@f)$(grep -oE '^[^ :]+: [^ ]+ exists in filesystem \(owned by [^)]+\)' "$pacman_out" \
+      | sed -E 's/^([^ :]+): .* \(owned by (.+)\)$/\1 \2/' | sort -u)}")
+  [[ -z ${pairs[1]} ]] && return 1
+
+  local -A owner_of
+  local line x y p t base r r_inst r_repo
+  for line in $pairs; do
+    x=${line%% *} y=${line##* }
+    # Two different owners for one incoming package is not a rename.
+    [[ -n ${owner_of[$x]} && ${owner_of[$x]} != $y ]] && return 1
+    owner_of[$x]=$y
+  done
+
+  local -a x_prov y_prov x_names y_names deps reqs
+  for x in ${(k)owner_of}; do
+    y=${owner_of[$x]}
+    # Both sides must be real: an owner pacman doesn't have installed, or a
+    # successor no repo carries, produces empty provides/dependants that would
+    # sail through every check below by being vacuously true.
+    pacman -Q -- "$y" &>/dev/null || { rm_conflicts=(); return 1 }
+    [[ -n $(pkg_field "$x" Version -Si) ]] || { rm_conflicts=(); return 1 }
+
+    x_prov=(${=$(pkg_field "$x" Provides -Si)} "$x")
+    y_prov=(${=$(pkg_field "$y" Provides -Qi)})
+    x_names=(${x_prov%%[<>=]*})
+    y_names=(${y_prov%%[<>=]*})
+
+    for p in $y_prov; do
+      [[ $p == *.so=* ]] || continue
+      (( ${x_prov[(Ie)$p]} )) || { rm_conflicts=(); return 1 }
+    done
+
+    reqs=(${=$(pkg_field "$y" "Required By" -Qi)})
+    for r in $reqs; do
+      # Which dependency list matters depends on whether the retry upgrades $r:
+      # if a newer version is coming, judge that one; otherwise $r stays as it
+      # is installed and its current deps are what removal would break.
+      r_inst=$(pacman -Q -- "$r" 2>/dev/null | awk '{print $2}')
+      r_repo=$(pkg_field "$r" Version -Si)
+      if [[ -n $r_repo && -n $r_inst ]] && (( $(vercmp "$r_repo" "$r_inst") > 0 )); then
+        deps=(${=$(pkg_field "$r" "Depends On" -Si)})
+      else
+        deps=(${=$(pkg_field "$r" "Depends On" -Qi)})
+      fi
+      for t in $deps; do
+        base=${t%%[<>=]*}
+        [[ $base == $y ]] && { rm_conflicts=(); return 1 }
+        (( ${y_names[(Ie)$base]} )) || continue
+        # Satisfied through one of OLD's provides: a versioned dep (soname)
+        # needs the exact token from NEW, a bare name just the name.
+        if [[ $t == *=* ]]; then
+          (( ${x_prov[(Ie)$t]} )) || { rm_conflicts=(); return 1 }
+        else
+          (( ${x_names[(Ie)$base]} )) || { rm_conflicts=(); return 1 }
+        fi
+      done
+    done
+
+    rm_conflicts+=("$y")
+    [[ $(pkg_field "$y" "Install Reason" -Qi) == Explicitly* ]] && conflict_explicit+=("$x")
+  done
+  (( ${#rm_conflicts} ))
+}
+
 log_before_official=$(wc -l < /var/log/pacman.log)
 official_failed=0
 section "Updating system packages..."
 # Interactive on purpose: review the transaction for elogind/nvidia and other
 # soname-transition surprises before committing. Do NOT add --noconfirm here.
-sudo pacman -Syu 2>&1 | tee "$pacman_out"
-first_exit=${pipestatus[1]}
+run_pacman -Syu
+first_exit=$?
 if grep -qE 'cannot resolve|breaks dependency' "$pacman_out"; then
   # A dependency conflict on a rolling release is a signal, not noise.
   # One case is safely automatable: Artix's `world` shipping a soname bump
@@ -100,8 +257,8 @@ if grep -qE 'cannot resolve|breaks dependency' "$pacman_out"; then
   # on purpose — the transaction now pulls from a different repo, review it.
   if recover_soname_lag; then
     warn "Cross-repo soname lag — pinning fixed builds and retrying: ${pins}"
-    sudo pacman -Su "${pins[@]}" 2>&1 | tee "$pacman_out"
-    retry_exit=${pipestatus[1]}
+    run_pacman -Su "${pins[@]}"
+    retry_exit=$?
     if grep -qE 'cannot resolve|breaks dependency' "$pacman_out" || (( retry_exit != 0 )); then
       fail "Conflict persists after cross-repo retry — resolve manually."
       grep -E 'cannot resolve|breaks dependency' "$pacman_out"
@@ -112,6 +269,39 @@ if grep -qE 'cannot resolve|breaks dependency' "$pacman_out"; then
     grep -E 'cannot resolve|breaks dependency' "$pacman_out"
     official_failed=1
   fi
+elif grep -q 'exists in filesystem' "$pacman_out"; then
+  # A file conflict is not a dependency conflict — nothing above matches it, so
+  # before this branch existed the run just died with a generic failure. The one
+  # safely automatable shape is a rename shipped without `Replaces=`; see
+  # recover_file_conflict for what it insists on before agreeing to that.
+  if recover_file_conflict; then
+    warn "Rename without Replaces — removing superseded: ${rm_conflicts}"
+    # Not --noconfirm: -Rdd leaves dependents unsatisfied until the retry lands,
+    # so this is exactly the transaction worth looking at before agreeing to it.
+    if sudo pacman -Rdd "${rm_conflicts[@]}"; then
+      run_pacman -Syu
+      retry_exit=$?
+      if (( retry_exit != 0 )) || grep -q 'exists in filesystem' "$pacman_out"; then
+        fail "Conflict persists after removal — resolve manually."
+        grep -E 'exists in filesystem' "$pacman_out"
+        official_failed=1
+      else
+        # The successor arrives as a dependency. If what it replaced was
+        # explicit, carry that over or the orphan sweep below removes it the
+        # moment its last dependent goes.
+        for pkg in $conflict_explicit; do
+          pacman -Q -- "$pkg" &>/dev/null && sudo pacman -D --asexplicit "$pkg" >/dev/null
+        done
+      fi
+    else
+      fail "Removal declined or failed — upgrade not applied."
+      official_failed=1
+    fi
+  else
+    fail "File conflict — not auto-resolving. Resolve manually."
+    grep -E 'exists in filesystem' "$pacman_out"
+    official_failed=1
+  fi
 else
   (( first_exit != 0 )) && official_failed=1
 fi
@@ -120,46 +310,147 @@ official_count=$(tail -n +$((log_before_official+1)) /var/log/pacman.log | grep 
 log_before_aur=$(wc -l < /var/log/pacman.log)
 aur_count=0
 typeset -a skip
-if command -v yay &>/dev/null && pacman -Qem &>/dev/null; then
+aur_skipped=0
+if (( SKIP_AUR )); then
+  section "Skipping AUR (SKIP_AUR=1)"
+  aur_skipped=1
+elif command -v yay &>/dev/null && pacman -Qem &>/dev/null; then
   section "Checking AUR updates..."
   pending=("${(f)$(yay -Quaq 2>/dev/null)}")
   [[ -z ${pending[1]} ]] && pending=()
 
   if (( ${#pending} )); then
-    # --- Soak time: hold back packages modified in the last SOAK_DAYS ---
-    if command -v jq &>/dev/null; then
-      now=$(date +%s)
-      args=$(printf 'arg[]=%s&' "${pending[@]}")
-      info=$(curl -sf --max-time 10 "https://aur.archlinux.org/rpc/v5/info?${args%&}" || true)
-      if [[ -n $info ]]; then
-        for pkg in $pending; do
-          (( ${SOAK_EXEMPT[(Ie)$pkg]} )) && continue
-          mod=$(echo "$info" | jq -r --arg p "$pkg" \
-            '.results[] | select(.Name==$p) | .LastModified')
-          if [[ -n $mod && $mod != null ]] && (( now - mod < SOAK_DAYS * 86400 )); then
-            skip+=("$pkg")
-            warn "$pkg: pushed $(( (now - mod) / 3600 ))h ago, soaking (${SOAK_DAYS}d quarantine)"
-          fi
-        done
-      else
-        warn "AUR RPC unreachable, skipping soak check"
-      fi
+    # --- Fail closed ------------------------------------------------------
+    # Previously a missing jq or an unreachable RPC only warned, then updates
+    # proceeded with no soak and no maintainer check. The warning scrolls past
+    # inside a wall of pacman output and you update blind believing otherwise.
+    # An unverifiable update is not an update worth having; bail instead.
+    if ! command -v jq &>/dev/null; then
+      fail "jq not found — cannot verify AUR packages. Skipping AUR entirely."
+      aur_skipped=1
     else
-      warn "jq not found, skipping soak check"
+      args=$(printf 'arg[]=%s&' "${pending[@]}")
+      info=$(curl -sf --max-time 15 "https://aur.archlinux.org/rpc/v5/info?${args%&}" || true)
+      if [[ -z $info ]] || ! echo "$info" | jq -e '.results' &>/dev/null; then
+        fail "AUR RPC unreachable — cannot verify. Skipping AUR entirely."
+        aur_skipped=1
+      fi
+    fi
+  fi
+
+  if (( ${#pending} && ! aur_skipped )); then
+    now=$(date +%s)
+    mkdir -p "${MAINT_DB:h}"
+    typeset -a accept
+    accept=("${(s:,:)AUR_ACCEPT_MAINT}")
+
+    # --- Seed the maintainer snapshot on first run ------------------------
+    # Seeded from whatever the AUR reports right now, so seed while you have
+    # reason to believe you're clean. Without a baseline there is nothing to
+    # compare against and the check is inert.
+    if [[ ! -s $MAINT_DB ]]; then
+      all=("${(f)$(pacman -Qmq 2>/dev/null)}")
+      if (( ${#all} )); then
+        allargs=$(printf 'arg[]=%s&' "${all[@]}")
+        seed=$(curl -sf --max-time 15 "https://aur.archlinux.org/rpc/v5/info?${allargs%&}" || true)
+        if [[ -n $seed ]] && echo "$seed" | jq -e '.results' &>/dev/null; then
+          echo "$seed" | jq '[.results[] | {(.Name): (.Maintainer // "@orphan")}] | add // {}' > "$MAINT_DB"
+          warn "Seeded maintainer baseline for ${#all} package(s) → $MAINT_DB"
+        else
+          fail "Could not seed maintainer baseline — skipping AUR."
+          aur_skipped=1
+        fi
+      fi
     fi
 
-    # --- Red-flag scan: hold back suspicious PKGBUILD/install/hook changes ---
+    # A truncated or corrupt baseline makes every jq lookup below return empty,
+    # which would read as "maintainer changed" for the entire package set — a
+    # wall of false alarms that trains you to ignore the one real one. Treat an
+    # unparseable baseline as no baseline: refuse, and let it be re-seeded
+    # deliberately rather than silently mid-outage.
+    if (( ! aur_skipped )) && ! jq -e . "$MAINT_DB" &>/dev/null; then
+      fail "Maintainer baseline unreadable ($MAINT_DB) — skipping AUR."
+      warn "    delete it to re-seed, but only when you trust the current state"
+      aur_skipped=1
+    fi
+  fi
+
+  if (( ${#pending} && ! aur_skipped )); then
+    for pkg in $pending; do
+      # --- No AUR record --------------------------------------------------
+      # Every check below reads out of $info. A package the RPC returns no
+      # entry for (deleted or renamed upstream, or a partial response) would
+      # pass all of them by producing empty values — the one shape in which
+      # this whole section fails open. Deletion is also how the AUR retires a
+      # package found malicious, so it is the last thing to wave through.
+      cur=$(echo "$info" | jq -r --arg p "$pkg" \
+        '.results[] | select(.Name==$p) | (.Maintainer // "@orphan")')
+      if [[ -z $cur ]]; then
+        skip+=("$pkg")
+        fail "$pkg: no AUR record returned — cannot verify, held"
+        warn "    https://aur.archlinux.org/packages/$pkg"
+        continue
+      fi
+
+      # --- Maintainer change ---------------------------------------------
+      # Authoritative: comes from the AUR's account records, not from the git
+      # commit author field, which is free text and trivially spoofed.
+      prev=$(jq -r --arg p "$pkg" '.[$p] // "@unknown"' "$MAINT_DB" 2>/dev/null)
+      if [[ $prev != "@unknown" && $cur != $prev ]]; then
+        if (( ${accept[(Ie)$pkg]} )); then
+          warn "$pkg: maintainer $prev → $cur, accepted via AUR_ACCEPT_MAINT"
+          jq --arg p "$pkg" --arg m "$cur" '.[$p]=$m' "$MAINT_DB" > "$MAINT_DB.tmp" \
+            && mv "$MAINT_DB.tmp" "$MAINT_DB"
+        else
+          skip+=("$pkg")
+          fail "$pkg: MAINTAINER CHANGED  $prev → $cur  — held"
+          warn "    https://aur.archlinux.org/packages/$pkg"
+          warn "    accept with: AUR_ACCEPT_MAINT=$pkg sys-update"
+          continue
+        fi
+      fi
+
+      # --- Soak time ------------------------------------------------------
+      (( ${SOAK_EXEMPT[(Ie)$pkg]} )) && continue
+      mod=$(echo "$info" | jq -r --arg p "$pkg" \
+        '.results[] | select(.Name==$p) | .LastModified')
+      if [[ -n $mod && $mod != null ]] && (( now - mod < SOAK_DAYS * 86400 )); then
+        skip+=("$pkg")
+        warn "$pkg: pushed $(( (now - mod) / 3600 ))h ago, soaking (~$(( SOAK_DAYS - (now - mod) / 86400 ))d left if nothing lands)"
+      fi
+    done
+
+    # --- Binary scan of incoming commits ----------------------------------
     for pkg in $pending; do
       (( ${skip[(Ie)$pkg]} )) && continue
       repo="$HOME/.cache/yay/$pkg"
-      [[ -d $repo/.git ]] || continue
-      git -C "$repo" fetch -q origin 2>/dev/null || continue
-      if git -C "$repo" diff HEAD..FETCH_HEAD -- PKGBUILD '*.install' '*.hook' 2>/dev/null \
-        | grep -qE "$SUSPECT_RE"; then
-        skip+=("$pkg")
-        warn "$pkg: suspicious change in PKGBUILD/install/hook, held for manual review"
-        warn "    inspect with: git -C $repo diff HEAD..FETCH_HEAD"
+      # No clone, or fetch failed: nothing was inspected, so hold. Same
+      # fail-closed logic as above — silence must not read as consent.
+      if [[ ! -d $repo/.git ]]; then
+        skip+=("$pkg"); warn "$pkg: no local clone to inspect, held"; continue
       fi
+      if ! git -C "$repo" fetch -q origin 2>/dev/null; then
+        skip+=("$pkg"); warn "$pkg: fetch failed, cannot inspect, held"; continue
+      fi
+
+      # ELF check. The Jul 2026 technique commits a prebuilt binary into the
+      # repo under an innocuous name (linter, hasher, minifier) and calls it
+      # from the build. `git show` reads the blob out of the fetched ref, so
+      # nothing is checked out and nothing runs. A PKGBUILD repo has no
+      # business shipping a compiled executable. Modified files count too: a
+      # file that was text last release and is an executable this one is the
+      # same attack wearing an older filename.
+      local -a changed
+      changed=("${(@f)$(git -C "$repo" diff --name-only --diff-filter=AM HEAD..FETCH_HEAD 2>/dev/null)}")
+      for f in $changed; do
+        [[ -z $f ]] && continue
+        magic=$(git -C "$repo" show "FETCH_HEAD:$f" 2>/dev/null | head -c4 | od -An -tx1 | tr -d ' \n')
+        if [[ $magic == 7f454c46 ]]; then
+          skip+=("$pkg")
+          fail "$pkg: incoming commit adds ELF binary '$f' — held"
+          break
+        fi
+      done
     done
 
     section "Updating AUR packages..."
@@ -169,6 +460,16 @@ if command -v yay &>/dev/null && pacman -Qem &>/dev/null; then
       yay -Sua --noconfirm --cleanafter || true
     fi
     aur_count=$(tail -n +$((log_before_aur+1)) /var/log/pacman.log | grep -c '\[ALPM\] upgraded' || true)
+
+    # Record maintainers for everything that actually updated, so the baseline
+    # tracks legitimate handovers you've already lived with.
+    for pkg in $pending; do
+      (( ${skip[(Ie)$pkg]} )) && continue
+      cur=$(echo "$info" | jq -r --arg p "$pkg" \
+        '.results[] | select(.Name==$p) | (.Maintainer // "@orphan")')
+      [[ -n $cur ]] && jq --arg p "$pkg" --arg m "$cur" '.[$p]=$m' "$MAINT_DB" > "$MAINT_DB.tmp" \
+        && mv "$MAINT_DB.tmp" "$MAINT_DB"
+    done
   fi
 fi
 
@@ -213,7 +514,9 @@ elif (( official_count > 0 )); then
 else
   ok "Official: already up to date"
 fi
-if (( aur_count > 0 )); then
+if (( aur_skipped )); then
+  warn "AUR:      not checked"
+elif (( aur_count > 0 )); then
   ok "AUR:      $aur_count package(s) updated"
 else
   ok "AUR:      already up to date"

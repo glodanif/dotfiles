@@ -1,15 +1,8 @@
-bottles
 brave-origin-bin
 bruno-bin
-discord-latest-bin
 elephant-all
-jetbrains-toolbox
 localsend-bin
-ookla-speedtest-bin
-opencode-bin
-openshot-bin
 slack-desktop
 viber
-voxtype
 walker
 yay-bin

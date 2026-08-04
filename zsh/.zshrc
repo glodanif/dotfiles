@@ -31,9 +31,9 @@ alias work-claude="CLAUDE_CONFIG_DIR=$HOME/.claude-work command claude"
 alias java17='export JAVA_HOME=/usr/lib/jvm/java-17-openjdk; export PATH=$JAVA_HOME/bin:$PATH'
 alias java26='export JAVA_HOME=$HOME/.jdks/openjdk-26; export PATH=$JAVA_HOME/bin:$PATH'
 
-alias ls='eza --icons'
-alias ll='eza -la --icons --git'
-alias la='eza -la --icons'
+alias ls='eza --icons=auto'
+alias ll='eza -la --icons=auto --git'
+alias la='eza -la --icons=auto'
 
 v() { if [ "$#" -eq 0 ]; then command nvim . ; else command nvim "$@"; fi; }
 sv() { if [ "$#" -eq 0 ]; then sudo nvim . ; else sudo nvim "$@"; fi; }
