@@ -30,9 +30,13 @@ hl.bind(mainMod .. " + down", hl.dsp.focus({ direction = "down" }))
 
 hl.bind(mainMod .. " + ALT + SPACE", hl.dsp.exec_cmd("walker --provider menus:main"))
 
--- TAB cycles between windows (was hy3:togglefocuslayer)
-hl.bind("SUPER + TAB", hl.dsp.window.cycle_next({ next = true }))
-hl.bind("SUPER + TAB", hl.dsp.window.bring_to_top())
+-- TAB cycles focus through the windows of the active monitor's workspace (was hy3:togglefocuslayer).
+-- Both dispatchers live in one callback so the raise always happens after the focus change;
+-- as two separate binds on the same key the order is up to Hyprland.
+hl.bind("SUPER + TAB", function()
+	hl.dispatch(hl.dsp.window.cycle_next({ next = true }))
+	hl.dispatch(hl.dsp.window.bring_to_top())
+end, { description = "Cycle focus to next window" })
 
 -- Move workspaces to other monitors
 hl.bind("SUPER + ALT + LEFT", function()
