@@ -38,6 +38,17 @@ hl.bind("SUPER + TAB", function()
 	hl.dispatch(hl.dsp.window.bring_to_top())
 end, { description = "Cycle focus to next window" })
 
+-- Reverse cycle. code:23 is TAB — with SHIFT held the keysym becomes ISO_Left_Tab, the
+-- keycode does not, so the name "TAB" would not match here.
+-- cycle_next has no `prev` field: it is silently ignored and yields a forward cycle,
+-- so reverse has to be spelled next = false.
+-- No bring_to_top here, unlike the forward bind: cycle_next walks the z-order list, and
+-- raising the window it just landed on pushes it past the one behind it, so the next
+-- press comes straight back — you ping-pong between two windows instead of cycling.
+hl.bind("SUPER + SHIFT + code:23", function()
+	hl.dispatch(hl.dsp.window.cycle_next({ next = false }))
+end, { description = "Cycle focus to previous window" })
+
 -- Move workspaces to other monitors
 hl.bind("SUPER + ALT + LEFT", function()
 	local w = hl.get_active_workspace()
