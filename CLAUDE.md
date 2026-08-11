@@ -62,13 +62,13 @@ command -v foo &>/dev/null && ok "foo installed" || err "foo not installed" "Ins
 
 The `fix()` helper prints: `hint_text command_text` (hint in dim, command in bold cyan).
 
-### Existing checks (00–16)
+### Existing checks (00–17)
 
-00-bootloader (limine, mkinitcpio hooks, plymouth), 01-services (OpenRC: required & optional), 02-shell (zsh, oh-my-zsh, p10k), 03-power (elogind/loginctl), 04-dotfiles (stow symlink integrity), 05-ssh (keys, agent, git config), 06-vpn (wireguard), 07-toolchains (rust, flutter, dart, java, esp32), 08-packages (yay, pacman repos, parallel downloads), 09-hardware (nvidia, android-udev, ESP32 serial), 10-backup (restic, NAS mount, samba creds), 11-own-tools (terminal-weather, pioctl, stainer), 13-fonts (nerd fonts, noto, lato, montserrat, SUSE Mono), 14-dns (dnscrypt-proxy, resolv.conf, NM override, setcap), 15-suspend (hypridle running, elogind NVIDIA sleep hook), 16-cookies (Brave cookie export, keyring key, cron entry, jar freshness on both hosts).
+00-bootloader (limine, mkinitcpio hooks, plymouth), 01-services (OpenRC: required & optional), 02-shell (zsh, oh-my-zsh, p10k), 03-power (elogind/loginctl), 04-dotfiles (stow symlink integrity), 05-ssh (keys, agent, git config), 06-vpn (wireguard), 07-toolchains (rust, flutter, dart, java, esp32), 08-packages (yay, pacman repos, parallel downloads), 09-hardware (nvidia, android-udev, ESP32 serial), 10-backup (restic, NAS mount, samba creds), 11-own-tools (terminal-weather, pioctl, stainer), 13-fonts (nerd fonts, noto, lato, montserrat, SUSE Mono), 14-dns (dnscrypt-proxy, resolv.conf, NM override, setcap), 15-suspend (hypridle running, elogind NVIDIA sleep hook), 16-cookies (Brave cookie export, keyring key, cron entry, jar freshness on both hosts), 17-work-leak (work identity in the repo working tree, git history, or a tracked local.conf).
 
 ### Adding a new check
 
-1. Create `NN-name.sh` in `artix-doctor/.config/artix-doctor/checks/` (next number in sequence, currently 17).
+1. Create `NN-name.sh` in `artix-doctor/.config/artix-doctor/checks/` (next number in sequence, currently 18).
 2. Start with `section "Name"`.
 3. Use `ok`, `warn`, `err` for assertions; provide fix hints.
 4. No shebang needed — files are sourced.
@@ -77,6 +77,8 @@ The `fix()` helper prints: `hint_text command_text` (hint in dim, command in bol
 ### local.conf
 
 `~/.config/artix-doctor/local.conf` is sourced if present. Machine-specific overrides go here (not tracked in git).
+
+It is also where anything work/employer-specific lives, so that neither the value nor the name ever lands in this repo: `WORK_SSH_KEY` (path to the work SSH key) and `WORK_SECRET_PATTERN` (case-insensitive extended regex of org names/domains). `17-work-leak.sh` reads both as needles and scans the repo for them — never hardcode such a pattern in a check script.
 
 ## System details
 

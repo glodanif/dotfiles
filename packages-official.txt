@@ -84,6 +84,7 @@ pipewire-audio
 pipewire-pulse
 plymouth
 polkit-gnome
+pulseview
 python-gobject
 python-pip
 qemu-full
