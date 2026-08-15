@@ -33,6 +33,13 @@ AUR_ACCEPT_MAINT=${AUR_ACCEPT_MAINT:-}
 # were unaffected by the AUR campaigns; there is never a reason to skip them.
 SKIP_AUR=${SKIP_AUR:-0}
 
+# Set SKIP_TOOLCHAINS=1 to leave rustup alone. `rustup` itself is a pacman
+# package, but the toolchains it manages live under ~/.rustup and pacman never
+# sees them — the same blind spot Go's module cache has in the orphan sweep
+# below, except nothing else ever cleans it up. Updates come first-party from
+# static.rust-lang.org over TLS, so none of the AUR machinery above applies.
+SKIP_TOOLCHAINS=${SKIP_TOOLCHAINS:-0}
+
 # Snapshot of AUR maintainer per package. The Jun/Jul 2026 attacks worked by
 # adopting orphaned packages: the name, history and user trust are unchanged,
 # only the account holding commit rights changes. That handover is the single
@@ -50,8 +57,9 @@ STALE_DAYS=4
 pacman_tmpdir="${XDG_RUNTIME_DIR:-$HOME/.cache}"
 mkdir -p "$pacman_tmpdir"
 pacman_out=$(mktemp "$pacman_tmpdir/pacman-out.XXXXXX")
+rustup_out=$(mktemp "$pacman_tmpdir/rustup-out.XXXXXX")
 keep_screen_on
-trap 'rm -f "$pacman_out"; allow_idle' EXIT
+trap 'rm -f "$pacman_out" "$rustup_out"; allow_idle' EXIT
 section "System Update"
 sudo -v
 
@@ -100,11 +108,15 @@ fi
 # the `sudo -v` above. Outside, sudo runs on the real tty and stays silent.
 # $pacman_out already exists (mktemp'd as us), so root writing to it through
 # script leaves it ours to sed and to rm in the trap.
+flatten_pty() {  # capture-file
+  sed -i -e 's/\r/\n/g' -e 's/\x1b\[[0-9;?]*[a-zA-Z]//g' \
+         -e '/^Script \(started\|done\) on /d' "$1"
+}
+
 run_pacman() {
   sudo script -qec "pacman ${(j: :)${(q)@}}" "$pacman_out"
   local rc=$?
-  sed -i -e 's/\r/\n/g' -e 's/\x1b\[[0-9;?]*[a-zA-Z]//g' \
-         -e '/^Script \(started\|done\) on /d' "$pacman_out"
+  flatten_pty "$pacman_out"
   return $rc
 }
 
@@ -424,6 +436,35 @@ if [[ -n $orphans ]]; then
   echo "$orphans" | sudo pacman -Rs --noconfirm -
 fi
 
+# --- Rust toolchains --------------------------------------------------------
+# Everything above this line is pacman's world. ~/.rustup is not: pacman ships
+# the rustup *binary* and stops there, so without this the toolchains sit at
+# whatever version they were on the day they were installed.
+#
+# --no-self-update because the rustup binary belongs to pacman — letting rustup
+# replace a package-owned file leaves pacman reporting a version that is not on
+# disk, and the next `pacman -Syu` silently reverts it.
+#
+# Plain `rustup update` covers every installed toolchain, which here means
+# nightly gets pulled fresh on most runs since it rebuilds daily. Narrow this to
+# `rustup update stable` if that bandwidth stops being worth it.
+#
+# Same pty trick as run_pacman: rustup only draws download progress on a tty, so
+# `script` keeps it live on screen while capturing for the count below.
+rust_updated=0
+rust_failed=0
+rust_skipped=1
+if (( ! SKIP_TOOLCHAINS )) && command -v rustup &>/dev/null; then
+  rust_skipped=0
+  section "Updating Rust toolchains..."
+  script -qec "rustup update --no-self-update" "$rustup_out"
+  (( $? != 0 )) && rust_failed=1
+  flatten_pty "$rustup_out"
+  # rustup prints one line per toolchain: "<name> updated - rustc X" or
+  # "<name> unchanged - rustc X". Count only the former.
+  rust_updated=$(grep -cE '^[[:space:]]*[^[:space:]]+ updated - ' "$rustup_out" || true)
+fi
+
 section "Rechecking updates..."
 rm -f "$HOME/.cache/scripts/waybar-updates-cache"
 pkill -RTMIN+8 waybar 2>/dev/null || true
@@ -460,9 +501,20 @@ fi
 if (( ${#skip} )); then
   warn "AUR:      ${#skip} package(s) held back: ${(j:, :)skip}"
 fi
+if (( rust_skipped )); then
+  warn "Rust:     not checked"
+elif (( rust_failed )); then
+  fail "Rust:     update failed"
+elif (( rust_updated > 0 )); then
+  ok "Rust:     $rust_updated toolchain(s) updated"
+else
+  ok "Rust:     already up to date"
+fi
 if (( official_failed )); then
   notify-send -e -u critical "Update failed."
-elif (( official_count > 0 || aur_count > 0 )); then
+elif (( rust_failed )); then
+  notify-send -e -u critical "Rust toolchain update failed."
+elif (( official_count > 0 || aur_count > 0 || rust_updated > 0 )); then
   notify-send -e -t 2000 "Update complete."
 fi
 
