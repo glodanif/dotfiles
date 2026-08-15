@@ -3,12 +3,26 @@
 source "$HOME/.config/bash/utils.sh"
 
 # AUR safety knobs
-# SOAK_DAYS is the only control that works without you reading anything: it
-# outsources detection to everyone else on the AUR. Size it to exceed current
-# detection lag, not to feel comfortable. The Jun 2026 campaign took ~3 weeks
-# for the affected-package list to stop growing. Drop back to 3-5 once
-# adoptions are re-enabled and aur-general has been quiet for a week.
-SOAK_DAYS=14
+# SOAK_DAYS outsources detection to everyone else on the AUR, so it has two
+# preconditions that are easy to miss:
+#
+#   * There has to be a crowd. elephant-all has 0 AUR votes and walker 26, so
+#     no window of any length buys detection on those two — the maintainer
+#     check below and actually reading the diff are the only controls there.
+#   * It has to be shorter than the package's release cadence, or it is not a
+#     delay, it is a permanent freeze at whatever version was installed when
+#     you set it. At 14 this froze six of the eight installed packages: they
+#     never went 14 days without a push, so they never came out of soak.
+#
+# Measured median push gaps (Aug 2026): brave-origin-bin 5d, localsend-bin 6d,
+# viber 6d, elephant-all 7d, bruno-bin 12d, yay-bin 14d, walker 18d,
+# slack-desktop 22d. 3 clears all of them with room to spare.
+#
+# Be honest about what 3 buys: the Jun 2026 campaign took ~3 weeks for the
+# affected-package list to stop growing, so a 3-day window catches only the
+# sloppy, fast-burning stuff. The maintainer-change check is the real defense;
+# this is a thin second layer. Keep it fail-closed and keep it quiet.
+SOAK_DAYS=3
 SOAK_EXEMPT=()
 
 # Packages whose maintainer change you've reviewed and accepted. Comma list,
@@ -132,113 +146,57 @@ recover_soname_lag() {
   (( ${#pins} ))
 }
 
-# --- Field reader for pacman -Qi/-Si ----------------------------------------
-# Long value lists wrap onto continuation lines, and -Si prints one record per
-# repo carrying the package (world *and* extra here), so a naive grep gets
-# half a value or two repos' worth. Fold continuations into the value, stop at
-# the first record, and normalise pacman's "None" to empty.
-pkg_field() {  # pkg field -Qi|-Si
-  pacman "$3" -- "$1" 2>/dev/null | awk -v f="$2" '
-    done { next }
-    /^[A-Z][A-Za-z ]*:/ {
-      name=$0; sub(/ *:.*/, "", name)
-      if (grab) { done=1; next }
-      val=$0; sub(/^[^:]*: */, "", val)
-      if (name == f) { grab=1; out=val }
-      next
-    }
-    grab { line=$0; sub(/^ +/, "", line); out = out " " line }
-    END { if (out != "None") print out }'
-}
-
-# --- Auto-recovery for a package rename without Replaces --------------------
+# --- Diagnose a package rename without Replaces -----------------------------
 # Arch occasionally splits or renames a package (mbedtls → mbedtls3, Aug 2026)
 # and ships the successor with no `Replaces=`, so pacman aborts with
 #   error: failed to commit transaction (conflicting files)
 #   NEW: /usr/lib/libfoo.so.1 exists in filesystem (owned by OLD)
 # There is no flag for this: --overwrite would leave both packages owning the
-# same paths, so the old one has to go first. `-Rdd` is the sharp edge here —
-# it drops the package while its dependents are still installed — so this only
-# fires when removal is provably a no-op for everything else on the system:
+# same paths, so the old one has to go first, and that needs `-Rdd` — the
+# sharpest flag pacman has, since it drops a package while its dependents are
+# still installed.
 #
-#   * every conflicting file for NEW is owned by one and the same OLD, and
-#     nothing conflicts with an *unowned* file (that means stray files on disk,
-#     which is a different problem and never a rename)
-#   * NEW carries every soname OLD provides, at the same version — an soname
-#     that changed is an ABI break, not a rename
-#   * every package that depends on OLD either stops needing it in the version
-#     the retry will install, or only ever needed a soname NEW also provides
+# This used to *prove* the removal safe (every conflicting file owned by one
+# and the same package, NEW carrying every soname OLD provides, every dependent
+# either upgrading away from OLD or satisfied by one of NEW's provides) and
+# then run it unattended. That proof was ~80 lines of code that executed maybe
+# once a year, which meant its first real run would always be against a
+# half-applied transaction — the worst possible moment to find a bug in it.
+# Getting it right saved two minutes; getting it wrong -Rdd'd something
+# load-bearing mid-upgrade. So it now only names the pair and the command, and
+# the judgement call stays with you.
 #
-# Anything short of that stays manual. Sets $rm_conflicts to the packages to
-# remove; $conflict_explicit lists those that were explicitly installed, whose
-# install reason has to carry over or the orphan sweep below eats the successor.
-typeset -ga rm_conflicts conflict_explicit
-recover_file_conflict() {
-  rm_conflicts=() conflict_explicit=()
-  grep -qE 'exists in filesystem[[:space:]]*$' "$pacman_out" && return 1
-  local -a pairs
+# Returns 1 without printing if the conflict is any other shape.
+report_file_conflict() {
+  local -a pairs olds news
+  local line new old
   pairs=("${(@f)$(grep -oE '^[^ :]+: [^ ]+ exists in filesystem \(owned by [^)]+\)' "$pacman_out" \
       | sed -E 's/^([^ :]+): .* \(owned by (.+)\)$/\1 \2/' | sort -u)}")
   [[ -z ${pairs[1]} ]] && return 1
 
-  local -A owner_of
-  local line x y p t base r r_inst r_repo
   for line in $pairs; do
-    x=${line%% *} y=${line##* }
-    # Two different owners for one incoming package is not a rename.
-    [[ -n ${owner_of[$x]} && ${owner_of[$x]} != $y ]] && return 1
-    owner_of[$x]=$y
+    new=${line%% *} old=${line##* }
+    (( ${olds[(Ie)$old]} )) || olds+=("$old")
+    (( ${news[(Ie)$new]} )) || news+=("$new")
   done
 
-  local -a x_prov y_prov x_names y_names deps reqs
-  for x in ${(k)owner_of}; do
-    y=${owner_of[$x]}
-    # Both sides must be real: an owner pacman doesn't have installed, or a
-    # successor no repo carries, produces empty provides/dependants that would
-    # sail through every check below by being vacuously true.
-    pacman -Q -- "$y" &>/dev/null || { rm_conflicts=(); return 1 }
-    [[ -n $(pkg_field "$x" Version -Si) ]] || { rm_conflicts=(); return 1 }
-
-    x_prov=(${=$(pkg_field "$x" Provides -Si)} "$x")
-    y_prov=(${=$(pkg_field "$y" Provides -Qi)})
-    x_names=(${x_prov%%[<>=]*})
-    y_names=(${y_prov%%[<>=]*})
-
-    for p in $y_prov; do
-      [[ $p == *.so=* ]] || continue
-      (( ${x_prov[(Ie)$p]} )) || { rm_conflicts=(); return 1 }
-    done
-
-    reqs=(${=$(pkg_field "$y" "Required By" -Qi)})
-    for r in $reqs; do
-      # Which dependency list matters depends on whether the retry upgrades $r:
-      # if a newer version is coming, judge that one; otherwise $r stays as it
-      # is installed and its current deps are what removal would break.
-      r_inst=$(pacman -Q -- "$r" 2>/dev/null | awk '{print $2}')
-      r_repo=$(pkg_field "$r" Version -Si)
-      if [[ -n $r_repo && -n $r_inst ]] && (( $(vercmp "$r_repo" "$r_inst") > 0 )); then
-        deps=(${=$(pkg_field "$r" "Depends On" -Si)})
-      else
-        deps=(${=$(pkg_field "$r" "Depends On" -Qi)})
-      fi
-      for t in $deps; do
-        base=${t%%[<>=]*}
-        [[ $base == $y ]] && { rm_conflicts=(); return 1 }
-        (( ${y_names[(Ie)$base]} )) || continue
-        # Satisfied through one of OLD's provides: a versioned dep (soname)
-        # needs the exact token from NEW, a bare name just the name.
-        if [[ $t == *=* ]]; then
-          (( ${x_prov[(Ie)$t]} )) || { rm_conflicts=(); return 1 }
-        else
-          (( ${x_names[(Ie)$base]} )) || { rm_conflicts=(); return 1 }
-        fi
-      done
-    done
-
-    rm_conflicts+=("$y")
-    [[ $(pkg_field "$y" "Install Reason" -Qi) == Explicitly* ]] && conflict_explicit+=("$x")
+  warn "Looks like a rename without Replaces=:"
+  for line in $pairs; do
+    warn "    ${line##* }  →  ${line%% *}"
   done
-  (( ${#rm_conflicts} ))
+  # A conflict against an *unowned* file is stray junk on disk, not a rename.
+  # Call that out separately instead of folding it into advice that won't fix
+  # it — the -Rdd below would leave those files exactly where they are.
+  if grep -qE 'exists in filesystem[[:space:]]*$' "$pacman_out"; then
+    warn "    also conflicts with unowned files — that part is NOT a rename:"
+    grep -E 'exists in filesystem[[:space:]]*$' "$pacman_out" | sed 's/^/          /'
+  fi
+  warn "    if you agree it's a rename, remove the old and retry:"
+  warn "          sudo pacman -Rdd ${olds[*]} && sudo pacman -Syu"
+  warn "    the successor then arrives as a dependency — if what it replaced was"
+  warn "    explicit, carry that over or the orphan sweep below eats it:"
+  warn "          sudo pacman -D --asexplicit ${news[*]}"
+  return 0
 }
 
 log_before_official=$(wc -l < /var/log/pacman.log)
@@ -271,37 +229,15 @@ if grep -qE 'cannot resolve|breaks dependency' "$pacman_out"; then
   fi
 elif grep -q 'exists in filesystem' "$pacman_out"; then
   # A file conflict is not a dependency conflict — nothing above matches it, so
-  # before this branch existed the run just died with a generic failure. The one
-  # safely automatable shape is a rename shipped without `Replaces=`; see
-  # recover_file_conflict for what it insists on before agreeing to that.
-  if recover_file_conflict; then
-    warn "Rename without Replaces — removing superseded: ${rm_conflicts}"
-    # Not --noconfirm: -Rdd leaves dependents unsatisfied until the retry lands,
-    # so this is exactly the transaction worth looking at before agreeing to it.
-    if sudo pacman -Rdd "${rm_conflicts[@]}"; then
-      run_pacman -Syu
-      retry_exit=$?
-      if (( retry_exit != 0 )) || grep -q 'exists in filesystem' "$pacman_out"; then
-        fail "Conflict persists after removal — resolve manually."
-        grep -E 'exists in filesystem' "$pacman_out"
-        official_failed=1
-      else
-        # The successor arrives as a dependency. If what it replaced was
-        # explicit, carry that over or the orphan sweep below removes it the
-        # moment its last dependent goes.
-        for pkg in $conflict_explicit; do
-          pacman -Q -- "$pkg" &>/dev/null && sudo pacman -D --asexplicit "$pkg" >/dev/null
-        done
-      fi
-    else
-      fail "Removal declined or failed — upgrade not applied."
-      official_failed=1
-    fi
-  else
-    fail "File conflict — not auto-resolving. Resolve manually."
+  # without this branch the run dies with a generic failure and no diagnosis.
+  # Name the shape and the command; the removal itself is never automatic, see
+  # report_file_conflict for why.
+  fail "File conflict — upgrade not applied."
+  if ! report_file_conflict; then
     grep -E 'exists in filesystem' "$pacman_out"
-    official_failed=1
+    warn "    unrecognised conflict shape — resolve manually"
   fi
+  official_failed=1
 else
   (( first_exit != 0 )) && official_failed=1
 fi
