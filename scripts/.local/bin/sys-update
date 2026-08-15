@@ -6,9 +6,22 @@ source "$HOME/.config/bash/utils.sh"
 section "System Update"
 sudo -v
 
+# Set SKIP_TOOLCHAINS=1 to leave rustup alone.
+SKIP_TOOLCHAINS=${SKIP_TOOLCHAINS:-0}
+
 update_failed=0
 section "Syncing and upgrading packages..."
 sudo xbps-install -Su || update_failed=1
+
+# xbps ships only /usr/bin/rustup-init; ~/.cargo/bin/rustup is a symlink to it
+# and ~/.rustup is invisible to xbps, so nothing else ever updates the toolchain.
+# --no-self-update because that symlink points at an xbps-owned file: a self
+# update would replace it with a private binary and silently detach from xbps.
+rust_failed=0
+if (( ! SKIP_TOOLCHAINS )) && command -v rustup &>/dev/null; then
+    section "Updating Rust toolchains..."
+    rustup update --no-self-update || rust_failed=1
+fi
 
 section "Updating cargo binaries..."
 if command -v cargo-binstall &>/dev/null; then
@@ -34,8 +47,9 @@ if [[ -n "$installed" && "$installed" != "$running" ]]; then
     section "⚠ Kernel updated — reboot when ready!" "\e[1;33m"
 fi
 
-if (( update_failed )); then
-    fail "Update failed"
+if (( update_failed || rust_failed )); then
+    (( update_failed )) && fail "Package update failed"
+    (( rust_failed )) && fail "Rust toolchain update failed"
 else
     ok "Done"
 fi
