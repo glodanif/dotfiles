@@ -62,13 +62,13 @@ command -v foo &>/dev/null && ok "foo installed" || err "foo not installed" "Ins
 
 The `fix()` helper prints: `hint_text command_text` (hint in dim, command in bold cyan).
 
-### Existing checks (00–17)
+### Existing checks (00–18)
 
-00-bootloader (limine, mkinitcpio hooks, plymouth), 01-services (OpenRC: required & optional), 02-shell (zsh, oh-my-zsh, p10k), 03-power (elogind/loginctl), 04-dotfiles (stow symlink integrity), 05-ssh (keys, agent, git config), 06-vpn (wireguard), 07-toolchains (rust, flutter, dart, java, esp32), 08-packages (yay, pacman repos, parallel downloads), 09-hardware (nvidia, android-udev, ESP32 serial), 10-backup (restic, NAS mount, samba creds), 11-own-tools (terminal-weather, pioctl, stainer), 13-fonts (nerd fonts, noto, lato, montserrat, SUSE Mono), 14-dns (dnscrypt-proxy, resolv.conf, NM override, setcap), 15-suspend (hypridle running, elogind NVIDIA sleep hook), 16-cookies (Brave cookie export, keyring key, cron entry, jar freshness on both hosts), 17-work-leak (work identity in the repo working tree, git history, or a tracked local.conf).
+00-bootloader (limine, mkinitcpio hooks, plymouth), 01-services (OpenRC: required & optional), 02-shell (zsh, oh-my-zsh, p10k), 03-power (elogind/loginctl), 04-dotfiles (stow symlink integrity), 05-ssh (keys, agent, git config), 06-vpn (wireguard), 07-toolchains (rust, flutter, dart, java, esp32), 08-packages (yay, pacman repos, parallel downloads), 09-hardware (nvidia, android-udev, ESP32 serial), 10-backup (restic, NAS mount, samba creds), 11-own-tools (terminal-weather, pioctl, stainer), 13-fonts (nerd fonts, noto, lato, montserrat, SUSE Mono), 14-dns (dnscrypt-proxy, resolv.conf, NM override, setcap), 15-suspend (hypridle running, elogind NVIDIA sleep hook), 16-cookies (Brave cookie export, keyring key, cron entry, jar freshness on both hosts), 17-work-leak (work identity in the repo working tree, git history, or a tracked local.conf), 18-maintenance (maintenance scripts stowed, waybar nag module wired, whether maintenance is due, optional smartd).
 
 ### Adding a new check
 
-1. Create `NN-name.sh` in `artix-doctor/.config/artix-doctor/checks/` (next number in sequence, currently 18).
+1. Create `NN-name.sh` in `artix-doctor/.config/artix-doctor/checks/` (next number in sequence, currently 19).
 2. Start with `section "Name"`.
 3. Use `ok`, `warn`, `err` for assertions; provide fix hints.
 4. No shebang needed — files are sourced.
@@ -97,6 +97,9 @@ It is also where anything work/employer-specific lives, so that neither the valu
 
 - **Apply dotfile changes**: `./refresh.sh` from the repo root (re-stows all packages, updates package lists)
 - **Run health check**: `artix-doctor`
+- **Periodic maintenance**: `sys-maintenance` (paccache, fstrim, SMART spot check, then btrfs scrub and `sys-backup` *only when overdue*). Nothing schedules it — `maintenance-watch` drives a waybar badge that nags, and clicking it runs the script. Deliberate: a scrub reads the whole filesystem, so it must never fire unattended at boot.
+- **Thresholds live in one place**: `maintenance-watch` owns `SCRUB_DAYS`/`CACHE_MAX_GB`/`BACKUP_DAYS`. Both `sys-maintenance` and `18-maintenance.sh` call `maintenance-watch --plain` (one due-item per line, exit 1 if any) instead of keeping their own copies. Add a new chore by adding it there.
+- **Backup stays its own script**: `sys-backup` runs on a much shorter cycle than a scrub and needs the NAS up, so `sys-maintenance` delegates to it rather than absorbing it. It writes `~/.local/state/last-backup` on success, which is the unprivileged signal `maintenance-watch` reads for backup age.
 - **Service management**: `sudo rc-service <svc> start|stop|restart`, `sudo rc-update add|del <svc> default`
 - **Hyprland reload**: Changes to `~/.config/hypr/*.lua` are auto-reloaded by Hyprland
 - **Check Hyprland config**: `Hyprland --verify-config` (parse errors only — it does not execute `hl.on` callbacks)

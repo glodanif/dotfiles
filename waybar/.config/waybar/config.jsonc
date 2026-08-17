@@ -13,6 +13,7 @@
     "custom/recording",
     "custom/mic",
     "custom/updates",
+    "custom/maintenance",
     "pulseaudio",
     "cpu",
     "memory",
@@ -112,6 +113,13 @@
     "interval": "once",
     "on-click": "run-and-wait sys-update",
     "on-click-middle": "rm -f $HOME/.cache/scripts/waybar-updates-cache && pkill -RTMIN+8 waybar",
+    "signal": 8,
+  },
+  "custom/maintenance": {
+    "exec": "maintenance-watch",
+    "return-type": "json",
+    "interval": 3600,
+    "on-click": "run-and-wait sys-maintenance",
     "signal": 8,
   },
   "custom/artix": {

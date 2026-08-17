@@ -55,6 +55,7 @@ button:hover {
 #bluetooth:hover,
 #custom-power:hover,
 #custom-updates:hover,
+#custom-maintenance:hover,
 #custom-vpn:hover,
 #custom-notification:hover,
 #pulseaudio:hover {
@@ -217,6 +218,7 @@ label:focus {
 #memory,
 #network,
 #custom-updates,
+#custom-maintenance,
 #pulseaudio,
 #custom-notification {
     margin-right: 8px;
@@ -370,6 +372,7 @@ label:focus {
 }
 
 #custom-updates,
+#custom-maintenance,
 #custom-screenshare,
 #custom-notification,
 #custom-mic {
@@ -416,6 +419,10 @@ label:focus {
 
 #custom-updates {
     background: linear-gradient(180deg, #4dabf7 0%, #4dabf7 60%, #9775fa 100%);
+}
+
+#custom-maintenance {
+    background: linear-gradient(180deg, #f59f00 0%, #f59f00 60%, #e8590c 100%);
 }
 
 #custom-notification {

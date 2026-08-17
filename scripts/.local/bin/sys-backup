@@ -38,6 +38,10 @@ sudo restic forget --repo "$REPO" \
   --keep-monthly 6 \
   --prune
 
+# Success stamp. Lets maintenance-watch nag about backup age without needing
+# root, the NAS mounted, or the restic password just to answer "how long ago?".
+mkdir -p ~/.local/state && touch ~/.local/state/last-backup
+
 section "Backup complete."
 notify-send -e -t 2000 "Backup complete."
 

@@ -1,0 +1,87 @@
+#!/bin/zsh
+# sys-maintenance — the periodic chores, run when you decide to, not at boot.
+set -euo pipefail
+source "$HOME/.config/bash/utils.sh"
+
+keep_screen_on
+section "System Maintenance"
+sudo -v
+
+# Anything that needs your attention lands here and is reprinted at the end,
+# so a failure can't scroll away behind scrub output.
+problems=()
+
+# maintenance-watch owns the thresholds; ask it what's actually due rather than
+# keeping a second set here. Cheap chores below run unconditionally; the two
+# expensive ones (scrub, backup) only run when they're genuinely overdue, so
+# clicking the badge twice in a row doesn't re-read 368G or re-hit the NAS.
+due=$(maintenance-watch --plain || true)
+is_due() { echo "$due" | grep -q "^$1"; }
+
+# --- pacman cache ------------------------------------------------------------
+# Keep 2 versions of each installed package: enough to downgrade a bad update,
+# which is the only thing the cache is actually for. Drop everything belonging
+# to packages that are no longer installed.
+section "Trimming pacman cache..."
+before=$(du -sm /var/cache/pacman/pkg | cut -f1)
+sudo paccache -rk2
+sudo paccache -ruk0
+after=$(du -sm /var/cache/pacman/pkg | cut -f1)
+echo "cache: ${before}M -> ${after}M"
+
+# --- TRIM --------------------------------------------------------------------
+# Inert on the encrypted root until 'allow-discards' is in the cryptdevice=
+# cmdline; /boot and /mnt/2t trim regardless.
+section "Trimming filesystems..."
+sudo fstrim -av || true
+
+# --- drive health ------------------------------------------------------------
+# Point-in-time only: reads the verdict the drive firmware already computed
+# (instant, no self-test). Checked here because we happen to hold sudo.
+section "Checking drive health..."
+# || true on every capture: under `set -e` a non-matching grep inside an
+# assignment aborts the whole script, silently skipping everything below.
+for dev in ${(f)"$(sudo smartctl --scan | awk '{print $1}' || true)"}; do
+  health=$(sudo smartctl -H "$dev" 2>&1 | grep -iE 'overall-health|SMART Health' | head -1 || true)
+  [[ -z $health ]] && health="no health line in smartctl output"
+  if echo "$health" | grep -qiE 'PASSED|OK'; then
+    echo "  $dev: OK"
+  else
+    echo "  \e[1;31m$dev: $health\e[0m"
+    problems+=("$dev: $health")
+  fi
+done
+
+# --- btrfs scrub -------------------------------------------------------------
+# Reads every block and verifies checksums — this is what finds silent
+# corruption while a good copy still exists in the restic snapshots.
+# -B blocks so we see the summary; -c 3 is idle I/O so the desktop stays usable.
+if ! is_due 'btrfs scrub'; then
+  section "Scrub not due yet, skipping."
+elif sudo btrfs scrub status / 2>/dev/null | grep -q 'Status:.*running'; then
+  section "Scrub already running, skipping." "\e[33m"
+else
+  section "Scrubbing / (reads the whole filesystem, this takes a while)..."
+  sudo btrfs scrub start -B -c 3 / || problems+=("btrfs scrub failed or found errors")
+fi
+
+# --- backup ------------------------------------------------------------------
+# Deliberately still its own script: it runs on a much shorter cycle than a
+# scrub and depends on the NAS being up. Delegated to, never duplicated.
+if is_due 'backup'; then
+  section "Backup is due, running sys-backup..."
+  sys-backup || problems+=("backup failed — check the NAS mount")
+else
+  section "Backup not due yet, skipping."
+fi
+
+if (( $#problems )); then
+  section "NEEDS ATTENTION" "\e[1;31m"
+  printf '  \e[1;31m%s\e[0m\n' $problems
+  notify-send -e -u critical "Maintenance: $#problems problem(s)" "${(j:\n:)problems}"
+else
+  section "Maintenance complete — nothing needs attention."
+  notify-send -e -t 2000 "Maintenance complete."
+fi
+pkill -RTMIN+8 waybar 2>/dev/null || true
+press_any_key

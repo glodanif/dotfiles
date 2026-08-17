@@ -1,0 +1,55 @@
+#!/bin/zsh
+# Waybar module: nags when periodic maintenance is due. Never does the work —
+# clicking runs sys-maintenance, so a heavy scrub only ever starts when asked.
+#
+# Everything here is derived from the system itself rather than a state file we
+# keep: btrfs records its own last-scrub time, and the cache size is the cache
+# size. Nothing to get out of sync.
+
+SCRUB_DAYS=45     # btrfs default guidance is monthly-ish; 45d avoids nagging early
+CACHE_MAX_GB=8    # ~2 versions of everything sits well under this
+BACKUP_DAYS=1     # restic to the NAS; the one item here that loses data if skipped
+
+# Ages compare with >=, so a threshold of N nags once N days have elapsed.
+# With > it would take N+1, which for BACKUP_DAYS=1 means a two-day-old backup
+# before you hear about it — not what "daily" means.
+
+# --plain: one due item per line, exit 1 if anything is due. Lets artix-doctor
+# reuse these thresholds instead of keeping a second copy of them.
+plain=0
+[[ ${1:-} == --plain ]] && plain=1
+
+due=()
+
+# Last scrub: the status file is root-only to read, but its mtime is not.
+scrub_status=(/var/lib/btrfs/scrub.status.*(N))
+if (( $#scrub_status )); then
+  age=$(( ( $(date +%s) - $(stat -c %Y "$scrub_status[1]") ) / 86400 ))
+  (( age >= SCRUB_DAYS )) && due+=("btrfs scrub: ${age}d ago")
+else
+  due+=("btrfs scrub: never run")
+fi
+
+cache_gb=$(( $(du -sm /var/cache/pacman/pkg 2>/dev/null | cut -f1) / 1024 ))
+(( cache_gb > CACHE_MAX_GB )) && due+=("pacman cache: ${cache_gb}G")
+
+# Backup age, from the stamp sys-backup writes on success.
+stamp=~/.local/state/last-backup
+if [[ -f $stamp ]]; then
+  bage=$(( ( $(date +%s) - $(stat -c %Y $stamp) ) / 86400 ))
+  (( bage >= BACKUP_DAYS )) && due+=("backup: ${bage}d ago")
+else
+  due+=("backup: never recorded")
+fi
+
+if (( plain )); then
+  (( $#due )) && printf '%s\n' $due
+  exit $(( $#due > 0 ))
+fi
+
+if (( $#due == 0 )); then
+  printf '{"text":""}\n'
+else
+  tooltip="Maintenance due:\\n$(printf '%s\\n' $due | sed 's/\\n$//')\\nClick to run"
+  printf '{"text":"󰃢 %d","tooltip":"%s","class":"maintenance"}\n' $#due "$tooltip"
+fi
