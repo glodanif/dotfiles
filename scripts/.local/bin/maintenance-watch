@@ -6,7 +6,7 @@
 # keep: btrfs records its own last-scrub time, and the cache size is the cache
 # size. Nothing to get out of sync.
 
-SCRUB_DAYS=45     # btrfs default guidance is monthly-ish; 45d avoids nagging early
+SCRUB_DAYS=14     # measured: 333G scrubs in 1m40s at 3.34GiB/s, so it's cheap
 CACHE_MAX_GB=8    # ~2 versions of everything sits well under this
 BACKUP_DAYS=1     # restic to the NAS; the one item here that loses data if skipped
 

@@ -11,10 +11,12 @@ while IFS= read -r src; do
     relative=${pkg_and_rest#*/}
     target="$HOME/$relative"
 
-    # Skip repo-root metadata files
-    case "$relative" in
-        LICENSE|README.md|CLAUDE.md|.gitignore|.stowignore|packages-*.txt|refresh.sh) continue ;;
-    esac
+    # Skip repo-root metadata files. A stow package is always a directory, so
+    # anything with no '/' left after stripping the repo path sits at the root
+    # and belongs to no package. Structural rather than a list of names, so a
+    # new root-level file (RECOVERY.md, a CI config) doesn't get reported as an
+    # unstowed package the day it's added.
+    [[ "$pkg_and_rest" != */* ]] && continue
 
     if [[ -L "$target" ]]; then
         link_target=$(readlink -f "$target" 2>/dev/null)

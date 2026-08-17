@@ -1,6 +1,10 @@
 #!/bin/zsh
 # sys-maintenance — the periodic chores, run when you decide to, not at boot.
-set -euo pipefail
+# No -e on purpose. Every step here is independent, and a chore that exits
+# non-zero (du hitting a root-only dir, fstrim on a fs that won't take it)
+# must not cancel the ones after it. Failures are collected in $problems and
+# reported at the end instead.
+set -uo pipefail
 source "$HOME/.config/bash/utils.sh"
 
 keep_screen_on
@@ -22,11 +26,21 @@ is_due() { echo "$due" | grep -q "^$1"; }
 # Keep 2 versions of each installed package: enough to downgrade a bad update,
 # which is the only thing the cache is actually for. Drop everything belonging
 # to packages that are no longer installed.
+# du runs under sudo: pacman leaves root-only download-* temp dirs in there,
+# and as a user du both miscounts and prints a screenful of Permission denied.
+# Fall back only on empty output: with pipefail a `|| echo ?` would also fire
+# when du printed a perfectly good number but exited non-zero.
+cache_mb() {
+  local mb
+  mb=$(sudo du -sm /var/cache/pacman/pkg 2>/dev/null | cut -f1)
+  [[ -n $mb ]] && echo "$mb" || echo '?'
+}
+
 section "Trimming pacman cache..."
-before=$(du -sm /var/cache/pacman/pkg | cut -f1)
-sudo paccache -rk2
-sudo paccache -ruk0
-after=$(du -sm /var/cache/pacman/pkg | cut -f1)
+before=$(cache_mb)
+sudo paccache -rk2 || problems+=("paccache -rk2 failed")
+sudo paccache -ruk0 || problems+=("paccache -ruk0 failed")
+after=$(cache_mb)
 echo "cache: ${before}M -> ${after}M"
 
 # --- TRIM --------------------------------------------------------------------

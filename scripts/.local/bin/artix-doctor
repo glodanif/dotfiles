@@ -3,7 +3,12 @@
 
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 
-set -uo pipefail
+# No pipefail. Checks are boolean assertions of the form `cmd | grep -q ...`,
+# where the status we want is grep's. grep -q exits the instant it matches, so
+# a slower producer still writing (dkms status, for one) takes SIGPIPE and
+# pipefail then reports 141 for a pipeline that actually succeeded — a false
+# ERR on a healthy system. -u stays: it catches typo'd variable names.
+set -u
 
 UTILS="$HOME/.config/bash/utils.sh"
 CHECKS_DIR="$HOME/.config/artix-doctor/checks"

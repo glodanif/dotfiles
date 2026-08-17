@@ -64,7 +64,7 @@ The `fix()` helper prints: `hint_text command_text` (hint in dim, command in bol
 
 ### Existing checks (00–18)
 
-00-bootloader (limine, mkinitcpio hooks, plymouth), 01-services (OpenRC: required & optional), 02-shell (zsh, oh-my-zsh, p10k), 03-power (elogind/loginctl), 04-dotfiles (stow symlink integrity), 05-ssh (keys, agent, git config), 06-vpn (wireguard), 07-toolchains (rust, flutter, dart, java, esp32), 08-packages (yay, pacman repos, parallel downloads), 09-hardware (nvidia, android-udev, ESP32 serial), 10-backup (restic, NAS mount, samba creds), 11-own-tools (terminal-weather, pioctl, stainer), 13-fonts (nerd fonts, noto, lato, montserrat, SUSE Mono), 14-dns (dnscrypt-proxy, resolv.conf, NM override, setcap), 15-suspend (hypridle running, elogind NVIDIA sleep hook), 16-cookies (Brave cookie export, keyring key, cron entry, jar freshness on both hosts), 17-work-leak (work identity in the repo working tree, git history, or a tracked local.conf), 18-maintenance (maintenance scripts stowed, waybar nag module wired, whether maintenance is due, optional smartd).
+00-bootloader (limine, mkinitcpio hooks, plymouth, fallback initramfs, `allow-discards` in the cmdline, LTS rescue kernel + its nvidia DKMS build), 01-services (OpenRC: required & optional, earlyoom running with its `--avoid` guard), 02-shell (zsh, oh-my-zsh, p10k), 03-power (elogind/loginctl), 04-dotfiles (stow symlink integrity), 05-ssh (keys, agent, git config), 06-vpn (wireguard), 07-toolchains (rust, flutter, dart, java, esp32), 08-packages (yay, pacman repos, parallel downloads), 09-hardware (nvidia, android-udev, ESP32 serial), 10-backup (restic, NAS mount, samba creds), 11-own-tools (terminal-weather, pioctl, stainer), 13-fonts (nerd fonts, noto, lato, montserrat, SUSE Mono), 14-dns (dnscrypt-proxy, resolv.conf, NM override, setcap), 15-suspend (hypridle running, elogind NVIDIA sleep hook), 16-cookies (Brave cookie export, keyring key, cron entry, jar freshness on both hosts), 17-work-leak (work identity in the repo working tree, git history, or a tracked local.conf), 18-maintenance (maintenance scripts stowed, waybar nag module wired, whether maintenance is due).
 
 ### Adding a new check
 
@@ -73,6 +73,7 @@ The `fix()` helper prints: `hint_text command_text` (hint in dim, command in bol
 3. Use `ok`, `warn`, `err` for assertions; provide fix hints.
 4. No shebang needed — files are sourced.
 5. Can use variables from `local.conf` (e.g., `$WORK_SSH_KEY`).
+6. `artix-doctor` runs `set -u` but **not** `pipefail`, deliberately. Checks are written as `cmd | grep -q ...`, and `grep -q` exits on first match; with pipefail a slower producer (`dkms status`) takes SIGPIPE and the pipeline reports 141 for an assertion that passed. Don't add pipefail back.
 
 ### local.conf
 

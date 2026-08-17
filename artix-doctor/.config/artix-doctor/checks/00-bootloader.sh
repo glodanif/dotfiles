@@ -69,6 +69,51 @@ if [[ -f /boot/limine.conf ]]; then
     cmdline=$(grep -m1 -E '^\s+cmdline:' /boot/limine.conf)
     echo "$cmdline" | grep -q 'quiet' && ok "limine cmdline: quiet" || warn "limine cmdline: quiet missing (plymouth won't suppress logs)" "Add 'quiet' to the cmdline: line in /boot/limine.conf."
     echo "$cmdline" | grep -q 'splash' && ok "limine cmdline: splash" || warn "limine cmdline: splash missing (plymouth won't activate)" "Add 'splash' to the cmdline: line in /boot/limine.conf."
+
+    # allow-discards is an argument to the encrypt hook's cryptdevice=, not a
+    # standalone kernel parameter. Without it dm-crypt silently drops every TRIM
+    # and the encrypted root is never trimmed at all. Default entry only — the
+    # rescue entries deliberately omit it.
+    echo "$cmdline" | grep -q 'allow-discards' \
+        && ok "limine cmdline: allow-discards (TRIM reaches the SSD)" \
+        || warn "allow-discards missing — TRIM never reaches the encrypted root" "Append ':allow-discards' to the cryptdevice= value in /boot/limine.conf, after the mapper name."
+fi
+
+# The fallback entry above shares vmlinuz-linux with the default entry, so it
+# rescues a broken initramfs but NOT a broken kernel or a failed NVIDIA build.
+# linux-lts is the only genuine second kernel. These assertions exist because a
+# silent DKMS failure leaves a rescue entry that boots to a black screen, and
+# you would find that out at the worst possible moment.
+lts_img=/boot/initramfs-linux-lts.img
+lts_modules=(/lib/modules/*-lts(N/))
+lts_kver=${lts_modules[1]:t}
+
+if [[ -f /boot/vmlinuz-linux-lts ]]; then
+    ok "LTS rescue kernel installed${lts_kver:+ ($lts_kver)}"
+
+    if [[ -f "$lts_img" ]]; then
+        if [[ "$lts_img" -ot /boot/vmlinuz-linux-lts ]]; then
+            err "LTS initramfs older than the LTS kernel — it won't boot it" "Rebuild it:" "sudo mkinitcpio -p linux-lts"
+        else
+            ok "LTS initramfs present and newer than its kernel"
+        fi
+    else
+        err "LTS initramfs missing — the LTS entry can't boot" "Build it:" "sudo mkinitcpio -p linux-lts"
+    fi
+
+    grep -qF 'vmlinuz-linux-lts' /boot/limine.conf 2>/dev/null \
+        && ok "limine LTS boot entry present" \
+        || err "LTS kernel has no limine entry — unreachable at boot" "Add an '/Artix Linux (LTS)' entry to /boot/limine.conf with path: boot():/vmlinuz-linux-lts"
+
+    # dkms status is the authority: the modules land in kernel/drivers/video/,
+    # not updates/dkms/, so don't assert on a path that varies by packaging.
+    if [[ -n "$lts_kver" ]]; then
+        dkms status 2>/dev/null | grep -q "nvidia.*$lts_kver.*installed" \
+            && ok "nvidia DKMS module built for $lts_kver" \
+            || err "nvidia not built for the LTS kernel — it would boot to a black screen" "Rebuild it:" "sudo dkms autoinstall -k $lts_kver"
+    fi
+else
+    warn "no LTS kernel — the fallback entry reuses vmlinuz-linux, so a bad kernel or NVIDIA build leaves nothing bootable" "Install it:" "sudo pacman -S linux-lts linux-lts-headers"
 fi
 
 plymouth_theme=$(plymouth-set-default-theme 2>/dev/null)
