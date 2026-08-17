@@ -75,6 +75,78 @@ because the NVIDIA card claims `DP-1`–`DP-3` first. With the card removed they
 will likely renumber, and `hypr/monitors.lua` hardcodes `DP-1`/`DP-2`/
 `HDMI-A-1` — so expect the wrong mode or offset until those rules are adjusted.
 
+## Network: is it the firewall?
+
+The tell is **how** it fails:
+
+| Symptom | Meaning |
+|---|---|
+| hangs, then times out | packets are being *dropped* — firewall is the prime suspect |
+| "connection refused", instantly | nothing is listening on that port — not the firewall |
+| "no route to host" | routing, not filtering |
+
+Ask what's loaded first, because there are two and their scope differs:
+
+```sh
+sudo nft list tables
+```
+
+- `inet filter` — always on, filters **inbound only**. It cannot break connections
+  *you* initiate.
+- `inet vpnkill` — present only while the VPN is up, filters **outbound**, policy
+  drop. This one can break your own traffic, and is meant to. `vpn-run off`
+  removes it.
+
+Blocked packets are logged. This is usually the fastest answer:
+
+```sh
+sudo dmesg | grep nft-drop
+```
+
+`nft-drop-in:` is the inbound firewall, `nft-drop-out:` is the killswitch. The
+line names the interface, source, destination and port. Rate-limited to 5/min,
+and it lives in the kernel ring buffer, so it answers "why is this failing right
+now", not "what happened last week".
+
+Ten-second isolation test — flushing can't lock you out, since no rules means
+everything is permitted:
+
+```sh
+sudo nft flush ruleset      # retest whatever was broken
+sudo nft -f /etc/nftables.conf
+```
+
+Opening a port for a dev server, live only until the next reload or reboot:
+
+```sh
+sudo nft add rule inet filter input tcp dport 3000 accept
+```
+
+Remember a service must also be *listening* on `0.0.0.0`, not `127.0.0.1`, for
+anything outside this machine to reach it. That's a separate gate from the
+firewall, and it's the one that produces an instant refusal rather than a hang.
+
+## VPN won't connect
+
+If `wg-quick` reports a resolvconf "signature mismatch" and tears the interface
+back down, the config has a `DNS =` line. `/etc/resolv.conf` is deliberately
+immutable and points at dnscrypt-proxy, so wg-quick can't rewrite it. Comment
+the line out — every config regenerated from the provider ships one:
+
+```sh
+sudo sed -i 's/^DNS/#DNS/' ~/.config/wireguard/*.conf
+```
+
+DNS still resolves through dnscrypt, and with `AllowedIPs = 0.0.0.0/0` those
+queries travel inside the tunnel anyway. `06-vpn.sh` checks for this.
+
+If everything stops working right after a VPN drop, the killswitch outlived its
+tunnel:
+
+```sh
+sudo nft delete table inet vpnkill
+```
+
 ## What none of this covers
 
 A damaged LUKS header, a wiped `/boot`, or a missing `limine.conf` needs an
