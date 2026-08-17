@@ -15,6 +15,15 @@ if grep -q "^nameserver 127.0.0.1" /etc/resolv.conf; then
 else
     err "resolv.conf not pointing to 127.0.0.1" "Point it at the local resolver:" "echo 'nameserver 127.0.0.1' | sudo tee /etc/resolv.conf"
 fi
+# The immutable bit is what actually holds the pointer in place. Without it
+# NetworkManager, a dhcp client, or wg-quick's resolvconf call will rewrite the
+# file and quietly move DNS off the encrypted resolver.
+if lsattr /etc/resolv.conf 2>/dev/null | awk '{print $1}' | grep -q i; then
+    ok "resolv.conf is immutable"
+else
+    warn "resolv.conf is not immutable — something can overwrite it" "Lock it:" "sudo chattr +i /etc/resolv.conf"
+fi
+
 if [[ -f /etc/NetworkManager/conf.d/dns.conf ]] && grep -q "dns=none" /etc/NetworkManager/conf.d/dns.conf; then
     ok "NetworkManager DNS override disabled"
 else

@@ -17,6 +17,19 @@ else
     err "no nftables boot hook — the ruleset will not survive a reboot" "Create $hook containing 'exec /usr/bin/nft -f /etc/nftables.conf', then:" "sudo chmod +x $hook"
 fi
 
+# Two invariants that let this firewall coexist with libvirt and the VPN
+# killswitch. Both are easy to reintroduce by editing the file, and neither
+# failure is visible until a VM or the tunnel misbehaves much later.
+if [[ -f /etc/nftables.conf ]]; then
+    grep -qE '^\s*flush ruleset' /etc/nftables.conf \
+        && err "/etc/nftables.conf calls 'flush ruleset' — at boot it deletes libvirt's and wg-quick's tables too" "Scope the reset instead: a 'table inet filter' line followed by 'delete table inet filter'." \
+        || ok "nftables.conf resets only its own table"
+
+    grep -qE 'hook forward' /etc/nftables.conf \
+        && warn "/etc/nftables.conf defines a forward chain — with policy drop it blocks libvirt VM NAT regardless of libvirt's own rules" "Remove the forward chain unless this host actually routes traffic." \
+        || ok "no forward chain (libvirt governs its own forwarding)"
+fi
+
 # Reading the live ruleset needs root. Distinguish "no sudo ticket" (warn, the
 # check simply couldn't look) from "sudo works and there are no drop-policy
 # rules" (err, the firewall is genuinely not up).

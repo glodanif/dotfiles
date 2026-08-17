@@ -62,13 +62,13 @@ command -v foo &>/dev/null && ok "foo installed" || err "foo not installed" "Ins
 
 The `fix()` helper prints: `hint_text command_text` (hint in dim, command in bold cyan).
 
-### Existing checks (00–19)
+### Existing checks (00–20)
 
-00-bootloader (limine, mkinitcpio hooks, plymouth, fallback initramfs, `allow-discards` in the cmdline, LTS rescue kernel + its nvidia DKMS build), 01-services (OpenRC: required & optional, earlyoom running with its `--avoid` guard), 02-shell (zsh, oh-my-zsh, p10k), 03-power (elogind/loginctl), 04-dotfiles (stow symlink integrity), 05-ssh (keys, agent, git config), 06-vpn (wireguard), 07-toolchains (rust, flutter, dart, java, esp32), 08-packages (yay, pacman repos, parallel downloads), 09-hardware (nvidia, android-udev, ESP32 serial), 10-backup (restic, NAS mount, samba creds), 11-own-tools (terminal-weather, pioctl, stainer), 13-fonts (nerd fonts, noto, lato, montserrat, SUSE Mono), 14-dns (dnscrypt-proxy, resolv.conf, NM override, setcap), 15-suspend (hypridle running, elogind NVIDIA sleep hook), 16-cookies (Brave cookie export, keyring key, cron entry, jar freshness on both hosts), 17-work-leak (work identity in the repo working tree, git history, or a tracked local.conf), 18-maintenance (maintenance scripts stowed, waybar nag module wired, whether maintenance is due), 19-firewall (nftables installed, ruleset file, the `local.d` boot hook, and a live input chain with `policy drop`).
+00-bootloader (limine, mkinitcpio hooks, plymouth, fallback initramfs, `allow-discards` in the cmdline, LTS rescue kernel + its nvidia DKMS build), 01-services (OpenRC: required & optional, earlyoom running with its `--avoid` guard), 02-shell (zsh, oh-my-zsh, p10k), 03-power (elogind/loginctl), 04-dotfiles (stow symlink integrity), 05-ssh (keys, agent, git config), 06-vpn (wireguard, no active `DNS=` line in the configs), 07-toolchains (rust, flutter, dart, java, esp32), 08-packages (yay, pacman repos, parallel downloads), 09-hardware (nvidia, android-udev, ESP32 serial), 10-backup (restic, NAS mount, samba creds), 11-own-tools (terminal-weather, pioctl, stainer), 13-fonts (nerd fonts, noto, lato, montserrat, SUSE Mono), 14-dns (dnscrypt-proxy, resolv.conf contents + immutable bit, NM override, setcap), 15-suspend (hypridle running, elogind NVIDIA sleep hook), 16-cookies (Brave cookie export, keyring key, cron entry, jar freshness on both hosts), 17-work-leak (work identity in the repo working tree, git history, or a tracked local.conf), 18-maintenance (maintenance scripts stowed, waybar nag module wired, whether maintenance is due), 19-firewall (nftables installed, ruleset file, the `local.d` boot hook, a live input chain with `policy drop`, and that the ruleset neither calls `flush ruleset` nor defines a forward chain — both would break libvirt and wg-quick), 20-filesystems (root `compress=zstd` actually applied to the live mount, `/mnt/2t` on `ntfs3` and mounted read-write).
 
 ### Adding a new check
 
-1. Create `NN-name.sh` in `artix-doctor/.config/artix-doctor/checks/` (next number in sequence, currently 20).
+1. Create `NN-name.sh` in `artix-doctor/.config/artix-doctor/checks/` (next number in sequence, currently 21).
 2. Start with `section "Name"`.
 3. Use `ok`, `warn`, `err` for assertions; provide fix hints.
 4. No shebang needed — files are sourced.

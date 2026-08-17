@@ -14,6 +14,7 @@ cifs-utils
 clang
 cliphist
 cmake
+compsize
 cpio
 cronie-openrc
 cryptsetup

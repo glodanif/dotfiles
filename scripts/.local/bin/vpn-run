@@ -5,6 +5,48 @@ source "$HOME/.config/bash/utils.sh"
 CONFIGS_DIR="/home/glodanif/.config/wireguard"
 WAYBAR_SIGNAL=8
 
+# Killswitch. Once the tunnel is verified, every outbound path except the
+# tunnel is blocked, so a dropped wireguard link stops traffic instead of
+# silently falling back to the clear.
+#
+# Lives in its own `inet vpnkill` table and never calls `flush ruleset`: the
+# base firewall is `inet filter` and libvirt installs its own tables, so a
+# global flush would take out both (see the comment in /etc/nftables.conf).
+# Both output chains are evaluated and a drop in either wins, which is exactly
+# what makes a second table enough.
+#
+# The encrypted packets leaving for the VPN server can't go out the tunnel —
+# they'd loop. wg-quick marks them with its routing fwmark, so allow that mark
+# rather than hardcoding an endpoint address, which changes with every server.
+apply_killswitch() {
+    local iface=$1 fwmark lan
+    fwmark=$(sudo wg show "$iface" fwmark 2>/dev/null)
+    if [[ -z $fwmark || $fwmark == off ]]; then
+        echo "No fwmark on $iface — skipping killswitch (it would cut the tunnel itself)"
+        return 1
+    fi
+    # Link-scope route = the LAN prefix, already correctly masked. Keeps the
+    # NAS, syncthing peers and printers reachable while the VPN is up.
+    lan=$(ip -4 route show scope link | awk '$1 ~ /\// {print $1; exit}')
+
+    sudo nft -f - <<EOF
+table inet vpnkill
+delete table inet vpnkill
+table inet vpnkill {
+	chain output {
+		type filter hook output priority filter; policy drop;
+		oifname "lo" accept
+		oifname "$iface" accept
+		meta mark $fwmark accept
+		${lan:+ip daddr $lan accept}
+		ip6 daddr fe80::/10 accept
+		ip6 daddr ff00::/8 accept
+		udp dport 67 accept
+	}
+}
+EOF
+}
+
 case "$1" in
     on)
         section "Starting VPN"
@@ -17,7 +59,15 @@ case "$1" in
             echo "No config found in $CONFIGS_DIR"
             exit 1
         fi
-        sudo wg-quick up "$CONFIG"
+        # Check wg-quick's exit status before blaming the handshake. wg-quick
+        # tears the interface back down if any of its steps fail (a DNS= line
+        # hitting the immutable /etc/resolv.conf, for one), and the old code
+        # then reported "no handshake — keys may be stale" for what was really
+        # a setup failure, sending you after the wrong problem entirely.
+        if ! sudo wg-quick up "$CONFIG"; then
+            echo "wg-quick failed to bring the interface up — see its output above"
+            exit 1
+        fi
         sleep 3
         LAST_HANDSHAKE=$(sudo wg show all latest-handshakes | awk '{print $3}')
         NOW=$(date +%s)
@@ -26,14 +76,25 @@ case "$1" in
             sudo wg-quick down "$CONFIG"
             exit 1
         fi
+        # Only after the handshake is confirmed — applying it earlier would
+        # block the very traffic needed to establish the tunnel.
+        if apply_killswitch "${CONFIG:t:r}"; then
+            echo "Killswitch active — traffic can only leave via the tunnel"
+        fi
         ;;
    off)
         section "Stopping VPN"
+        # Drop the killswitch first and unconditionally. If it outlived a
+        # failed `on` there'd be no interface for the check below to find, and
+        # exiting early would leave every outbound packet blocked with no
+        # obvious cause. Manual escape hatch, should it ever come to that:
+        #   sudo nft delete table inet vpnkill
+        sudo nft delete table inet vpnkill 2>/dev/null
         INTERFACE=$(sudo wg show interfaces)
         if [ -z "$INTERFACE" ]; then
             echo "VPN not connected"
             exit 1
-        fi 
+        fi
         sudo wg-quick down "$CONFIGS_DIR/$INTERFACE.conf"
         sudo nmcli connection up "Wired connection 1"
         ;;
