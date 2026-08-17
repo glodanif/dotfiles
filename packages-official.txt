@@ -88,6 +88,7 @@ pinta
 pipewire
 pipewire-audio
 pipewire-pulse
+plocate
 plymouth
 polkit-gnome
 pulseview
@@ -97,6 +98,7 @@ qemu-full
 qt5-wayland
 qt6-wayland
 restic
+ripgrep
 rsync
 rustup
 satty

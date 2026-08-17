@@ -89,6 +89,16 @@ else
   section "Backup not due yet, skipping."
 fi
 
+# Merging a .pacnew is a judgement call, so this script can't clear it and the
+# badge stays lit after the run. Say so explicitly — otherwise it looks like
+# maintenance failed to do its job.
+if is_due 'pacnew'; then
+  section "Pending .pacnew files — these need merging by hand:" "\e[33m"
+  pacdiff -o 2>/dev/null | sed 's/^/  /'
+  echo "  Take the packaged file as the base, re-apply your edits, then verify:"
+  echo "  diff <pristine-from-/var/cache/pacman/pkg> <the file> == only your changes"
+fi
+
 if (( $#problems )); then
   section "NEEDS ATTENTION" "\e[1;31m"
   printf '  \e[1;31m%s\e[0m\n' $problems

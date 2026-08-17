@@ -42,6 +42,17 @@ else
   due+=("backup: never recorded")
 fi
 
+# Unmerged .pacnew files. `pacdiff -o` asks the pacman database instead of
+# walking the filesystem, so it's cheap enough to run on the badge interval.
+# No age threshold here, unlike everything above: a pending .pacnew either
+# exists or it doesn't, and it stays until merged by hand. sys-maintenance
+# deliberately can't clear this one — merging is a judgement call, so the badge
+# keeps nagging until you've done it yourself.
+if command -v pacdiff &>/dev/null; then
+  pacnew=$(pacdiff -o 2>/dev/null | grep -c .)
+  (( pacnew > 0 )) && due+=("pacnew: $pacnew file(s) to merge")
+fi
+
 if (( plain )); then
   (( $#due )) && printf '%s\n' $due
   exit $(( $#due > 0 ))
