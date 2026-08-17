@@ -29,8 +29,44 @@ else
     err "/etc/mkinitcpio.conf not found" "Reinstall mkinitcpio:" "sudo pacman -S mkinitcpio"
 fi
 
+preset=/etc/mkinitcpio.d/linux.preset
+fallback_img=/boot/initramfs-linux-fallback.img
+
+if [[ -f "$preset" ]]; then
+    # PRESETS alone isn't enough — fallback_image must be uncommented or the
+    # preset builds nothing and only warns.
+    grep -qE "^PRESETS=.*'fallback'" "$preset" \
+        && ok "mkinitcpio fallback preset enabled" \
+        || err "mkinitcpio fallback preset disabled — no rescue initramfs will be built" "Set PRESETS=('default' 'fallback') in $preset, then:" "sudo mkinitcpio -P"
+
+    grep -qE '^fallback_image=' "$preset" \
+        && ok "mkinitcpio fallback_image set" \
+        || err "fallback_image commented out — fallback preset builds no image" "Uncomment fallback_image and fallback_options in $preset, then:" "sudo mkinitcpio -P"
+else
+    err "$preset not found" "Reinstall the kernel package:" "sudo pacman -S linux"
+fi
+
+if [[ -f "$fallback_img" ]]; then
+    ok "fallback initramfs present ($(du -h "$fallback_img" | cut -f1))"
+    if [[ "$fallback_img" -ot /boot/vmlinuz-linux ]]; then
+        err "fallback initramfs older than the kernel — it won't boot this kernel" "Rebuild it:" "sudo mkinitcpio -P"
+    else
+        ok "fallback initramfs newer than kernel"
+    fi
+else
+    err "fallback initramfs missing — no rescue entry to boot from" "Build it:" "sudo mkinitcpio -P"
+fi
+
 if [[ -f /boot/limine.conf ]]; then
-    cmdline=$(grep -E '^\s+cmdline:' /boot/limine.conf)
+    grep -qF 'initramfs-linux-fallback.img' /boot/limine.conf \
+        && ok "limine fallback boot entry present" \
+        || err "fallback initramfs has no limine entry — unreachable at boot" "Add an '/Artix Linux (fallback)' entry to /boot/limine.conf with module_path: boot():/initramfs-linux-fallback.img"
+fi
+
+if [[ -f /boot/limine.conf ]]; then
+    # -m1: first cmdline only (the default entry). Later entries are rescue
+    # entries that deliberately drop quiet/splash.
+    cmdline=$(grep -m1 -E '^\s+cmdline:' /boot/limine.conf)
     echo "$cmdline" | grep -q 'quiet' && ok "limine cmdline: quiet" || warn "limine cmdline: quiet missing (plymouth won't suppress logs)" "Add 'quiet' to the cmdline: line in /boot/limine.conf."
     echo "$cmdline" | grep -q 'splash' && ok "limine cmdline: splash" || warn "limine cmdline: splash missing (plymouth won't activate)" "Add 'splash' to the cmdline: line in /boot/limine.conf."
 fi
