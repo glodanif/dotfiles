@@ -2,6 +2,7 @@ alsa-utils
 amd-ucode
 android-udev
 artix-archlinux-support
+ayatana-ido
 base
 base-devel
 blueman
@@ -49,6 +50,7 @@ hyprpaper
 iwd-openrc
 lazygit
 lib32-nvidia-utils
+libayatana-indicator
 libva-nvidia-driver
 libva-utils
 libvirt
@@ -98,6 +100,7 @@ python-pip
 qemu-full
 qt5-wayland
 qt6-wayland
+quickshell
 restic
 ripgrep
 rsync
@@ -112,6 +115,7 @@ sof-firmware
 solaar
 sound-theme-freedesktop
 speedtest-cli
+spice-vdagent
 steam
 stow
 swayimg

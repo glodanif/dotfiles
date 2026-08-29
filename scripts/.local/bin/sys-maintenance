@@ -108,4 +108,3 @@ else
   notify-send -e -t 2000 "Maintenance complete."
 fi
 pkill -RTMIN+8 waybar 2>/dev/null || true
-press_any_key

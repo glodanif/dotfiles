@@ -80,6 +80,14 @@
   "hyprland/workspaces": {
     "format": "{id}",
     "on-click": "activate",
+    // "activate" still shells the legacy `dispatch workspace N`, which the Lua
+    // config rejects, so clicking a number is dead until Waybar learns the Lua
+    // form. Scrolling over the module works instead (side buttons don't — the
+    // per-workspace GtkButton eats the press). Hyprland's relative selectors are
+    // no good here: "e±1" skips the empty slots and "r±1" runs off past 7 into a
+    // ws8 no rule in windows.lua places, so step the id by hand and clamp to 1-7.
+    "on-scroll-up": "w=$(hyprctl activeworkspace -j | jq -r .id); [ \"$w\" -gt 1 ] && [ \"$w\" -le 7 ] && hyprctl dispatch \"hl.dsp.focus({ workspace = $((w-1)) })\"",
+    "on-scroll-down": "w=$(hyprctl activeworkspace -j | jq -r .id); [ \"$w\" -ge 1 ] && [ \"$w\" -lt 7 ] && hyprctl dispatch \"hl.dsp.focus({ workspace = $((w+1)) })\"",
     "persistent-workspaces": {
       "1": [],
       "2": [],

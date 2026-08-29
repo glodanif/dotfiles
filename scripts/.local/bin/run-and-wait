@@ -1,4 +1,6 @@
 #!/bin/zsh
+# The pause lives here, once: every sys-* script it launches must NOT call
+# press_any_key itself, or a badge click prompts twice.
 cmd="$*"
 ghostty \
   --title="${cmd} - float" \

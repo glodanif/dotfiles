@@ -16,8 +16,7 @@ if ! mountpoint -q "$MOUNT_POINT"; then
   section "Mounting NAS backup share..."
   sudo mount "$MOUNT_POINT" || {
     section "Failed to mount NAS. Skipping." "\e[33m"
-    press_any_key
-    exit 0
+    exit 1
   }
 fi
 

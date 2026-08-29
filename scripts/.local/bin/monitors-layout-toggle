@@ -43,10 +43,10 @@ set_workspace_rule() {
 # windows.lua declares the workspace->monitor rules from display-mode.lua, but that is
 # only read when the config is (re)loaded. A runtime toggle just rewrites the state file,
 # so Hyprland keeps the OTHER mode's rules until the next reload — same reason this script
-# has to re-declare monitors by hand. That stale state is what puts a TV switch on ws8:
-# with no rule matching HDMI-A-1, CMonitor::onConnect falls back to `workspaces.size() + 1`,
-# and PC mode leaves exactly 7 workspaces behind. With ws1 declared default for HDMI-A-1,
-# onConnect finds the existing ws1 and moves it to the TV instead of inventing ws8.
+# has to re-declare monitors by hand. Without them nothing pulls ws1-7 onto the TV at all.
+# These rules are necessary but NOT sufficient for landing on ws1: onConnect applies the
+# default rule first and then overrides it with the workspace the output was last on, so
+# the pc branch also has to leave HDMI-A-1 sitting on ws1 when it disables it.
 # Keep this in sync with windows.lua. Rules are keyed by workspace, so these replace
 # rather than accumulate, and `default = false` genuinely clears the flag.
 apply_workspace_rules() {
@@ -106,6 +106,7 @@ tv_active_workspace() {
 pin_ws1() {
     local i
     for ((i=1; i<=30; i++)); do
+        still_tv || return 1
         focus_monitor HDMI-A-1
         go_to_workspace 1
         sleep 0.5
@@ -115,6 +116,13 @@ pin_ws1() {
         fi
     done
     return 1
+}
+
+# Every step in settle_tv drives HDMI-A-1, so all of it must stop the moment we are
+# no longer in TV mode — otherwise a Win+P switch leaves the background job running and
+# pin_ws1 keeps yanking focus onto whatever monitor ws1 landed on.
+still_tv() {
+    [ "$(cat "$STATE_FILE" 2>/dev/null)" = "tv" ]
 }
 
 hdmi_connected() {
@@ -134,8 +142,10 @@ settle_tv() {
     # Wait up to 30s for the panel to wake and the output to connect.
     for ((i=1; i<=30; i++)); do
         hdmi_connected && break
+        still_tv || return 1
         sleep 1
     done
+    hdmi_connected || return 1
 
     # No workspace loop here: windows.lua already declares ws1-7 on HDMI-A-1 for TV
     # mode, and in TV mode it is the only enabled output so workspaces migrate to it
@@ -147,6 +157,7 @@ settle_tv() {
     # Upgrade to @120 once the panel advertises it. Forcing @120 mid-wake makes
     # Hyprland flap @60<->@120, which kills GPU clients that lack crash-recovery.
     for ((i=1; i<=20; i++)); do
+        still_tv || return 1
         if hyprctl monitors all -j 2>/dev/null \
             | jq -e '.[] | select(.name=="HDMI-A-1")
                      | .availableModes[]? | select(startswith("3840x2160@119"))' \
@@ -165,12 +176,28 @@ settle_tv() {
 
 case $MODE in
     pc)
+        echo "pc" > "$STATE_FILE"
         apply_workspace_rules pc
 
         if [ "$SKIP_MONITORS" -eq 0 ]; then
             set_monitor DP-2 preferred 5000x0 1
             set_monitor DP-1 preferred 6920x0 1
             sleep 1
+            # Hand HDMI-A-1 ws1 back before switching it off. Hyprland remembers a
+            # monitor's active workspace and, on reconnect, restores it AFTER applying
+            # the `default = true` workspace rule — the log shows both, in that order:
+            #   moveWorkspaceToMonitor: Moving 1 to monitor 0            <- the rule
+            #   Monitor HDMI-A-1 was on workspace 8, setting it to that  <- overrides it
+            # So the rule alone cannot decide where a TV switch lands; whatever the TV
+            # showed when it was disabled does. Bringing DP-2 up takes ws1 back and
+            # Hyprland plugs the gap it leaves on HDMI-A-1 with a brand-new workspace
+            # (id = count + 1 = 8) — disable the output right then and 8 is what every
+            # later TV switch opens on, forever. Moving ws1 back first makes the
+            # remembered id 1. focus+workspace because moveWorkspaceToMonitor only
+            # carries "active" over when the source monitor was the focused one.
+            move_workspace_to 1 HDMI-A-1
+            focus_monitor HDMI-A-1
+            go_to_workspace 1
             disable_monitor HDMI-A-1
             set_monitor DP-2 preferred 0x0 1
             set_monitor DP-1 preferred 1920x0 1
@@ -190,7 +217,6 @@ case $MODE in
         hyprctl dispatch 'hl.dsp.cursor.move({ x = 3200, y = 720 })'
 
         set_sink "alsa_output.usb-Focusrite_Scarlett_2i2_USB-00"
-        echo "pc" > "$STATE_FILE"
         notify-send -e -t 3000 "Display Mode" "Switched to PC"
         ;;
     tv)
