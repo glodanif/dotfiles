@@ -3,6 +3,13 @@ STATE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/hypr-display-mode"
 mkdir -p "$(dirname "$STATE_FILE")"
 PERSISTENT_WORKSPACES=7
 TV_MODE="3840x2160@120"
+# Seconds to let the HDMI link settle between the connect modeset and the @120 upgrade.
+# @120 is FRL (HDMI 2.1); stacking that modeset straight on top of the @60 one the
+# output just came up with makes link training fail — the TV stays backlit and black
+# while Hyprland happily reports "Modesetting HDMI-A-1 with 3840x2160@119.88Hz".
+# The wake-from-off path never hit this because waiting for the panel already burned
+# these seconds; switching with the TV already on goes straight through and trips it.
+TV_LINK_SETTLE=5
 
 MODE=$1
 SKIP_MONITORS=0
@@ -154,6 +161,13 @@ settle_tv() {
 
     set_sink "alsa_output.pci-0000_01_00.1.hdmi"
 
+    # Land on ws1 while still at @60, before the upgrade: disabling DP-1/DP-2 hands
+    # their gap workspaces to the TV a beat after it connects, so without this the
+    # first thing on screen is whatever id Hyprland invented (ws8/ws9).
+    pin_ws1
+
+    still_tv && sleep "$TV_LINK_SETTLE"
+
     # Upgrade to @120 once the panel advertises it. Forcing @120 mid-wake makes
     # Hyprland flap @60<->@120, which kills GPU clients that lack crash-recovery.
     for ((i=1; i<=20; i++)); do
@@ -168,8 +182,23 @@ settle_tv() {
         sleep 1
     done
 
-    # Now that the TV is fully up, land on the first workspace and hold it.
-    pin_ws1
+    # Re-assert ws1 for a while, not just once. The @120 modeset makes the TV drop off
+    # the bus for a moment; with no enabled output left Hyprland spins up a headless
+    # FALLBACK monitor, which has its own remembered workspace (ws8, minted by some
+    # long-past flap). When the TV comes back and FALLBACK is torn down, its workspace
+    # is handed to the only monitor left:
+    #   Disconnecting Monitor HDMI-A-1 was on workspace 1
+    #   Monitor FALLBACK was on workspace 8, setting it to that
+    #   Monitor HDMI-A-1 was on workspace 1, setting it to that   <- we are fine here
+    #   Disconnecting Monitor FALLBACK was on workspace 8
+    #   moveWorkspaceToMonitor: SWITCHINGISACTIVE, active 1 -> 8  <- and ws8 wins anyway
+    # All of that lands after a single pin_ws1 has already succeeded and returned, so
+    # hold the workspace across the whole flap instead.
+    for ((i=1; i<=15; i++)); do
+        still_tv || return 1
+        [ "$(tv_active_workspace)" = "1" ] || pin_ws1
+        sleep 1
+    done
 
     pgrep -x hyprpaper >/dev/null || hyprctl dispatch 'hl.dsp.exec_cmd("hyprpaper")'
 }

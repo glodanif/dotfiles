@@ -1,20 +1,20 @@
 #!/bin/zsh
 cache_file="$HOME/.cache/scripts/waybar-updates-cache"
 freshness_file="$HOME/.cache/scripts/mirror-freshness"
-STALE_DAYS=4
+STALE_DAYS=2
 THROTTLE=21600   # re-check mirror freshness at most every 6h
 
 # --- Throttled freshness canary --------------------------------------------
 # A frozen mirror serves a stale db that checkupdates reports as "0 updates".
 # The only honest signal is when the mirror last touched its db. Check one
-# Artix repo (system, via mirrorlist) and one Arch repo (extra, via
+# Artix repo (world — the busy one, via mirrorlist) and one Arch repo (extra, via
 # mirrorlist-arch); cache the worst age so the bar isn't hitting the net every
 # poll.
 if [[ ! -f $freshness_file ]] || \
    (( $(date +%s) - $(stat -c %Y "$freshness_file") > THROTTLE )); then
   arch=$(uname -m)
   worst=0
-  for repo in system extra; do
+  for repo in world extra; do
     url=$(pacman-conf --repo "$repo" 2>/dev/null | awk '/^Server/{print $3; exit}')
     url=${url//\$repo/$repo}; url=${url//\$arch/$arch}
     [[ -z $url ]] && continue

@@ -466,14 +466,21 @@ if (( ! SKIP_TOOLCHAINS )) && command -v rustup &>/dev/null; then
 fi
 
 section "Rechecking updates..."
-rm -f "$HOME/.cache/scripts/waybar-updates-cache"
+# Drop the freshness canary too, not just the count. check-updates caches
+# mirror age for 6h, and the live per-repo check above already gated this run —
+# leaving the pre-upgrade value behind makes the recheck warn about a mirror you
+# just reseated.
+rm -f "$HOME/.cache/scripts/waybar-updates-cache" "$HOME/.cache/scripts/mirror-freshness"
 pkill -RTMIN+8 waybar 2>/dev/null || true
 check-updates
 cache_file="$HOME/.cache/scripts/waybar-updates-cache"
 if [[ -s "$cache_file" ]]; then
-  remaining_count=$(sed 's/.*"text":"//;s/".*//' "$cache_file")
-  remaining=$(sed 's/.*"tooltip":"//;s/"}[[:space:]]*$//' "$cache_file" | sed 's/\\n/\n/g')
-  warn "$remaining_count package(s) still pending:"
+  # jq, not sed: the cache has an optional "class" key, so the old
+  # s/"}$// never fired on the stale variant and leaked ","class":"stale
+  # into the message. jq -r also unescapes \n for free.
+  remaining_count=$(jq -r '.text' "$cache_file" | tr -dc '0-9')
+  remaining=$(jq -r '.tooltip' "$cache_file")
+  warn "${remaining_count:-?} package(s) still pending:"
   echo "$remaining"
 else
   ok "All packages up to date"

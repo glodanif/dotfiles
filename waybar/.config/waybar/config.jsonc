@@ -1,5 +1,7 @@
 {
-  "reload_style_on_change": true,
+  // Dead on waybar 0.15 here: the file monitor registers no watch (waybar's
+  // only inotify fd has zero wds), so style edits need `pkill -USR2 waybar`.
+  // "reload_style_on_change": true,
   "layer": "top",
   "position": "top",
   "height": 42,
@@ -8,15 +10,15 @@
   "modules-center": ["clock", "custom/weather"],
   "modules-right": [
     "custom/screenshare",
+    "custom/mic",
     "tray",
     "custom/layout",
     "custom/recording",
-    "custom/mic",
     "custom/updates",
     "custom/maintenance",
-    "pulseaudio",
     "cpu",
     "memory",
+    "pulseaudio",
     "bluetooth",
     "custom/vpn",
     "network",
