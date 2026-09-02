@@ -61,6 +61,7 @@ linux-firmware
 linux-headers
 linux-lts
 linux-lts-headers
+logrotate
 lvm2
 man-db
 man-pages
@@ -87,6 +88,7 @@ openssh-openrc
 oxipng
 pacman-contrib
 papirus-icon-theme
+picocom
 pinta
 pipewire
 pipewire-audio
@@ -97,6 +99,7 @@ polkit-gnome
 pulseview
 python-gobject
 python-pip
+python-pipx
 qemu-full
 qt5-wayland
 qt6-wayland
