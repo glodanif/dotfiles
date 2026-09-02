@@ -75,8 +75,8 @@ button:hover {
     padding: 0px 8px;
     background-color: transparent;
     color: #ffffff;
-    margin-top: 6px;
-    margin-bottom: 6px;
+    margin-top: 8px;
+    margin-bottom: 8px;
     border-radius: 8px;
 }
 
@@ -87,7 +87,7 @@ button:hover {
 #workspaces button.focused,
 #workspaces button.active {
     color: rgba(43, 48, 59, 0.75);
-    background: linear-gradient(180deg, #4dabf7 0%, #4dabf7 60%, #9775fa 100%);
+    background-color: #4dabf7;
 }
 
 #workspaces button.urgent {
@@ -438,6 +438,7 @@ label:focus {
 
 #custom-maintenance {
     background: linear-gradient(180deg, #f59f00 0%, #f59f00 60%, #e8590c 100%);
+    margin-right: 8px;
 }
 
 #custom-notification {
