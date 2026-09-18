@@ -85,15 +85,23 @@ focus_monitor() {
     hyprctl dispatch "hl.dsp.focus({ monitor = '$1' })"
 }
 
+# Never trust `head -1` or the exit status here. The NVIDIA card keeps a sink for
+# every HDMI port it knows about, connected or not, so the prefix matches several
+# names (hdmi-stereo, hdmi-stereo-extra1, ...) and the lowest-index one is usually
+# a dead port -- for this box the TV is HDMI 2 (hdmi-stereo-extra1) while the stale
+# hdmi-stereo sits at a lower index and wins the sort. Worse, set-default-sink exits
+# 0 for those stale sinks and simply doesn't move the default, so the old code
+# reported success while audio stayed on the Focusrite. Try every match and confirm
+# the default actually moved.
 set_sink() {
     local prefix=$1
     local attempts=10
+    local i sink
     for ((i=1; i<=attempts; i++)); do
-        local sink
-        sink=$(pactl list short sinks | awk '{print $2}' | grep "^${prefix}" | head -1)
-        if [ -n "$sink" ] && pactl set-default-sink "$sink" 2>/dev/null; then
-            return 0
-        fi
+        for sink in $(pactl list short sinks | awk '{print $2}' | grep "^${prefix}"); do
+            pactl set-default-sink "$sink" 2>/dev/null
+            [ "$(pactl get-default-sink 2>/dev/null)" = "$sink" ] && return 0
+        done
         sleep 0.5
     done
     return 1

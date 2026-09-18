@@ -26,9 +26,8 @@
   ],
   "clock": {
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-    "format": "{:L%A %H:%M}",
-    "format-alt": "{:L%d %B W%V %Y}",
-    "on-click-right": "ghostty -e calcurse",
+    "format": "{:L%a %b %d, %H:%M}",
+    "on-click": "ghostty -e calcurse",
   },
   "cpu": {
     "format": " {usage}%",

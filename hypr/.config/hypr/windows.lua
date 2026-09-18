@@ -88,3 +88,15 @@ hl.window_rule({
 	center = true,
 	size = "1024 700",
 })
+
+-- Chromium/Brave picture-in-picture. The client advertises a max size smaller than
+-- a dwindle tile, and DwindleAlgorithm::addTarget re-floats anything whose maxSize
+-- is under the tile it would get — so Mod+V looked like a no-op. Drop the hint.
+hl.window_rule({
+	name = "pip-tileable",
+	match = {
+		class = "^$",
+		title = "^Picture in picture$",
+	},
+	no_max_size = true,
+})
