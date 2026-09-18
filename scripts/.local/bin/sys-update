@@ -23,7 +23,11 @@ source "$HOME/.config/bash/utils.sh"
 # sloppy, fast-burning stuff. The maintainer-change check is the real defense;
 # this is a thin second layer. Keep it fail-closed and keep it quiet.
 SOAK_DAYS=3
-SOAK_EXEMPT=()
+# Space-separated, or set inline to push one package through early:
+#   SOAK_EXEMPT=slack-desktop sys-update
+# Waives the soak window only — the maintainer, ELF and no-AUR-record checks
+# still run, so this is not the same as reaching for `yay -S` by hand.
+SOAK_EXEMPT=(${=SOAK_EXEMPT:-})
 
 # Packages whose maintainer change you've reviewed and accepted. Comma list,
 # or set inline: AUR_ACCEPT_MAINT=walker,duhh sys-update
@@ -61,6 +65,21 @@ rustup_out=$(mktemp "$pacman_tmpdir/rustup-out.XXXXXX")
 keep_screen_on
 trap 'rm -f "$pacman_out" "$rustup_out"; allow_idle' EXIT
 section "System Update"
+
+# Both run_pacman and the rustup step below run everything through script(1),
+# so if it is broken nothing updates and the failure surfaces as a bare loader
+# error inside each section. Sep 2026: Artix util-linux 2.42.3 links script
+# against libutempter without declaring the dependency, the orphan sweep at the
+# bottom of this file duly removed libutempter, and every later run silently
+# no-oped. Check once, up front, and say what to do.
+if ! script -qec true /dev/null &>/dev/null; then
+  fail "script(1) is broken — pacman and rustup both run through it."
+  script -qec true /dev/null 2>&1 | sed 's/^/    /'
+  warn "    likely an undeclared dependency the orphan sweep removed; check with:"
+  warn "          ldd \$(command -v script) | grep 'not found'"
+  exit 1
+fi
+
 sudo -v
 
 section "Syncing keyrings..."
@@ -433,7 +452,11 @@ if [[ -n $orphans ]]; then
   if echo "$orphans" | grep -qx go && command -v go &>/dev/null; then
     go clean -modcache -cache 2>/dev/null || true
   fi
-  echo "$orphans" | sudo pacman -Rs --noconfirm -
+  # Interactive on purpose, same reason as the -Syu above. `pacman -Qtdq` is
+  # only as good as the declared dependency graph: a package that is genuinely
+  # needed but undeclared (util-linux/libutempter, Sep 2026) reads as an orphan
+  # and an unattended -Rs will happily break your system with it.
+  sudo pacman -Rs -- ${(f)orphans}
 fi
 
 # --- Rust toolchains --------------------------------------------------------

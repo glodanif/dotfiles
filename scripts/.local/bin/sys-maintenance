@@ -14,6 +14,9 @@ sudo -v
 # Anything that needs your attention lands here and is reprinted at the end,
 # so a failure can't scroll away behind scrub output.
 problems=()
+# One line per chore, printed together at the end: after a scrub and a backup
+# have scrolled past, this is the only way to see what the earlier steps did.
+summary=()
 
 # maintenance-watch owns the thresholds; ask it what's actually due rather than
 # keeping a second set here. Cheap chores below run unconditionally; the two
@@ -42,12 +45,17 @@ sudo paccache -rk2 || problems+=("paccache -rk2 failed")
 sudo paccache -ruk0 || problems+=("paccache -ruk0 failed")
 after=$(cache_mb)
 echo "cache: ${before}M -> ${after}M"
+summary+=("pacman cache: ${before}M -> ${after}M")
 
 # --- TRIM --------------------------------------------------------------------
 # Inert on the encrypted root until 'allow-discards' is in the cryptdevice=
-# cmdline; /boot and /mnt/2t trim regardless.
+# cmdline; /boot trims regardless. --quiet-unsupported drops the expected
+# /mnt/2t (ntfs3) "discard operation is not supported" noise, so only real
+# failures show up here.
 section "Trimming filesystems..."
-sudo fstrim -av || true
+trimmed=$(sudo fstrim -av --quiet-unsupported 2>&1)
+echo "$trimmed"
+summary+=("trim: $(echo "$trimmed" | grep -c 'trimmed') filesystem(s) trimmed")
 
 # --- drive health ------------------------------------------------------------
 # Point-in-time only: reads the verdict the drive firmware already computed
@@ -55,16 +63,20 @@ sudo fstrim -av || true
 section "Checking drive health..."
 # || true on every capture: under `set -e` a non-matching grep inside an
 # assignment aborts the whole script, silently skipping everything below.
+smart_ok=0 smart_bad=0
 for dev in ${(f)"$(sudo smartctl --scan | awk '{print $1}' || true)"}; do
   health=$(sudo smartctl -H "$dev" 2>&1 | grep -iE 'overall-health|SMART Health' | head -1 || true)
   [[ -z $health ]] && health="no health line in smartctl output"
   if echo "$health" | grep -qiE 'PASSED|OK'; then
     echo "  $dev: OK"
+    smart_ok=$((smart_ok+1))
   else
     echo "  \e[1;31m$dev: $health\e[0m"
     problems+=("$dev: $health")
+    smart_bad=$((smart_bad+1))
   fi
 done
+summary+=("SMART: $smart_ok drive(s) OK, $smart_bad problem(s)")
 
 # --- btrfs scrub -------------------------------------------------------------
 # Reads every block and verifies checksums — this is what finds silent
@@ -72,11 +84,18 @@ done
 # -B blocks so we see the summary; -c 3 is idle I/O so the desktop stays usable.
 if ! is_due 'btrfs scrub'; then
   section "Scrub not due yet, skipping."
+  summary+=("btrfs scrub: skipped, not due")
 elif sudo btrfs scrub status / 2>/dev/null | grep -q 'Status:.*running'; then
   section "Scrub already running, skipping." "\e[33m"
+  summary+=("btrfs scrub: skipped, already running")
 else
   section "Scrubbing / (reads the whole filesystem, this takes a while)..."
-  sudo btrfs scrub start -B -c 3 / || problems+=("btrfs scrub failed or found errors")
+  if sudo btrfs scrub start -B -c 3 /; then
+    summary+=("btrfs scrub: finished clean")
+  else
+    problems+=("btrfs scrub failed or found errors")
+    summary+=("btrfs scrub: FAILED or found errors")
+  fi
 fi
 
 # --- backup ------------------------------------------------------------------
@@ -84,9 +103,15 @@ fi
 # scrub and depends on the NAS being up. Delegated to, never duplicated.
 if is_due 'backup'; then
   section "Backup is due, running sys-backup..."
-  sys-backup || problems+=("backup failed — check the NAS mount")
+  if sys-backup; then
+    summary+=("backup: done")
+  else
+    problems+=("backup failed — check the NAS mount")
+    summary+=("backup: FAILED")
+  fi
 else
   section "Backup not due yet, skipping."
+  summary+=("backup: skipped, not due")
 fi
 
 # Merging a .pacnew is a judgement call, so this script can't clear it and the
@@ -94,10 +119,15 @@ fi
 # maintenance failed to do its job.
 if is_due 'pacnew'; then
   section "Pending .pacnew files — these need merging by hand:" "\e[33m"
-  pacdiff -o 2>/dev/null | sed 's/^/  /'
+  pacnews=$(pacdiff -o 2>/dev/null)
+  echo "$pacnews" | sed 's/^/  /'
   echo "  Take the packaged file as the base, re-apply your edits, then verify:"
   echo "  diff <pristine-from-/var/cache/pacman/pkg> <the file> == only your changes"
+  summary+=("pacnew: $(echo "$pacnews" | grep -c .) file(s) to merge by hand")
 fi
+
+section "Summary"
+printf '  %s\n' $summary
 
 if (( $#problems )); then
   section "NEEDS ATTENTION" "\e[1;31m"

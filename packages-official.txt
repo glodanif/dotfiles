@@ -51,6 +51,7 @@ iwd-openrc
 lazygit
 lib32-nvidia-utils
 libayatana-indicator
+libutempter
 libva-nvidia-driver
 libva-utils
 libvirt
@@ -81,6 +82,7 @@ nvidia-open-dkms
 nvidia-utils
 obs-studio
 obsidian
+opencode
 openrc
 openresolv
 openshot
@@ -154,6 +156,7 @@ xdg-desktop-portal-hyprland
 xournalpp
 yazi
 yt-dlp
+zbar
 zed
 zellij
 zip
