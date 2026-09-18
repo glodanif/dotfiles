@@ -6,7 +6,7 @@ Call rtk read, rtk grep, or rtk find directly, if you need to read a file, find 
 
 ## Repo Layout
 
-This is a **GNU Stow** repo. Each top-level directory is a stow package whose contents mirror `$HOME`:
+This is a **GNU Stow** repo. Each top-level directory is a stow package whose contents mirror `$HOME` — except `system/`, which mirrors `/` (see below):
 
 | Package | What it manages |
 |---|---|
@@ -23,7 +23,7 @@ This is a **GNU Stow** repo. Each top-level directory is a stow package whose co
 | `mpv/` | Media player |
 | `brave/` | Brave launch flags (`.config/brave-origin-flags.conf`) |
 | `zsh/` | Zsh shell config |
-| `greetd/` | Login manager (config.toml) |
+| `system/` | Root-owned files mirrored from `/` — **not stowed**; `refresh.sh` installs them with `sudo` (greetd config + `conf.d`) |
 | `pipewire/` | Audio (PipeWire conf.d snippets) |
 | `mic/` | Friendly names for audio inputs, read by `mic-watch` |
 | `gnupg/` | GPG agent config |
@@ -38,7 +38,9 @@ This is a **GNU Stow** repo. Each top-level directory is a stow package whose co
 | `applications/` | .desktop files |
 | `assets/` | Wallpapers and other assets |
 
-**Applying changes**: Always use `./refresh.sh` from the repo root — it re-stows all packages and updates the package lists. Do not run `stow` commands manually.
+**Applying changes**: Always use `./refresh.sh` from the repo root — it re-stows all packages, installs any `system/` file that differs from its `/` target (0644 root:root), and updates the package lists. Do not run `stow` commands manually.
+
+**`system/`** exists because some config is read by root daemons, and a root daemon must never read a file under `$HOME` (anything running as the user could edit it — for greetd that means `user = "root"` on the autologin session). Stowing such a file into `~/.config` does nothing anyway. Add a file by placing it at `system/<absolute path>`; `22-seat.sh` flags drift.
 
 ## artix-doctor
 
@@ -62,13 +64,13 @@ command -v foo &>/dev/null && ok "foo installed" || err "foo not installed" "Ins
 
 The `fix()` helper prints: `hint_text command_text` (hint in dim, command in bold cyan).
 
-### Existing checks (00–21)
+### Existing checks (00–22)
 
-00-bootloader (limine, mkinitcpio hooks, plymouth, fallback initramfs, `allow-discards` in the cmdline, LTS rescue kernel + its nvidia DKMS build), 01-services (OpenRC: required & optional, earlyoom running with its `--avoid` guard), 02-shell (zsh, oh-my-zsh, p10k), 03-power (elogind/loginctl), 04-dotfiles (stow symlink integrity), 05-ssh (keys, agent, git config), 06-vpn (wireguard, no active `DNS=` line in the configs), 07-toolchains (rust, flutter, dart, java, esp32), 08-packages (yay, pacman repos, parallel downloads), 09-hardware (nvidia, android-udev, ESP32 serial), 10-backup (restic, NAS mount, samba creds), 11-own-tools (terminal-weather, pioctl, stainer), 13-fonts (nerd fonts, noto, lato, montserrat, SUSE Mono), 14-dns (dnscrypt-proxy, resolv.conf contents + immutable bit, NM override, setcap), 15-suspend (hypridle running, elogind NVIDIA sleep hook), 16-cookies (Brave cookie export, keyring key, cron entry, jar freshness on both hosts), 17-work-leak (work identity in the repo working tree, git history, or a tracked local.conf), 18-maintenance (maintenance scripts stowed, waybar nag module wired, whether maintenance is due), 19-firewall (nftables installed, ruleset file, the `local.d` boot hook, a live input chain with `policy drop`, and that the ruleset neither calls `flush ruleset` nor defines a forward chain — both would break libvirt and wg-quick), 20-filesystems (root `compress=zstd` actually applied to the live mount, `/mnt/2t` on `ntfs3` and mounted read-write), 21-logging (syslog-ng actually wired to a destination and writing, kernel messages reaching the log, `kernel.sysrq` non-zero, logrotate installed *and* driven by a `cron.daily` hook, and greetd's VT not shared with an `agetty`).
+00-bootloader (limine, mkinitcpio hooks, plymouth, fallback initramfs, `allow-discards` in the cmdline, LTS rescue kernel + its nvidia DKMS build), 01-services (OpenRC: required & optional, earlyoom running with its `--avoid` guard), 02-shell (zsh, oh-my-zsh, p10k), 03-power (elogind/loginctl), 04-dotfiles (stow symlink integrity), 05-ssh (keys, agent, git config), 06-vpn (wireguard, no active `DNS=` line in the configs), 07-toolchains (rust, flutter, dart, java, esp32), 08-packages (yay, pacman repos, parallel downloads), 09-hardware (nvidia, android-udev, ESP32 serial), 10-backup (restic, NAS mount, samba creds), 11-own-tools (terminal-weather, pioctl, stainer), 13-fonts (nerd fonts, noto, lato, montserrat, SUSE Mono), 14-dns (dnscrypt-proxy, resolv.conf contents + immutable bit, NM override, setcap), 15-suspend (hypridle running, elogind NVIDIA sleep hook), 16-cookies (Brave cookie export, keyring key, cron entry, jar freshness on both hosts), 17-work-leak (work identity in the repo working tree, git history, or a tracked local.conf), 18-maintenance (maintenance scripts stowed, waybar nag module wired, whether maintenance is due), 19-firewall (nftables installed, ruleset file, the `local.d` boot hook, a live input chain with `policy drop`, and that the ruleset neither calls `flush ruleset` nor defines a forward chain — both would break libvirt and wg-quick), 20-filesystems (root `compress=zstd` actually applied to the live mount, `/mnt/2t` on `ntfs3` and mounted read-write), 21-logging (syslog-ng actually wired to a destination and writing, kernel messages reaching the log, `kernel.sysrq` non-zero, logrotate installed *and* driven by a `cron.daily` hook, and greetd's VT not shared with an `agetty`), 22-seat (tty1 keyboard in `K_OFF` while Hyprland runs, and every `system/` file installed root-owned and identical to the repo — that's where greetd's `conf.d` quits plymouth in `start_pre`: plymouthd resets tty1 to text/Unicode on exit, so quitting it from `local.d` after the autologin session starts leaves the console keyboard live, typed text leaks onto tty1 and a stray ^C kills the session).
 
 ### Adding a new check
 
-1. Create `NN-name.sh` in `artix-doctor/.config/artix-doctor/checks/` (next number in sequence, currently 22).
+1. Create `NN-name.sh` in `artix-doctor/.config/artix-doctor/checks/` (next number in sequence, currently 23).
 2. Start with `section "Name"`.
 3. Use `ok`, `warn`, `err` for assertions; provide fix hints.
 4. No shebang needed — files are sourced.

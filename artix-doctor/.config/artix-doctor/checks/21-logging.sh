@@ -79,8 +79,7 @@ fi
 # keystrokes: both print a login prompt and each key goes to whichever reader
 # wins, so the console looks alive but accepts nothing. The symptom (dead
 # keyboard, working Ctrl+Alt+Fn) looks like a kernel fault and is not.
-greetd_conf=$(sed -n 's/.*--config \([^"]*\).*/\1/p' /etc/conf.d/greetd 2>/dev/null)
-[[ -z $greetd_conf ]] && greetd_conf=/etc/greetd/config.toml
+greetd_conf=/etc/greetd/config.toml
 greetd_vt=$(grep -oE '^[[:space:]]*vt[[:space:]]*=[[:space:]]*[0-9]+' "$greetd_conf" 2>/dev/null | grep -oE '[0-9]+$')
 if [[ -n $greetd_vt ]]; then
     if rc-update show default 2>/dev/null | grep -qE "^\s*agetty\.tty$greetd_vt\s"; then

@@ -35,9 +35,3 @@ if rc-update show default 2>/dev/null | grep -qE '^\s*earlyoom\s'; then
     fi
 fi
 
-greetd_conf_path="/home/glodanif/.config/greetd/config.toml"
-if [[ -f /etc/conf.d/greetd ]] && grep -q "$greetd_conf_path" /etc/conf.d/greetd; then
-    ok "/etc/conf.d/greetd points to config"
-else
-    err "/etc/conf.d/greetd not configured" "Add to /etc/conf.d/greetd:" "command_args=\"--config $greetd_conf_path\""
-fi

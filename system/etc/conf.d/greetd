@@ -1,0 +1,8 @@
+# No command_args: greetd runs as root, so its config must stay in /etc. A
+# config under $HOME lets anything running as the user set `user = "root"`
+# on the autologin session.
+
+# plymouthd resets tty1 to text/Unicode on exit; quit it before any session
+# starts, not from local.d (which runs after greetd) — otherwise the
+# autologin session's keyboard is left live and typed text reaches tty1.
+start_pre() { plymouth quit --wait 2>/dev/null; return 0; }

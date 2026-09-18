@@ -32,7 +32,7 @@ while IFS= read -r src; do
         err "missing: ${target/#$HOME/~}" "Stow the package:" "cd ~/dotfiles && stow $pkg"
         ((missing++)) || true
     fi
-done < <(find ~/dotfiles -type f -not -path '*/.git/*' -not -path '*/.claude/*')
+done < <(find ~/dotfiles -type f -not -path '*/.git/*' -not -path '*/.claude/*' -not -path "$HOME/dotfiles/system/*")  # system/ mirrors /, installed by refresh.sh; 22-seat checks it
 
 if (( shadowed == 0 && missing == 0 && mismatch == 0 )); then
     ok "all dotfiles properly stowed"
