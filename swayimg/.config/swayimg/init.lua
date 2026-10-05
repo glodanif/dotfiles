@@ -1,7 +1,7 @@
 -- Scale to fit, re-fit on resize
-swayimg.viewer.default_scale = "optimal"
+swayimg.viewer.default_scale = "fit"
 swayimg.on_window_resize(function()
-	swayimg.viewer.set_fix_scale("optimal")
+	swayimg.viewer.set_fix_scale("fit")
 end)
 
 -- Load all files from same directory

@@ -12,6 +12,32 @@ ok()    { check "\e[1;32mOK \e[0m" "$1"; }
 fail()  { check "\e[1;31mERR\e[0m" "$1"; }
 warn()  { check "\e[1;33mWRN\e[0m" "$1"; }
 
+# spin "msg" cmd... — run cmd with a spinner + elapsed time beside msg. cmd stays
+# in the foreground (Ctrl-C and sudo's tty ticket behave as usual); the spinner
+# is the background job and watches $$, so it dies with the script instead of
+# spinning on forever after a Ctrl-C. cmd's output is held until it exits so it
+# can't tear the spinner line. Returns cmd's exit code.
+spin() {
+  local msg=$1; shift
+  [[ -t 2 ]] || { "$@"; return; }
+  local out rc pid start=$SECONDS
+  out=$(mktemp)
+  (
+    frames='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏' i=0
+    while kill -0 $$ 2>/dev/null; do
+      printf '\r\e[36m%s\e[0m %s \e[2m%ds\e[0m' "${frames:$((i++ % 10)):1}" "$msg" $((SECONDS-start)) >&2
+      sleep 0.1
+    done
+  ) &
+  pid=$!
+  "$@" >"$out" 2>&1
+  rc=$?
+  kill $pid 2>/dev/null; wait $pid 2>/dev/null
+  printf '\r\e[K' >&2
+  cat "$out"; rm -f "$out"
+  return $rc
+}
+
 # ── Interaction ───────────────────────────────────────────
 confirm() {
   local msg="${1:-Continue?}"

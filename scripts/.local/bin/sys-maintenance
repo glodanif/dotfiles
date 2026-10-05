@@ -41,8 +41,8 @@ cache_mb() {
 
 section "Trimming pacman cache..."
 before=$(cache_mb)
-sudo paccache -rk2 || problems+=("paccache -rk2 failed")
-sudo paccache -ruk0 || problems+=("paccache -ruk0 failed")
+spin "old versions" sudo paccache -rk2 || problems+=("paccache -rk2 failed")
+spin "uninstalled" sudo paccache -ruk0 || problems+=("paccache -ruk0 failed")
 after=$(cache_mb)
 echo "cache: ${before}M -> ${after}M"
 summary+=("pacman cache: ${before}M -> ${after}M")
@@ -53,7 +53,7 @@ summary+=("pacman cache: ${before}M -> ${after}M")
 # /mnt/2t (ntfs3) "discard operation is not supported" noise, so only real
 # failures show up here.
 section "Trimming filesystems..."
-trimmed=$(sudo fstrim -av --quiet-unsupported 2>&1)
+trimmed=$(spin "trimming" sudo fstrim -av --quiet-unsupported)
 echo "$trimmed"
 summary+=("trim: $(echo "$trimmed" | grep -c 'trimmed') filesystem(s) trimmed")
 
@@ -90,7 +90,7 @@ elif sudo btrfs scrub status / 2>/dev/null | grep -q 'Status:.*running'; then
   summary+=("btrfs scrub: skipped, already running")
 else
   section "Scrubbing / (reads the whole filesystem, this takes a while)..."
-  if sudo btrfs scrub start -B -c 3 /; then
+  if spin "scrubbing" sudo btrfs scrub start -B -c 3 /; then
     summary+=("btrfs scrub: finished clean")
   else
     problems+=("btrfs scrub failed or found errors")

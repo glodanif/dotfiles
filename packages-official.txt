@@ -102,6 +102,7 @@ pulseview
 python-gobject
 python-pip
 python-pipx
+qalculate-qt
 qemu-full
 qt5-wayland
 qt6-wayland

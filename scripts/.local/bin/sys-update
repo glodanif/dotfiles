@@ -83,7 +83,7 @@ fi
 sudo -v
 
 section "Syncing keyrings..."
-sudo pacman -Sy --noconfirm archlinux-keyring artix-keyring >/dev/null || true
+spin "syncing" sudo pacman -Sy --noconfirm archlinux-keyring artix-keyring >/dev/null || true
 
 # --- Mirror freshness: a frozen mirror serves a stale db that pacman still
 #     reports as "up to date". Check when the mirror last touched each .db. ---
@@ -495,7 +495,7 @@ section "Rechecking updates..."
 # just reseated.
 rm -f "$HOME/.cache/scripts/waybar-updates-cache" "$HOME/.cache/scripts/mirror-freshness"
 pkill -RTMIN+8 waybar 2>/dev/null || true
-check-updates
+spin "checking" check-updates
 cache_file="$HOME/.cache/scripts/waybar-updates-cache"
 if [[ -s "$cache_file" ]]; then
   # jq, not sed: the cache has an optional "class" key, so the old

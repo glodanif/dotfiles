@@ -252,6 +252,9 @@ case $MODE in
         focus_monitor DP-1
         go_to_workspace 2
         hyprctl dispatch 'hl.dsp.cursor.move({ x = 3200, y = 720 })'
+        # Wine/Proton fullscreens onto the XWayland primary, and with none set it takes
+        # the output at 0,0 (DP-2, 1080p) — games then lack 1440p and land on DP-2.
+        xrandr --output DP-1 --primary 2>/dev/null
 
         set_sink "alsa_output.usb-Focusrite_Scarlett_2i2_USB-00"
         notify-send -e -t 3000 "Display Mode" "Switched to PC"
