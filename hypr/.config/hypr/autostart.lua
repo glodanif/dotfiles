@@ -1,3 +1,9 @@
+-- Electron apps probe for the tray once at launch and never retry, so wait for
+-- waybar to own the StatusNotifierWatcher instead of guessing with sleep.
+local function after_tray(cmd)
+	hl.exec_cmd("sh -c 'for i in $(seq 100); do busctl --user status org.kde.StatusNotifierWatcher >/dev/null 2>&1 && break; sleep 0.2; done; exec " .. cmd .. "'")
+end
+
 hl.on("hyprland.start", function()
 	hl.exec_cmd("pgrep -x pipewire > /dev/null || pipewire")
 	hl.exec_cmd("pgrep -x wireplumber > /dev/null || wireplumber")
@@ -19,10 +25,10 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1")
 	hl.exec_cmd("gnome-keyring-daemon --start --components=secrets,pkcs11")
 	hl.exec_cmd("sh -c 'mkdir -p $XDG_RUNTIME_DIR/gcr && /usr/lib/gcr-ssh-agent --base-dir $XDG_RUNTIME_DIR/gcr'")
-	hl.exec_cmd("solaar --window=hide")
-	hl.exec_cmd("sleep 1 && discord --start-minimized")
-	hl.exec_cmd("sleep 1 && slack --startup")
-	hl.exec_cmd("Telegram -startintray")
+	after_tray("solaar --window=hide")
+	after_tray("discord --start-minimized")
+	after_tray("slack --startup")
+	after_tray("Telegram -startintray")
 	hl.exec_cmd("syncthing")
 	hl.exec_cmd("mic-pico-sync")
 end)

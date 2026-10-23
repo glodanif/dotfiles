@@ -48,12 +48,8 @@ HISTFILE="$HOME/.zsh_history"
 HISTSIZE=32768
 SAVEHIST=32768
 
-
-# fnm
-FNM_PATH="/home/glodanif/.local/share/fnm"
-if [ -d "$FNM_PATH" ]; then
-  export PATH="$FNM_PATH:$PATH"
-  eval "$(fnm env --shell zsh)"
-fi
+# Dart pub global tools (fvm)
 export PATH="$PATH:$HOME/.pub-cache/bin"
 
+# Machine-specific env — untracked, like ~/.ssh/config.local
+[ -f ~/.zshrc.local ] && source ~/.zshrc.local

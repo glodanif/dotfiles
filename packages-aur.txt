@@ -2,6 +2,7 @@ brave-origin-bin
 bruno-bin
 elephant-all
 localsend-bin
+minipro
 slack-desktop
 viber
 walker

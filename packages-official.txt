@@ -1,7 +1,12 @@
 alsa-utils
 amd-ucode
 android-udev
+arduino-cli
 artix-archlinux-support
+avr-gcc
+avr-libc
+avrdude
+aws-cli-v2
 ayatana-ido
 base
 base-devel
@@ -24,6 +29,10 @@ discord
 dnscrypt-proxy
 dnscrypt-proxy-openrc
 dnsmasq
+docker
+docker-buildx
+docker-compose
+docker-openrc
 dua-cli
 earlyoom
 earlyoom-openrc
@@ -37,6 +46,7 @@ ghostty
 git
 github-cli
 gnome-themes-extra
+go
 gptfdisk
 gpu-screen-recorder
 greetd
@@ -98,6 +108,8 @@ pipewire-pulse
 plocate
 plymouth
 polkit-gnome
+postgresql
+postgresql-openrc
 pulseview
 python-gobject
 python-pip
@@ -122,6 +134,7 @@ solaar
 sound-theme-freedesktop
 speedtest-cli
 spice-vdagent
+sqlitebrowser
 steam
 stow
 swayimg
