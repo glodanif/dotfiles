@@ -86,11 +86,14 @@ section "Syncing keyrings..."
 spin "syncing" sudo pacman -Sy --noconfirm archlinux-keyring artix-keyring >/dev/null || true
 
 # --- Mirror freshness: a frozen mirror serves a stale db that pacman still
-#     reports as "up to date". Check when the mirror last touched each .db. ---
+#     reports as "up to date". Check when the mirror last touched its db —
+#     only the busy repo per mirrorlist (world: Artix, extra: Arch). Quiet repos
+#     like lib32 legitimately go a week without a rebuild, and they share the
+#     same mirror, so a frozen mirror still shows up here. ---
 section "Checking mirror freshness..."
 arch=$(uname -m)
 stale=0
-for repo in system world galaxy lib32 multilib extra; do
+for repo in world extra; do
   pacman-conf --repo "$repo" &>/dev/null || continue
   url=$(pacman-conf --repo "$repo" | awk '/^Server/{print $3; exit}')
   url=${url//\$repo/$repo}; url=${url//\$arch/$arch}

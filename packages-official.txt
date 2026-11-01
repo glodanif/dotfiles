@@ -126,6 +126,8 @@ rustup
 satty
 scrcpy
 seahorse
+sigrok-cli
+sigrok-firmware-fx2lafw
 slurp
 smartmontools
 socat
@@ -161,7 +163,6 @@ wireguard-tools
 wiremix
 wireplumber
 wl-clip-persist
-wlogout
 wofi
 xarchiver
 xdg-desktop-portal
