@@ -17,13 +17,13 @@ This is a **GNU Stow** repo. Each top-level directory is a stow package whose co
 | `walker/` | App launcher (config.toml) |
 | `ghostty/` | Terminal emulator |
 | `swaync/` | Notification center (`config.json` + `style.css`) |
-| `wlogout/` | Logout menu |
+| `wlogout/` | Only `overlay.py` (the "Rebooting…" screen). wlogout itself is gone — the menu is `scripts/.local/bin/power-menu` (GTK4 layer-shell, needed for the short Windows button under Reboot) |
 | `screensaver/` | Screensaver config |
 | `swayimg/` | Image viewer |
 | `mpv/` | Media player |
 | `brave/` | Brave launch flags (`.config/brave-origin-flags.conf`) |
 | `zsh/` | Zsh shell config |
-| `system/` | Root-owned files mirrored from `/` — **not stowed**; `refresh.sh` installs them with `sudo` (greetd config + `conf.d`) |
+| `system/` | Root-owned files mirrored from `/` — **not stowed**; `refresh.sh` installs them with `sudo` (greetd config + `conf.d`, modprobe.d, sudoers.d) |
 | `pipewire/` | Audio (PipeWire conf.d snippets) |
 | `mic/` | Friendly names for audio inputs, read by `mic-watch` |
 | `gnupg/` | GPG agent config |
@@ -40,7 +40,7 @@ This is a **GNU Stow** repo. Each top-level directory is a stow package whose co
 
 **Applying changes**: Always use `./refresh.sh` from the repo root — it re-stows all packages, installs any `system/` file that differs from its `/` target (0644 root:root), and updates the package lists. Do not run `stow` commands manually.
 
-**`system/`** exists because some config is read by root daemons, and a root daemon must never read a file under `$HOME` (anything running as the user could edit it — for greetd that means `user = "root"` on the autologin session). Stowing such a file into `~/.config` does nothing anyway. Add a file by placing it at `system/<absolute path>`; `22-seat.sh` flags drift.
+**`system/`** exists because some config is read by root daemons, and a root daemon must never read a file under `$HOME` (anything running as the user could edit it — for greetd that means `user = "root"` on the autologin session). Stowing such a file into `~/.config` does nothing anyway. Add a file by placing it at `system/<absolute path>`; `22-seat.sh` flags drift. `sudoers.d` files are the exception: `refresh.sh` runs `visudo -c` first and installs them 0440, and since the user can't read them, `22-seat.sh` checks the rule works (`sudo -n -l`) instead of comparing contents.
 
 ## artix-doctor
 

@@ -15,7 +15,12 @@ fi
 # above isn't actually live.
 for f in $HOME/dotfiles/system/**/*(.N); do
     t=/${f#$HOME/dotfiles/system/}
+    [[ $t == /etc/sudoers.d/* ]] && continue  # unreadable as user; checked by behaviour below
     [[ "$(stat -c %U "$t" 2>/dev/null)" == root ]] && cmp -s "$f" "$t" \
         && ok "$t matches repo" \
         || err "$t missing, not root-owned, or differs from repo" "Apply:" "cd ~/dotfiles && ./refresh.sh"
 done
+
+sudo -n -l /usr/bin/efibootmgr --bootnext 0000 &>/dev/null \
+    && ok "reboot-into-windows is passwordless" \
+    || warn "reboot-into-windows needs a password (power menu button will fail)" "Apply:" "cd ~/dotfiles && ./refresh.sh"

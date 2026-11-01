@@ -1,19 +1,109 @@
-#!/bin/zsh
+#!/usr/bin/env python3
+# Power menu (replaces wlogout: its grid can't span cells, so no short button under Reboot).
+# Same stack as ~/.config/wlogout/overlay.py: gtk4 + gtk4-layer-shell + python-gobject.
+import os
+import subprocess
+import sys
+from ctypes import CDLL
+CDLL('libgtk4-layer-shell.so')
 
-pkill wlogout 2>/dev/null; true
+import gi
+gi.require_version('Gtk', '4.0')
+gi.require_version('Gtk4LayerShell', '1.0')
+from gi.repository import Gtk, Gdk
+from gi.repository import Gtk4LayerShell as LayerShell
 
-MONITOR=$(hyprctl monitors -j | jq '.[] | select(.focused == true)')
-HEIGHT=$(echo $MONITOR | jq '.height')
-SCALE=$(echo $MONITOR | jq '.scale')
-LOGICAL_HEIGHT=$(echo "$HEIGHT $SCALE" | awk '{printf "%d", $1 / $2}')
+ASSETS = os.path.expanduser('~/.local/share/assets')
 
-if (( LOGICAL_HEIGHT >= 1440 )); then
-    MARGIN=512
-elif (( LOGICAL_HEIGHT >= 1080 )); then
-    MARGIN=280
-else
-    MARGIN=200
-fi
+# (id, text, icon, key, command, col, row, rowspan) on a 4x3 grid
+BUTTONS = [
+    ('lock',     'Lock',     'padlock.png',   'l', 'hyprlock',                0, 0, 3),
+    ('suspend',  'Suspend',  'suspend.png',   'u', 'loginctl suspend',        1, 0, 3),
+    ('reboot',   'Reboot',   'reboot.png',    'r', 'hyprland-power reboot',   2, 0, 2),
+    ('windows',  'Windows',  'windows.png',   'w', 'reboot-into-windows && hyprland-power reboot', 2, 2, 1),
+    ('shutdown', 'Shutdown', 'power-off.png', 's', 'hyprland-power shutdown', 3, 0, 3),
+]
 
-wlogout --buttons-per-row 4 --column-spacing 36 --margin $MARGIN
+CSS = '''
+window, window.background { background-color: rgba(12, 12, 12, 0.9); }
+button {
+    border-radius: 10px; border: 2px solid #66b2ff;
+    color: #FFFFFF; background: #1E1E1E; font-size: 36px;
+}
+button#windows { font-size: 24px; }
+button:hover { background: rgba(102, 178, 255, 0.2); }
+button:focus { background: rgba(102, 178, 255, 0.5); outline: none; }
+button:focus:hover { background: rgba(102, 178, 255, 0.7); }
+'''
 
+
+def run(cmd):
+    subprocess.Popen(['zsh', '-c', cmd], start_new_session=True)
+    app.quit()
+
+
+def activate(app):
+    if app.get_windows():  # second launch while open = close (old pkill wlogout behaviour)
+        return app.quit()
+    css = Gtk.CssProvider()
+    css.load_from_string(CSS)
+    Gtk.StyleContext.add_provider_for_display(
+        Gdk.Display.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+    win = Gtk.Window(application=app)
+    LayerShell.init_for_window(win)
+    LayerShell.set_layer(win, LayerShell.Layer.OVERLAY)
+    for edge in (LayerShell.Edge.TOP, LayerShell.Edge.BOTTOM, LayerShell.Edge.LEFT, LayerShell.Edge.RIGHT):
+        LayerShell.set_anchor(win, edge, True)
+    LayerShell.set_exclusive_zone(win, -1)
+    LayerShell.set_keyboard_mode(win, LayerShell.KeyboardMode.EXCLUSIVE)
+    LayerShell.set_namespace(win, 'power-menu')
+
+    grid = Gtk.Grid(row_homogeneous=True, column_homogeneous=True, column_spacing=36, row_spacing=36)
+    keys = {'Escape': app.quit}
+    btns = {}
+    for name, text, icon, key, cmd, col, row, span in BUTTONS:
+        small = span == 1
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL if small else Gtk.Orientation.VERTICAL,
+                      spacing=24, halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER)
+        img = Gtk.Image.new_from_file(f'{ASSETS}/{icon}')
+        img.set_pixel_size(48 if small else 96)
+        box.append(img)
+        box.append(Gtk.Label(label=text))
+        btn = Gtk.Button(child=box, name=name)
+        btns[name] = btn
+        btn.connect('clicked', lambda _b, c=cmd: run(c))
+        grid.attach(btn, col, row, 1, span)
+        keys[key] = lambda c=cmd: run(c)
+    win.set_child(grid)
+
+    ctl = Gtk.EventControllerKey()
+    # GTK's spatial nav picks Windows when entering the Reboot column from a tall button; prefer Reboot.
+    nav = {('suspend', 'Right'): 'reboot', ('shutdown', 'Left'): 'reboot'}
+
+    def on_key(_c, kv, _kc, _s):
+        focus = win.get_focus()
+        target = nav.get((focus and focus.get_name(), Gdk.keyval_name(kv)))
+        if target:
+            return btns[target].grab_focus()
+        fn = keys.get(Gdk.keyval_name(kv))
+        if fn:
+            fn()
+        return bool(fn)  # unhandled keys (arrows, Tab, Enter) fall through to GTK focus nav
+    ctl.connect('key-pressed', on_key)
+    win.add_controller(ctl)
+
+    # Margin per monitor height, as the old wlogout launcher did. Known only once mapped.
+    def on_map(w):
+        h = w.get_display().get_monitor_at_surface(w.get_surface()).get_geometry().height
+        m = 512 if h >= 1440 else 280 if h >= 1080 else 200
+        for side in ('top', 'bottom', 'start', 'end'):
+            getattr(grid, f'set_margin_{side}')(m)
+    win.connect('map', on_map)
+    win.present()
+
+
+app = Gtk.Application(application_id='com.power.menu')
+app.connect('activate', activate)
+if __name__ == '__main__':
+    app.run(None)

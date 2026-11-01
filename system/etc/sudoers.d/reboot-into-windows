@@ -1,0 +1,2 @@
+# Exact argv only: sudo rejects any other efibootmgr invocation without a password.
+glodanif ALL=(root) NOPASSWD: /usr/bin/efibootmgr --bootnext 0000
