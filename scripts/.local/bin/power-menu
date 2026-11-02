@@ -17,7 +17,8 @@ ASSETS = os.path.expanduser('~/.local/share/assets')
 
 # (id, text, icon, key, command, col, row, rowspan) on a 4x3 grid
 BUTTONS = [
-    ('lock',     'Lock',     'padlock.png',   'l', 'hyprlock',                0, 0, 3),
+    ('lock',     'Lock',     'padlock.png',   'l', 'hyprlock',                0, 0, 2),
+    ('logout',   'Logout',   'logout.png',    'e', 'hyprland-power logout',   0, 2, 1),
     ('suspend',  'Suspend',  'suspend.png',   'u', 'loginctl suspend',        1, 0, 3),
     ('reboot',   'Reboot',   'reboot.png',    'r', 'hyprland-power reboot',   2, 0, 2),
     ('windows',  'Windows',  'windows.png',   'w', 'reboot-into-windows && hyprland-power reboot', 2, 2, 1),
@@ -30,7 +31,7 @@ button {
     border-radius: 10px; border: 2px solid #66b2ff;
     color: #FFFFFF; background: #1E1E1E; font-size: 36px;
 }
-button#windows { font-size: 24px; }
+button#windows, button#logout { font-size: 24px; }
 button:hover { background: rgba(102, 178, 255, 0.2); }
 button:focus { background: rgba(102, 178, 255, 0.5); outline: none; }
 button:focus:hover { background: rgba(102, 178, 255, 0.7); }
@@ -78,8 +79,8 @@ def activate(app):
     win.set_child(grid)
 
     ctl = Gtk.EventControllerKey()
-    # GTK's spatial nav picks Windows when entering the Reboot column from a tall button; prefer Reboot.
-    nav = {('suspend', 'Right'): 'reboot', ('shutdown', 'Left'): 'reboot'}
+    # GTK's spatial nav picks the short button when entering a split column from a tall one; prefer the tall one.
+    nav = {('suspend', 'Right'): 'reboot', ('shutdown', 'Left'): 'reboot', ('suspend', 'Left'): 'lock'}
 
     def on_key(_c, kv, _kc, _s):
         focus = win.get_focus()
