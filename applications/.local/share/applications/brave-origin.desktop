@@ -12,6 +12,7 @@ Icon=brave-origin
 Type=Application
 Categories=Network;WebBrowser;
 Actions=new-window;new-private-window;
+MimeType=x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/mailto;application/pdf;application/rdf+xml;application/rss+xml;application/xhtml+xml;application/xhtml_xml;application/xml;image/gif;image/jpeg;image/png;image/webp;text/html;text/xml;x-scheme-handler/ipfs;x-scheme-handler/ipns;x-scheme-handler/unknown;x-scheme-handler/about;
 
 [Desktop Action new-window]
 Name=New Window
@@ -20,4 +21,3 @@ Exec=brave-origin
 [Desktop Action new-private-window]
 Name=New Incognito Window
 Exec=brave-origin --incognito
-MimeType=x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/mailto;application/pdf;application/rdf+xml;application/rss+xml;application/xhtml+xml;application/xhtml_xml;application/xml;image/gif;image/jpeg;image/png;image/webp;text/html;text/xml;x-scheme-handler/ipfs;x-scheme-handler/ipns;x-scheme-handler/unknown;x-scheme-handler/about;

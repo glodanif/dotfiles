@@ -15,6 +15,9 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("walker --gapplication-service")
 	hl.exec_cmd("swaync")
 	hl.exec_cmd("headphones-watch")
+	-- bluetoothd leaves adapters non-connectable, so headphones powering on
+	-- can't reach the PC. Retry: the USB dongle can register after login.
+	hl.exec_cmd("sh -c 'for i in $(seq 30); do ok=1; for h in /sys/class/bluetooth/hci?; do busctl set-property org.bluez /org/bluez/${h##*/} org.bluez.Adapter1 Connectable b true 2>/dev/null || ok=; done; [ $ok ] && break; sleep 1; done'")
 	hl.exec_cmd("urgent-watch")
 	hl.exec_cmd("wl-clip-persist --clipboard regular")
 	hl.exec_cmd("wl-paste --watch cliphist store")

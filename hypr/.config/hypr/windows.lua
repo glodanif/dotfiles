@@ -89,6 +89,17 @@ hl.window_rule({
 	size = "1024 700",
 })
 
+-- KiCad Footprint/Symbol Chooser opens at ~590x270. Title carries a live item count.
+hl.window_rule({
+	name = "kicad-chooser",
+	match = {
+		class = "^(eeschema|pcbnew|kicad)$",
+		title = "^(Footprint|Symbol) Chooser.*",
+	},
+	center = true,
+	size = "1400 900",
+})
+
 -- Chromium/Brave picture-in-picture. The client advertises a max size smaller than
 -- a dwindle tile, and DwindleAlgorithm::addTarget re-floats anything whose maxSize
 -- is under the tile it would get — so Mod+V looked like a no-op. Drop the hint.

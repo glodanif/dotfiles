@@ -9,15 +9,13 @@ swayimg.imagelist.adjacent = true
 
 swayimg.decoration = false
 swayimg.text.visible = false
-swayimg.viewer.set_text("topleft", {})
-swayimg.viewer.set_text("topright", {})
-swayimg.viewer.set_text("bottomleft", {})
-swayimg.viewer.set_text("bottomright", {})
+swayimg.viewer.text = { topleft = {}, topright = {}, bottomleft = {}, bottomright = {} }
 
 -- Scroll wheel to navigate images
-swayimg.viewer.on_mouse("ScrollDown", function()
-	swayimg.viewer.open("next")
-end)
-swayimg.viewer.on_mouse("ScrollUp", function()
-	swayimg.viewer.open("prev")
+swayimg.viewer.on_scroll(function(_, _, vertical)
+	if vertical > 0 then
+		swayimg.viewer.open("next")
+	elseif vertical < 0 then
+		swayimg.viewer.open("prev")
+	end
 end)

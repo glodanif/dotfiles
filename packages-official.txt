@@ -58,6 +58,9 @@ hyprland
 hyprlock
 hyprpaper
 iwd-openrc
+kicad
+kicad-library
+kicad-library-3d
 lazygit
 lib32-nvidia-utils
 libayatana-indicator
